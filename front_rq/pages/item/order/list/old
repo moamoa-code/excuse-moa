@@ -1,0 +1,192 @@
+// 주문서 목록
+import axios, { AxiosError } from 'axios';
+import { GetServerSidePropsContext } from 'next';
+import React, { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Table, Typography, DatePicker, Button, Space, Divider, message } from 'antd';
+import { useRouter } from 'next/router';
+import { dehydrate, QueryClient, useQuery, useMutation, useQueryClient } from 'react-query';
+import { loadMyInfoAPI } from '../../../../apis/user';
+import { loadMyOrdersAPI } from '../../../../apis/order';
+import AppLayout from '../../../../components/AppLayout';
+
+import User from '../../../../interfaces/user';
+import Order from '../../../../interfaces/order';
+
+import moment from 'moment';
+import 'moment/locale/ko';
+import locale from 'antd/lib/locale/ko_KR';
+import styled from 'styled-components';
+
+const pickerLocale = { // antd DatePicker 로케일 설정
+  "lang": {
+    "locale": "ko_KR",
+    "yearFormat": "YYYY",
+    "dateFormat": "M/D/YYYY",
+    "dayFormat": "D",
+    "dateTimeFormat": "M/D/YYYY HH:mm:ss",
+    "monthFormat": "MMMM",
+  },
+  "dateFormat": "YYYY-MM-DD",
+  "dateTimeFormat": "YYYY-MM-DD HH:mm:ss",
+  "weekFormat": "YYYY-wo",
+  "monthFormat": "YYYY-MM"
+}
+
+const Container800 = styled.div`
+max-width: 800px;
+padding: 20px;
+margin: 0 auto;
+@media screen and (max-width: 600px) {
+  padding: 10px;
+}
+`
+
+const OrderList = () => {
+  const router = useRouter();
+  const queryClient = new QueryClient();
+  const { Title } = Typography;
+  const { RangePicker } = DatePicker;
+  const { id: userId } = router.query; // 유저 id
+  const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
+  const [ datesVal, setDatesVal ] = useState([moment().subtract(2, 'months').format('YYYY-MM-DD'), moment().format('YYYY-MM-DD')]);
+  const [ dates, setDates ] = useState(datesVal);
+  const [ totalPrice, setTotalPrice ] = useState(0);
+  const getTotalPrice = (orders) => { // 총 금액 계산
+    console.log('getTotalPrice')
+    let total = 0
+    if(orders) {
+      orders.map((v) => {
+        let price = Number(v.totalPrice)?? 0;
+        if (isNaN(price) || v.status !== '주문확인완료') {
+          price = 0;
+        }
+        total = total + Number(price);
+      })
+    }
+    setTotalPrice(total);
+    return String(total);
+  };
+  const { isLoading, data: orders } = useQuery<Order[]>(['orders', datesVal], 
+    () => {
+      return loadMyOrdersAPI(userId, datesVal)
+    }, {
+      onSuccess: (data) => {
+        console.log('onSuccess');
+        getTotalPrice(data);
+      }
+    }
+  ); // 데이터 불러오기, 총 금액 계산
+
+  const onLoadOrdersWithDates = () => {
+    if(!dates){
+      message.error('날짜를 선택해 주세요.', 0.5);
+      return;
+    }
+    const newDates = [moment(dates[0]).format('YYYY-MM-DD'), moment(dates[1]).format('YYYY-MM-DD')];
+    console.log(newDates);
+    setDatesVal(newDates);
+    // queryClient.fetchQuery(['orders', datesVal], () => loadMyOrdersAPI(orderId, datesVal));
+    queryClient.invalidateQueries('orders');
+  }
+
+  const columns = [
+    {
+      title: '주문일시',
+      dataIndex: 'date',
+      key: 'date',
+      render: (text, record) => (
+        <>{moment(text).format('YYYY.MM.DD HH:mm')}</>
+      ),
+    }, {
+      title: '주문번호',
+      dataIndex: 'id',
+      key: 'id',
+    }, {
+      title: '총 공급가',
+      key: 'totalPrice',
+      dataIndex: 'totalPrice',
+    }, {
+      title: '공급사',
+      dataIndex: 'Provider',
+      key: 'date',
+      render: (text, record) => (
+        <>{text.company}</>
+      ),
+    }, {
+      title: '주문상태',
+      dataIndex: 'status',
+      key: 'status',
+    },{
+      title: '',
+      key: 'action',
+      render: (text, record) => (
+        <Link href={`/item/order/${record.id}`}><a>자세히 보기</a></Link>
+      ),
+    }
+  ]
+
+  return (
+    <AppLayout>
+      {/* {JSON.stringify(orders)} */}
+      <Container800>
+        <Title level={4}>주문 목록</Title>
+        <Space wrap>
+          <span>기간 검색</span>
+          <RangePicker
+            defaultValue={[moment().subtract(2, 'months'), moment()]}
+            locale={pickerLocale}
+            onCalendarChange={
+              (val) => {
+                setDates(val);
+                console.log(val);
+              }
+            }
+          />
+          <Button onClick={onLoadOrdersWithDates}>적용</Button>
+        </Space>
+        <p></p>
+        <Table 
+          size="small"
+          rowKey="id"
+          columns={columns}
+          dataSource={orders}
+          loading={isLoading}
+          />
+        {totalPrice?
+        <Divider orientation="right">총 금액: {String(totalPrice).toString()
+          .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원</Divider>
+        : null}
+      </Container800>
+    </AppLayout>
+  );
+};
+
+export const getServerSideProps = async (context: GetServerSidePropsContext) => {
+  const cookie = context.req ? context.req.headers.cookie : ''; // 쿠키 넣어주기
+  axios.defaults.headers.Cookie = '';
+  const id = context.params?.id as string;
+  if (context.req && cookie) {
+    axios.defaults.headers.Cookie = cookie;
+  }
+  const datesVal = [moment().subtract(2, 'months').format('YYYY-MM-DD'), moment().format('YYYY-MM-DD')];
+  const queryClient = new QueryClient();
+  const response = await loadMyInfoAPI();
+  if (!response) { // 로그인 안했으면 홈으로
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+  await queryClient.prefetchQuery(['user'], () => loadMyInfoAPI());
+  await queryClient.prefetchQuery(['orders', datesVal], () => loadMyOrdersAPI(id, datesVal));
+  return {
+    props: {
+      dehydratedState: JSON.parse(JSON.stringify(dehydrate(queryClient))),
+    },
+  };
+};
+
+export default OrderList;

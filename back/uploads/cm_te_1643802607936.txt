@@ -1,0 +1,29 @@
+package org.hello.controller;
+
+
+import javax.inject.Inject;
+import org.hello.dao.CM_memberDAO;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+@Controller
+@RequestMapping("/CM/") //url요청이  /board/로 시작하는 것은 여기서 처리한다. ex) board/abc , board/123 board/create
+public class CM_testController {
+    
+    @Inject
+    private CM_memberDAO dao;
+    
+    @RequestMapping(value = "/memberlist", method=RequestMethod.GET)
+    public void listAll(Model model) throws Exception{
+        
+        System.out.println("전체목록 페이지");
+        
+        model.addAttribute("memberList", dao.memberList());
+        
+    }
+
+    
+ 
+}
