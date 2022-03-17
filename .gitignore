@@ -5,4 +5,5 @@ node_modules
 .next
 *.tar
 .next.tar
+bfg-1.14.0.jar
 ~$문서.docx
