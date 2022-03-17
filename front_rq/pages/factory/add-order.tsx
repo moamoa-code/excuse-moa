@@ -10,7 +10,6 @@ import { loadAddrsAPI, loadMyInfoAPI, loadProviderAPI, loadProvidersAPI, loadUse
 import { orderPosItemAPI } from '../../apis/order';
 import AppLayout from '../../components/AppLayout';
 
-import 'dayjs/locale/ko';
 import User from '../../interfaces/user';
 import styled from 'styled-components';
 import { CheckCircleOutlined, MinusOutlined, PlusOutlined } from '@ant-design/icons';

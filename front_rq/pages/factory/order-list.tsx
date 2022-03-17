@@ -12,6 +12,7 @@ import AppLayout from '../../components/AppLayout';
 
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
+import locale_kr from 'antd/lib/locale/ko_KR';
 import User from '../../interfaces/user';
 import Order from '../../interfaces/order';
 import styled from 'styled-components';
@@ -22,47 +23,6 @@ import { loadOrderAPI } from '../../apis/item';
 import OrderView from '../../components/OrderView';
 import useInput from '../../hooks/useInput';
 
-
-const pickerLocale = {
-  "lang": {
-    "locale": "ko_KR",
-    "placeholder": "Select date",
-    "rangePlaceholder": ["Start date", "End date"],
-    "today": "Today",
-    "now": "Now",
-    "backToToday": "Back to today",
-    "ok": "OK",
-    "clear": "Clear",
-    "month": "Month",
-    "year": "Year",
-    "timeSelect": "Select time",
-    "dateSelect": "Select date",
-    "monthSelect": "Choose a month",
-    "yearSelect": "Choose a year",
-    "decadeSelect": "Choose a decade",
-    "yearFormat": "YYYY",
-    "dateFormat": "M/D/YYYY",
-    "dayFormat": "D",
-    "dateTimeFormat": "M/D/YYYY HH:mm:ss",
-    "monthFormat": "MMMM",
-    "monthBeforeYear": true,
-    "previousMonth": "Previous month (PageUp)",
-    "nextMonth": "Next month (PageDown)",
-    "previousYear": "Last year (Control + left)",
-    "nextYear": "Next year (Control + right)",
-    "previousDecade": "Last decade",
-    "nextDecade": "Next decade",
-    "previousCentury": "Last century",
-    "nextCentury": "Next century"
-  },
-  "timePickerLocale": {
-    "placeholder": "Select time"
-  },
-  "dateFormat": "YYYY-MM-DD",
-  "dateTimeFormat": "YYYY-MM-DD HH:mm:ss",
-  "weekFormat": "YYYY-wo",
-  "monthFormat": "YYYY-MM"
-}
 
 const Container1280 = styled.div`
   max-width: 1280px;
@@ -576,13 +536,13 @@ const orderList = () => {
                 <span>&nbsp;시작:</span>
                 <DatePicker
                   onChange={onChangeStartDate}
-                  locale={pickerLocale}
+                  // locale={locale_kr}
                   defaultValue={startDate}
                 />
                 <span>까지:</span>
                 <DatePicker
                   onChange={onChangeEndtDate} 
-                  locale={pickerLocale}
+                  // locale={locale_kr}
                   defaultValue={endDate}
                 />
               <div>
