@@ -1,7 +1,8 @@
 excuse-moa.pem
 node_modules
 .env
-.tmp
+*.tmp
 .next
-.tar
+*.tar
+.next.tar
 ~$문서.docx
