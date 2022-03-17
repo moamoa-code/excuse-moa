@@ -558,7 +558,7 @@ const orderList = () => {
             <Button loading={loading} onClick={onLoadTodos}>적용</Button>
           </FilterBox>
         : null}
-        {/* <p>{JSON.stringify(orders)}</p> */}
+        <p>{JSON.stringify(orders)}</p>
 
         <TaBle>
           <tr>

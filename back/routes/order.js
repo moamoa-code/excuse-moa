@@ -612,7 +612,7 @@ router.get('/todos', async (req, res, next) => {
         where: { status: stat3 }
       }]
     });
-
+    console.log(order);
     res.status(200).json(order);
   } catch (error) {
     console.error(error);
