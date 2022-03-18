@@ -195,11 +195,6 @@ const PaintStatus = (props) => {
   }
 }
 
-// 주문번호별 색상 태그 컴포넌트
-const PaintNumber = (props) => [
-  
-]
-
 const orderList = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -273,6 +268,7 @@ const orderList = () => {
     const fromz = startDate.toDate();
     const tilz = endDate.toDate();
     const params = {from:fromz, til:tilz, stat1: orderStatOpt, stat2: factoryStatOpt, stat3: orderDetailStatOpt};
+    message.error(params, 1);
     console.log(params);
     return loadTodosAPI(params)},
     {
