@@ -54,8 +54,12 @@ export function loadAllOrders(){
   return axios.get(`/order/all`).then((response) => response.data);
 }
 
-export function loadTodosAPI(params){
-  return axios.get(`/order/todos`, {params}).then((response) => response.data);
+// export function loadTodosAPI(params){
+//   return axios.get(`/order/todos`, {params}).then((response) => response.data);
+// }
+
+export function loadTodosAPI(data){
+  return axios.post(`/order/todos`, data).then((response) => response.data);
 }
 
 // 주문서 목록 불러오기 (판매자용)

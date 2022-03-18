@@ -267,11 +267,11 @@ const orderList = () => {
     console.log(startDate);
     const fromz = startDate.toDate();
     const tilz = endDate.toDate();
-    const params = {from:fromz, til:tilz, stat1: orderStatOpt, stat2: factoryStatOpt, stat3: orderDetailStatOpt};
-    message.error(JSON.stringify(params), 4);
-    console.log(params);
-    return loadTodosAPI(params)},
-    {
+    const data = {from:fromz, til:tilz, stat1: orderStatOpt, stat2: factoryStatOpt, stat3: orderDetailStatOpt};
+    // message.error(JSON.stringify(data), 4);
+    console.log(data);
+    return loadTodosAPI(data)
+    }, {
       // refetchInterval: 2000,
       onSuccess: (data) => {
         console.log('onSuccess');
@@ -554,8 +554,6 @@ const orderList = () => {
             <Button loading={loading} onClick={onLoadTodos}>적용</Button>
           </FilterBox>
         : null}
-        <p>{JSON.stringify(orders)}</p>
-
         <TaBle>
           <tr>
             <th className='th1'>번호<br />합포</th>

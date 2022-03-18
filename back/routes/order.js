@@ -269,7 +269,7 @@ router.post('/from-factory', async (req, res, next) => {
 
 
 // 일정기간 주문목록 가져오기 (구매자용)
-router.get('/:userId/:from/:til', async (req, res, next) => { // GET /post/1
+router.get('/:userId/:from/:til', async (req, res, next) => {
   try {
     console.log(req.params.userId);
     let from = new Date(req.params.from);
@@ -463,7 +463,7 @@ router.patch('/task-complete', async (req, res, next) => {
 });
 
 // 일정기간 주문목록 가져오기 (판매자용)
-router.get('/received-orders-dates/:userId/:from/:til', isProvider, async (req, res, next) => { // GET /post/1
+router.get('/received-orders-dates/:userId/:from/:til', isProvider, async (req, res, next) => { 
   try {
     console.log(req.params.userId);
     let from = new Date(req.params.from);
@@ -547,7 +547,7 @@ router.get('/received-orders-dates/:userId/:from/:til', isProvider, async (req, 
 });
 
 // 모든 주문목록 가져오기 (공장)
-router.get('/all', isProvider, async (req, res, next) => { // GET /post/1
+router.get('/all', isProvider, async (req, res, next) => { 
   try {
     const order = await Order.findAll({
       order: [
@@ -576,19 +576,64 @@ router.get('/all', isProvider, async (req, res, next) => { // GET /post/1
 });
 
 
+// // 주문목록 가져오기 (공장)
+// router.get('/todos', async (req, res, next) => {
+//   try {
+//     console.log(req.query);
+//     let from = new Date(req.query.from);
+//     from.setHours('0');
+//     let til = new Date(req.query.til);
+//     til.setHours('23');
+//     til.setMinutes('59');
+//     til.setSeconds('59');
+//     const stat1 = req.query.stat1? req.query.stat1 : '';
+//     const stat2 = req.query.stat2? req.query.stat2 : '';
+//     const stat3 = req.query.stat3? req.query.stat3 : '';
+//     const order = await Order.findAll({
+//       where: {
+//         date: { [Op.between]: [from, til] },
+//         status: stat1,
+//         factoryStatus: stat2,
+//       },
+//       order: [
+//         ['createdAt', 'DESC'],
+//       ],
+//       // attributes: ["id", "date", "totalPice", "comment", "address", "zip", "phone", "name", "isConfirmed", "isCanceled"],
+//       include: [{
+//         model: User,
+//         as: 'Provider',
+//         attributes: ["id", "company", "name", "phone"],
+//       }, {
+//         model: User,
+//         as: 'Customer',
+//         attributes: ["id", "company", "name", "phone"],
+//       }, {
+//         model: OrderDetail,
+//         where: { status: stat3 }
+//       }]
+//     });
+//     console.log(order);
+//     res.status(200).json(order);
+//   } catch (error) {
+//     console.error(error);
+//     next(error);
+//   }
+// });
+
+
 // 주문목록 가져오기 (공장)
-router.get('/todos', async (req, res, next) => {
+router.post('/todos', async (req, res, next) => {
   try {
-    console.log(req.query);
-    let from = new Date(req.query.from);
+    console.log(req.body);
+    let from = new Date(req.body.from);
     from.setHours('0');
-    let til = new Date(req.query.til);
+    let til = new Date(req.body.til);
     til.setHours('23');
     til.setMinutes('59');
     til.setSeconds('59');
-    const stat1 = req.query.stat1? req.query.stat1 : '';
-    const stat2 = req.query.stat2? req.query.stat2 : '';
-    const stat3 = req.query.stat3? req.query.stat3 : '';
+    const stat1 = req.body.stat1? req.body.stat1 : '';
+    const stat2 = req.body.stat2? req.body.stat2 : '';
+    const stat3 = req.body.stat3? req.body.stat3 : '';
     const order = await Order.findAll({
       where: {
         date: { [Op.between]: [from, til] },
@@ -612,7 +657,7 @@ router.get('/todos', async (req, res, next) => {
         where: { status: stat3 }
       }]
     });
-    console.log(order);
+    // console.log(order);
     res.status(200).json(order);
   } catch (error) {
     console.error(error);
@@ -621,7 +666,7 @@ router.get('/todos', async (req, res, next) => {
 });
 
 // 주문목록 가져오기 (판매자용)
-router.get('/received-orders/:userId', isProvider, async (req, res, next) => { // GET /post/1
+router.get('/received-orders/:userId', isProvider, async (req, res, next) => { 
   try {
     const user = await User.findOne({
       where: { id: req.params.userId }
@@ -659,7 +704,7 @@ router.get('/received-orders/:userId', isProvider, async (req, res, next) => { /
 });
 
 // 주문목록 3개 가져오기 (판매자용)
-router.get('/received-orders-three/:userId', isProvider, async (req, res, next) => { // GET /post/1
+router.get('/received-orders-three/:userId', isProvider, async (req, res, next) => {
   try {
     const user = await User.findOne({
       where: { id: req.params.userId }
@@ -703,7 +748,7 @@ router.get('/received-orders-three/:userId', isProvider, async (req, res, next) 
 
 
 // 주문목록 가져오기 (판매자용)
-router.get('/received-orders/:userId', async (req, res, next) => { // GET /post/1
+router.get('/received-orders/:userId', async (req, res, next) => {
   try {
     const user = await User.findOne({
       where: { id: req.params.userId }
