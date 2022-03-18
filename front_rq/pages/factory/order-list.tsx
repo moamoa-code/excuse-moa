@@ -268,7 +268,7 @@ const orderList = () => {
     const fromz = startDate.toDate();
     const tilz = endDate.toDate();
     const params = {from:fromz, til:tilz, stat1: orderStatOpt, stat2: factoryStatOpt, stat3: orderDetailStatOpt};
-    message.error(params, 1);
+    message.error(JSON.stringify(params), 4);
     console.log(params);
     return loadTodosAPI(params)},
     {
