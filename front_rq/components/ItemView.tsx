@@ -18,12 +18,17 @@ const ItemView = ({ item, myUserInfo }) => {
       <Descriptions
         bordered
         size="small"
-        title={item.User.company}
+        title={item.User?.company}
         extra={item.UserId === myUserInfo.id ? 
           <><Link href={`/item/edit/${item.id}`}><a>
             <Button type="primary">수정</Button>
           </a></Link>
           </>
+        : myUserInfo.role === 'ADMINISTRATOR'?
+        <><Link href={`/factory/item/edit/${item.id}`}><a>
+        <Button type="primary">수정</Button>
+        </a></Link>
+        </>
         : null}
       >
         {item.UserId === myUserInfo.id ? 

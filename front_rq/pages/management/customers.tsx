@@ -36,7 +36,9 @@ const Customers = () => {
   const [ uRole, setUrole ] = useState('');
   const [ uItems, setUitems ] = useState([]);
   const [ isMine, setIsmine ] = useState(false);
-  const [ isVisible, setIsvisible ] = useState(false)
+  const [ isVisible, setIsvisible ] = useState(false);
+
+  const [ a, setA ] = useState('');
 
   const openNotification = (text) => {
     notification.open({
@@ -122,6 +124,7 @@ const Customers = () => {
     setLoading(true);
     loadUserAPI(String(id))
       .then((response) => {
+        setA(response);
         console.log(response);
         if (myUserInfo.Customers.find((v) => (v.id === response.id))){
           setIsmine(true);
@@ -197,6 +200,7 @@ const Customers = () => {
       <Head>
         <title>고객 등록</title>
       </Head>
+      {JSON.stringify(a)}
       <Title level={3} >{myUserInfo.company}사의 고객 목록</Title>
       <Space size={8} wrap>
         {myUserInfo.Customers.map((v) => (

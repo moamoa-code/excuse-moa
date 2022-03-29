@@ -10,6 +10,6 @@ export default interface Item {
   supplyPrice: string|null;
   imgSrc: string|null;
   description: string|null;
-  UserId: Partial<User> & { id: number };
+  UserId: Partial<User> & { id: string };
   ItemViewUsers: any;
 }

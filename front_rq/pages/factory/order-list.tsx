@@ -593,9 +593,10 @@ const orderList = () => {
                   amount = amount + 0.1 * Number(item[0]?.qty);
                 }
                 return (
-                  <tr key={item[0].id} style={item[0]?.status === '포장완료'? doneStyle : null}>
+                  item.map((i) => (
+                    <tr key={i.id} style={i?.status === '포장완료'? doneStyle : null}>
                     <td className='th1' onClick={showOrderModal(order.id)}>
-                      <p className='number'>{String(item[0]?.OrderId).slice(-3)}</p>
+                      <p className='number'>{String(i?.OrderId).slice(-3)}</p>
                       {order?.OrderDetails.length >= 2?
                       <p className='count-two'>{order.OrderDetails.length}</p>
                       : <p className='count'>{order.OrderDetails.length}</p>}
@@ -607,11 +608,11 @@ const orderList = () => {
                         :<p>{order.factoryStatus}</p>}
                     </td>
                     <td className='th3'>{order.Provider?.company}</td>
-                    <td className='th4'>{item[0]?.itemName}<br />{item[0]?.itemPackage}</td>
-                    <td className='th5'>{item[0]?.tag}</td>
+                    <td className='th4'>{i?.itemName}<br />{i?.itemPackage}</td>
+                    <td className='th5'>{i?.tag}</td>
                     <td className='th6'>
-                      {PaintUnit(item[0].itemUnit)}
-                      {PaintQty(item[0].itemUnit, item[0]?.qty)}
+                      {PaintUnit(i.itemUnit)}
+                      {PaintQty(i.itemUnit, i?.qty)}
                     </td>
                     <td className='th7'>
                       {order.Customer?.company}<br />
@@ -620,25 +621,26 @@ const orderList = () => {
                     <td className='th8'>
                       <Space>
                         <PaintStatus status={order.status} />
-                        <PaintStatus status={item[0]?.status} />
+                        <PaintStatus status={i?.status} />
                       </Space>
-                      {/* {item[0]?.status === '포장완료'?
-                        <Tag color='#108ee9'>{item[0]?.status}</Tag>
-                        :<Tag>{item[0]?.status}</Tag>} */}
+                      {/* {i?.status === '포장완료'?
+                        <Tag color='#108ee9'>{i?.status}</Tag>
+                        :<Tag>{i?.status}</Tag>} */}
 
                       {/* {order.status === '취소요청중' || order.status === '주문취소완료'?
                         <Tag color='#ff2424'>{order.status}</Tag>
                         :<Tag>{order.status}</Tag>}
-                      {item[0]?.status === '포장완료'?
-                        <Tag color='#108ee9'>{item[0]?.status}</Tag>
-                        :<Tag>{item[0]?.status}</Tag>} */}
+                      {i?.status === '포장완료'?
+                        <Tag color='#108ee9'>{i?.status}</Tag>
+                        :<Tag>{i?.status}</Tag>} */}
                     </td>
                     <td  className='th9'>
-                      {item[0]?.status === '포장완료'?
-                      <Button loading={loading} onClick={onPackCancelClick(item[0].id)} danger>취소</Button>
-                      :<Button loading={loading} type='primary' onClick={onConfirmClick(item[0].id)}>완료</Button> }
+                      {i?.status === '포장완료'?
+                      <Button loading={loading} onClick={onPackCancelClick(i.id)} danger>취소</Button>
+                      :<Button loading={loading} type='primary' onClick={onConfirmClick(i.id)}>완료</Button> }
                     </td>
                   </tr>
+                  ))
                 )
               }
             }))}

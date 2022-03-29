@@ -167,10 +167,10 @@ const Orders = () => {
     }, {
       title: '고객사',
       dataIndex: 'Customer',
-      key: 'date',
-      render: (text, record) => (
-        <>{text.company}</>
-      ),
+      key: 'Customer',
+      render: (text, record) => {
+        return <>{text?.company ?? record.name}</>
+      },
     }, {
       title: '주문상태',
       dataIndex: 'status',

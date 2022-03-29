@@ -16,7 +16,9 @@ router.get('/show-provider', async (req, res, next) => { //
       where: {
         role: 'PROVIDER',
       },
-      attributes: ["id", "company", "name"],
+      attributes: {
+        exclude: ["password", "phone", "email", "hqNumber"],
+      }
     });
     if (!providers) {
       return res.status(403).send('회원이 존재하지 않습니다.');
@@ -25,6 +27,107 @@ router.get('/show-provider', async (req, res, next) => { //
   } catch (error) {
     console.error(error);
     next(error);
+  }
+});
+
+
+// 모든 유저 목록 불러오기
+router.get('/list', async (req, res, next) => { // 
+  try {
+    const userList = await User.findAll({
+      order: [['createdAt', 'DESC']],
+      attributes: {
+        include: ["id", "company", "role", "name", "createdAt"],
+        exclude: ["password", "phone", "email", "hqNumber"],
+      },
+    });
+    res.status(200).json(userList);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+// 회원 등급 변경하기
+router.patch('/update-role', async (req, res, next) => {
+  try {
+    console.log(req.body);
+    const user = await User.findOne({
+      where: { id: req.body.userId }
+    });
+    const role = String(req.body.role).toUpperCase().trim();
+    if (role !== 'PROVIDER' && role !== 'CUSTOMER' && role !== 'NOVICE' && role !== 'RESIGNED'){
+      return res.status(404).send('잘못된 값입니다.');
+    }
+    if (!user) {
+      return res.status(404).send('회원이 존재하지 않습니다.');
+    }
+    await User.update({
+      role: role
+    }, {
+      where: { id: user.id },
+    });
+    return res.status(200).send('ok');
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+// 정보수정
+router.patch('/update', async (req, res, next) => { // post /user
+  try {
+    const user = await User.findOne({ 
+      where: {
+        id: req.body.userId,
+      }
+    });
+    if (!user) {
+      return res.status(403).send('사용자를 찾을 수 없습니다.');
+    }
+    const role = String(req.body.role).toUpperCase().trim();
+    if (role !== 'PROVIDER' && role !== 'CUSTOMER' && role !== 'NOVICE'){
+      return res.status(404).send('잘못된 값입니다.');
+    }
+
+    await User.update({
+      company: req.body.company,
+      name: req.body.name,
+      phone: req.body.phone,
+      email: req.body.email,
+      role: role,
+    }, {
+      where: { id: user.id },
+    });
+    res.status(201).send('ok');
+  } catch (error) {
+    console.error(error);
+    next(error); // status 500
+  }
+});
+
+// 비밀번호 변경
+router.patch('/update-password', async (req, res, next) => { // post /user
+  try {
+    const user = await User.findOne({ // 아이디 DB에서 중복체크
+      where: {
+        id: req.body.userId,
+      }
+    });
+    if (!user) {
+      return res.status(403).send('사용자를 찾을 수 없습니다.');
+    }
+    const hashedPassword = await bcrypt.hash(req.body.password, 10); // 두번째 인자 높을수록 암호화 강함
+
+    await User.update({
+      password: hashedPassword, // 암호화된 password
+    }, {
+      where: { id: user.id },
+    });
+    res.status(201).send('ok');
+  } catch (error) {
+    console.error(error);
+    next(error); // status 500
   }
 });
 
@@ -40,7 +143,7 @@ router.get('/provider/:userId', async (req, res, next) => { //
         {
           model: User,
           as: "Customers",
-          attributes: ["id", "company"],
+          attributes: ["id", "company", "name"],
         }
       ]
     });
@@ -57,7 +160,7 @@ router.get('/provider/:userId', async (req, res, next) => { //
           {
             model: User,
             as: "Customers",
-            attributes: ["id", "company"],
+            attributes: ["id", "company", "name"],
           }
         ]
       });
@@ -131,6 +234,7 @@ router.patch('/addr/remove', isLoggedIn, async (req, res, next) => { //
 
 router.get("/:userId", isLoggedIn, async (req, res, next) => {
   try {
+    console.log('req.params~~',req.params);
     const userDataWithItems = await User.findOne({
       where: { id: req.params.userId },
       attributes: {
@@ -145,13 +249,13 @@ router.get("/:userId", isLoggedIn, async (req, res, next) => {
           model: Item,
           as: "UserViewItems",
           attributes: ["id", "codeName", "name"],
-          where: { UserId: req.user.id }
+          // where: { UserId: req.user.id }
         }
       ]
     });
     if (userDataWithItems) {
       const data = userDataWithItems.toJSON();
-      res.status(200).json(data);
+      return res.status(200).json(data);
     } else {
       const userData = await User.findOne({
         where: { id: req.params.userId },
@@ -168,7 +272,7 @@ router.get("/:userId", isLoggedIn, async (req, res, next) => {
       });
       if (userData) {
         const data = userData.toJSON();
-        res.status(200).json(data);
+        return res.status(200).json(data);
       } else {
         res.status(404).send('존재하지 않는 사용자입니다.')
       }
@@ -249,45 +353,136 @@ router.post('/logout', isLoggedIn, (req, res) => {
   res.status(200).send('ok');
 });
 
-// 고객생성
+// 회원/고객생성
 router.post('/create/', isLoggedIn, async (req, res, next) => { // post /user
   // front의 data: { providerId: string, id: string, password: string, company: string, name: string|null, phone: string|null, email: string|null }를 axios 통해 받음
   console.log('고객등록 req.body',req.body);
   try {
-    const provider = await User.findOne({
-      where: {
-        id: req.body.providerId
-      }
-    })
-    if (!provider) {
-      return res.status(403).send('공급사가 존재하지 않습니다.')
-    }
     const exUser = await User.findOne({ // 아이디 DB에서 중복체크
       where: {
-          id: req.body.id,
+        id: req.body.id,
       }
     });
     if (exUser) {
       return res.status(403).send('이미 사용중인 아이디 입니다.');
     }
     const hashedPassword = await bcrypt.hash(req.body.password, 10); // 두번째 인자 높을수록 암호화 강함
-    const customer = await User.create({
-      id: req.body.id,
-      password: hashedPassword, // 암호화된 password
-      company: req.body.company,
-      name: req.body.name,
-      phone: req.body.phone,
-      email: req.body.email,
-      hqNumber: req.body.hqNumber,
-      role: 'CUSTOMER',
-    });
-    await provider.addCustomers(customer);
-    res.status(201).send({ id: customer.id, company: customer.company, name: customer.name });
+    // role이 없는경우 판매회원의 CUSTOMER 생성
+    if (req.body.role === undefined || req.body.role === null || req.body.role === ''){
+      const provider = await User.findOne({
+        where: {
+          id: req.body.providerId
+        }
+      })
+      if (!provider) {
+        return res.status(403).send('공급사가 존재하지 않습니다.')
+      }
+      const customer = await User.create({
+        id: req.body.id,
+        password: hashedPassword, // 암호화된 password
+        company: req.body.company,
+        name: req.body.name,
+        phone: req.body.phone,
+        email: req.body.email,
+        hqNumber: req.body.hqNumber,
+        role: 'CUSTOMER',
+      });
+      await provider.addCustomers(customer);
+      return res.status(201).send({ id: customer.id, company: customer.company, name: customer.name });
+    }
+    // 판매자 회원 생성
+    if (String(req.body.role).toUpperCase().trim() === 'PROVIDER') {
+      const provider = await User.create({
+        id: req.body.id,
+        role: 'PROVIDER',
+        password: hashedPassword, // 암호화된 password
+        company: req.body.company,
+        name: req.body.name,
+        phone: req.body.phone,
+        email: req.body.email,
+        hqNumber: req.body.hqNumber,
+      });
+      return res.status(201).send({ id: provider.id, company: provider.company, name: provider.name });
+    }
+    // 구매회원 생성
+    if (String(req.body.role).toUpperCase().trim() === 'CUSTOMER') {
+      let customer;
+      const provider = await User.findOne({
+        where: {
+          id: req.body.providerId
+        }
+      })
+      if (!provider) {
+        customer = await User.create({
+          id: req.body.id,
+          role: 'CUSTOMER',
+          password: hashedPassword, // 암호화된 password
+          company: req.body.company,
+          name: req.body.name,
+          phone: req.body.phone,
+          email: req.body.email,
+          hqNumber: req.body.hqNumber,
+        });
+        return res.status(201).send({ id: customer.id, company: customer.company, name: customer.name });
+      }
+      customer = await User.create({
+        id: req.body.id,
+        role: 'CUSTOMER',
+        password: hashedPassword, // 암호화된 password
+        company: req.body.company,
+        name: req.body.name,
+        phone: req.body.phone,
+        email: req.body.email,
+        hqNumber: req.body.hqNumber,
+      });
+      await provider.addCustomers(customer);
+      return res.status(201).send({ id: customer.id, company: customer.company, name: customer.name });
+    }
   } catch (error) {
     console.error(error);
     next(error); // status 500
   }
 });
+
+// // 고객생성
+// router.post('/create/', isLoggedIn, async (req, res, next) => { // post /user
+//   // front의 data: { providerId: string, id: string, password: string, company: string, name: string|null, phone: string|null, email: string|null }를 axios 통해 받음
+//   console.log('고객등록 req.body',req.body);
+//   try {
+//     const provider = await User.findOne({
+//       where: {
+//         id: req.body.providerId
+//       }
+//     })
+//     if (!provider) {
+//       return res.status(403).send('공급사가 존재하지 않습니다.')
+//     }
+//     const exUser = await User.findOne({ // 아이디 DB에서 중복체크
+//       where: {
+//           id: req.body.id,
+//       }
+//     });
+//     if (exUser) {
+//       return res.status(403).send('이미 사용중인 아이디 입니다.');
+//     }
+//     const hashedPassword = await bcrypt.hash(req.body.password, 10); // 두번째 인자 높을수록 암호화 강함
+//     const customer = await User.create({
+//       id: req.body.id,
+//       password: hashedPassword, // 암호화된 password
+//       company: req.body.company,
+//       name: req.body.name,
+//       phone: req.body.phone,
+//       email: req.body.email,
+//       hqNumber: req.body.hqNumber,
+//       role: 'CUSTOMER',
+//     });
+//     await provider.addCustomers(customer);
+//     res.status(201).send({ id: customer.id, company: customer.company, name: customer.name });
+//   } catch (error) {
+//     console.error(error);
+//     next(error); // status 500
+//   }
+// });
 
 // 회원가입
 router.post('/', isNotLoggedIn, async (req, res, next) => { // post /user
@@ -484,6 +679,7 @@ router.patch('/deletecustomer', isLoggedIn, async (req, res, next) => { //
 router.patch('/add-item', isLoggedIn, async (req, res, next) => {
   // {itemId: number, customerId: string}
   try {
+
     console.log(req.body);
     const item = await Item.findOne({
       where: { id: req.body.itemId}

@@ -33,7 +33,19 @@ const ViewCartItems = () => {
   const { Title } = Typography;
   // const queryClient = useQueryClient();
   const { id } = router.query; // 유저 id
-  const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
+  // const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
+  const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI, {
+    onSuccess: (data) => {
+      console.log(data.id);
+      loadAddrsAPI(data.id)
+      .then((response) => {
+        setAddrs(response);
+      })
+      .catch((error) => {
+        alert(error.response.data);
+      })
+    }
+  });
   const { data: cartItems } = useQuery<Item[]>('cartItems', () => loadCartAPI(String(id)));
   const [ loading, setLoading ] = useState(false);
   const [ theMap, setTheMap ] = useState<Map<number,{qty:number, tag:string|null}>>(new Map());
@@ -44,12 +56,12 @@ const ViewCartItems = () => {
   const [ phone, setPhone ] = useState('');
   const [ address, setAddress ] = useState('');
   const [ zip, setZip ] = useState('');
-  const { data } = useQuery('addrs', loadAddrsAPI, {
-    onSuccess: (data) => {
-      console.log('onSuccess');
-      setAddrs(data);
-    }
-  });
+  // const { data } = useQuery('addrs', loadAddrsAPI, {
+  //   onSuccess: (data) => {
+  //     console.log('onSuccess');
+  //     setAddrs(data);
+  //   }
+  // });
 
   const openNotification = () => {
     notification['success']({

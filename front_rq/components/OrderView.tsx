@@ -38,7 +38,7 @@ const OrderView = ({ orderData, mode }) => {
       key: 'itemSupplyPrice',
       dataIndex: 'itemSupplyPrice',
       render: (text,record) => (
-        <>{text.toString()
+        <>{text?.toString()
           .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")}
         </>
       )
@@ -101,7 +101,7 @@ const OrderView = ({ orderData, mode }) => {
     <br />
     <Descriptions size="small" title="공급사" bordered>
       <Descriptions.Item label="사명">
-        {orderData.order.Provider.company}
+        {orderData.order.Provider?.company}
       </Descriptions.Item>
       <Descriptions.Item label="사업자등록번호">
         {orderData.order.Provider.id}

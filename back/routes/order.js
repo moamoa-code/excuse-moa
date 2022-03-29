@@ -173,7 +173,7 @@ router.post('/from-factory', async (req, res, next) => {
     let totalPrice = 0;
     orderDetail?.map((item) => {
       let price = Number(item.itemSupplyPrice)?? 0;
-      if(isNaN(item.itemSupplyPrice)) {
+      if(isNaN(item.itemSupplyPrice) || item.itemSupplyPrice === null || item.itemSupplyPrice === undefined) {
         price = 0;
       }
       return totalPrice = totalPrice + (price * Number(item.qty));
@@ -190,83 +190,6 @@ router.post('/from-factory', async (req, res, next) => {
     next(error);
   }
 });
-
-// // 공장에서 제품 주문
-// router.post('/from-factory', async (req, res, next) => { 
-//   try {
-//     console.log(req.body);
-//     const orderDataMap = new Map(Object.entries(req.body.items));
-//     const itemIds = Object.keys(req.body.items);
-//     const items = await Item.findAll({  // 해당되는 제품들 찾기
-//       where: {
-//         id: {
-//           [Op.or]: itemIds
-//         }
-//       }
-//     });
-//     const provider = await User.findOne({ // 판매자 찾기
-//       where: {
-//         id: req.body.providerId
-//       }
-//     })
-//     const customer = await User.findOne({ // 구매자 찾기
-//       where: {
-//         id: req.body.customerId
-//       }
-//     })
-//     let name = req.body.name;
-//     if (req.body.name === '') {
-//       name = customer.company;
-//     } 
-//     const order = await Order.create({ // 주문 INSERT
-//       comment: '공장주문',
-//       address: req.body.address,
-//       zip: '',
-//       name: name,
-//       address: req.body.phone,
-//       ProviderId: provider.id,
-//       CustomerId: customer.id,
-//     })
-
-//     const orderDetailItems = items.map((item) => { // 주문상세 데이터 작성
-//       const tag = orderDataMap.get(String(item.id)).tag;
-//       const qty = orderDataMap.get(String(item.id)).qty;
-//       return {
-//         tag: tag,
-//         qty: qty,
-//         OriginItemId: item.id,
-//         itemCodeName: item.codeName,
-//         itemPackage: item.packageName,
-//         itemName: item.name,
-//         itemUnit: item.unit,
-//         itemMsrp: item.msrp,
-//         itemSupplyPrice: item.supplyPrice,
-//         OrderId: order.id,
-//       }
-//     });
-//     const orderDetail = await OrderDetail.bulkCreate(orderDetailItems); 
-
-//     let totalPrice = 0;
-//     orderDetail.map((item) => {
-//       let price = Number(item.itemSupplyPrice)?? 0;
-//       if(isNaN(item.itemSupplyPrice)) {
-//         price = 0;
-//       }
-//       return totalPrice = totalPrice + (price * Number(item.qty));
-//     });
-//     console.log(totalPrice);
-
-//     order.update({
-//       totalPrice: String(totalPrice),
-//     });
-    
-//     res.status(200).json(order.id);
-//   } catch (error) {
-//     console.error(error);
-//     next(error);
-//   }
-// });
-
 
 // 일정기간 주문목록 가져오기 (구매자용)
 router.get('/:userId/:from/:til', async (req, res, next) => {
@@ -508,34 +431,6 @@ router.get('/received-orders-dates/:userId/:from/:til', isProvider, async (req, 
       }]
     }); 
 
-    // const user = await User.findOne({
-    //   where: { id: req.params.userId }
-    // })
-    // if (!user) {
-    //   return res.status(403)('해당 유저가 존재하지 않습니다.');
-    // }
-    // const me = await User.findOne({
-    //   where: { id: req.user.id }
-    // })
-    // if ( user.id !== me.id || me.role !== 'ADMINISTRATOR')  {
-    //   return res.status(403)('열람권한이 없습니다.');
-    // }
-    // const order = await Order.findAll({
-    //   where: { providerId: req.params.userId },
-    //   order: [
-    //     ['createdAt', 'DESC'],
-    //   ],
-    //   // attributes: ["id", "date", "totalPice", "comment", "address", "zip", "phone", "name", "isConfirmed", "isCanceled"],
-    //   include: [{
-    //     model: User,
-    //     as: 'Provider',
-    //     attributes: ["id", "company", "name", "phone"],
-    //   }, {
-    //     model: User,
-    //     as: 'Customer',
-    //     attributes: ["id", "company", "name", "phone"],
-    //   }]
-    // });
     if (!order) {
       return res.status(403).send('해당 제품이 존재하지 않습니다.');
     }
@@ -574,52 +469,6 @@ router.get('/all', isProvider, async (req, res, next) => {
     next(error);
   }
 });
-
-
-// // 주문목록 가져오기 (공장)
-// router.get('/todos', async (req, res, next) => {
-//   try {
-//     console.log(req.query);
-//     let from = new Date(req.query.from);
-//     from.setHours('0');
-//     let til = new Date(req.query.til);
-//     til.setHours('23');
-//     til.setMinutes('59');
-//     til.setSeconds('59');
-//     const stat1 = req.query.stat1? req.query.stat1 : '';
-//     const stat2 = req.query.stat2? req.query.stat2 : '';
-//     const stat3 = req.query.stat3? req.query.stat3 : '';
-//     const order = await Order.findAll({
-//       where: {
-//         date: { [Op.between]: [from, til] },
-//         status: stat1,
-//         factoryStatus: stat2,
-//       },
-//       order: [
-//         ['createdAt', 'DESC'],
-//       ],
-//       // attributes: ["id", "date", "totalPice", "comment", "address", "zip", "phone", "name", "isConfirmed", "isCanceled"],
-//       include: [{
-//         model: User,
-//         as: 'Provider',
-//         attributes: ["id", "company", "name", "phone"],
-//       }, {
-//         model: User,
-//         as: 'Customer',
-//         attributes: ["id", "company", "name", "phone"],
-//       }, {
-//         model: OrderDetail,
-//         where: { status: stat3 }
-//       }]
-//     });
-//     console.log(order);
-//     res.status(200).json(order);
-//   } catch (error) {
-//     console.error(error);
-//     next(error);
-//   }
-// });
-
 
 // 주문목록 가져오기 (공장)
 router.post('/todos', async (req, res, next) => {

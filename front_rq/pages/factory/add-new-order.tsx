@@ -910,19 +910,21 @@ const addNewOrder = () => {
               }
               return (
                 <ItemSelector onClick={onItemSelectClick(v)} className={className}>
-                  <div>
-                    <span className='underline'>
-                      <span className='codeName'>{v.codeName}</span>
-                      <div className='space' />
-                      <span className='name'>{v.name}</span>
-                    </span>
-                  </div>
-                  <div className='second'>
-                    <span className='unit'>{v.unit}</span>
+                <div>
+                  <span className='underline'>
+                    <span className='codeName'>{v.codeName}</span>
                     <div className='space' />
-                    <span className='packageName'>{v.packageName}</span>
-                  </div>
-                </ItemSelector>
+                    <span>({v.id}) </span>
+                    <span className='name'>{v.name}</span>
+                  </span>
+                </div>
+                <div className='second'>
+                  <span className='unit'>{v.unit}</span>
+                  <div className='space' />
+                  <span className='packageName'>{v.packageName}</span>
+                  <span> ({v.supplyPrice})</span>
+                </div>
+              </ItemSelector>
                 )
             })}
           </ItemsContainer>

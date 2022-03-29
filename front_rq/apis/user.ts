@@ -34,7 +34,11 @@ export function logOutAPI() {
   return axios.post('/user/logout').then((response) => response.data);
 }
 
-export function createUserAPI(data: { providerId: string, id: string, password: string, company: string, name: string, phone: string, email: string|null, hqNumber: string|null }) {
+// export function createUserAPI(data: { providerId: string, id: string, password: string, company: string, name: string, phone: string, email: string|null, hqNumber: string|null }) {
+//   return axios.post('/user/create', data).then((response) => response.data);
+// }
+
+export function createUserAPI(data) {
   return axios.post('/user/create', data).then((response) => response.data);
 }
 
@@ -79,10 +83,30 @@ export function deleteCustomerAPI(data: { providerId: string, customerId: string
   return axios.patch('/user/deletecustomer', data).then((response) => response.data);
 }
 
-export function addItemToCustomerAPI(data: {itemId: number, customerId: string}) {
+export function addItemToCustomerAPI(data) {
 return axios.patch('/user/add-item', data).then((response) => response.data);
 }
 
 export function removeItemToCustomerAPI(data: {itemId: number, customerId: string}) {
   return axios.patch('/user/remove-item', data).then((response) => response.data);
   }
+
+// 모든 회원 목록 가져오기
+export function loadAllUserListAPI() {
+  return axios.get(`/user/list`).then((response) => response.data);
+}
+
+// 회원 등급 변경하기
+export function updateUserRoleAPI(data: {userId: string, role: string}) {
+  return axios.patch('/user/update-role', data).then((response) => response.data);
+}
+
+// 회원 정보 수정하기
+export function updateUserAPI(data: { userId: string, company: string, name: string, phone: string, email: string, role: string } ) {
+  return axios.patch('/user/update', data).then((response) => response.data);
+}
+
+// 회원 비밀번호 초기화하기
+export function changePasswordAPI(data: { userId: string, password: string } ) {
+  return axios.patch('/user/update-password', data).then((response) => response.data);
+}

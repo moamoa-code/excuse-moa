@@ -42,7 +42,20 @@ const upload = multer({
 router.post('/regist', isLoggedIn, upload.none(), async (req, res, next) => {
   try {
     console.log('제품등록 req.body',req.body);
-    let item
+    let item;
+    let userId;
+    if (req.body.providerId === undefined || req.body.providerId === null || req.body.providerId === ''){
+      userId = req.user.id
+    } else {
+      const user = await User.findOne({
+        where: {id: req.body.providerId }
+      });
+      if(!user){
+        return res.status(400).send('해당 판매자가 존재하지 않습니다.');
+      }
+      userId = user.id
+    }
+
     if (req.body.imgSrc !== undefined) {
       item = await Item.create({
         codeName: req.body.codeName,
@@ -52,7 +65,7 @@ router.post('/regist', isLoggedIn, upload.none(), async (req, res, next) => {
         msrp: req.body.msrp,
         supplyPrice: req.body.supplyPrice,
         description: req.body.description,
-        UserId: req.user.id,
+        UserId: userId,
         imgSrc: req.body.imgSrc,
       })
     } else {
@@ -64,7 +77,7 @@ router.post('/regist', isLoggedIn, upload.none(), async (req, res, next) => {
         msrp: req.body.msrp,
         description: req.body.description,
         supplyPrice: req.body.supplyPrice,
-        UserId: req.user.id,
+        UserId: userId,
       })
     }
 
@@ -516,18 +529,12 @@ router.get('/:itemId', async (req, res, next) => { // GET /post/1
 // 제품에 열람가능한 고객 등록
 router.post('/add-customer', isLoggedIn, async (req, res, next) => {
   try {
-    console.log('고객등록 req.body',req.body);
-    console.log(req.user.id)
     const item = await Item.findOne({
       where: { id: req.body.itemId}
     });
     if (!item) {
       return res.status(404).send('해당 제품이 존재하지 않습니다.');
     }
-    if (item.UserId !== req.user.id) {
-      return res.status(404).send('권한이 없습니다.');
-    }
-
     // 유저 아이디 있는지 검사
     if(req.body.values.customerIds){
       await Promise.all(

@@ -122,7 +122,7 @@ const Home = () => {
                   dataIndex: 'Customer',
                   key: 'date',
                   render: (text, record) => (
-                    <>{text.company}</>
+                    <>{text?.company ?? record.name}</>
                   ),
                 }, {
                   title: '주문상태',

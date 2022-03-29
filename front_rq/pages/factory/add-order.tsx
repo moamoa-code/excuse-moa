@@ -626,6 +626,7 @@ const addOrder = () => {
                       <span className='underline'>
                         <span className='codeName'>{v.codeName}</span>
                         <div className='space' />
+                        <span>({v.id}) </span>
                         <span className='name'>{v.name}</span>
                       </span>
                     </div>
@@ -633,6 +634,7 @@ const addOrder = () => {
                       <span className='unit'>{v.unit}</span>
                       <div className='space' />
                       <span className='packageName'>{v.packageName}</span>
+                      <span> ({v.supplyPrice})</span>
                     </div>
                   </ItemSelector>
                   )
