@@ -41,12 +41,14 @@ const Factory = () => {
       </Head>
       <Container800>
         <Title level={4}><UserOutlined /> 고객관리</Title>
-        <Link href="/factory/user/list"><a>회원목록</a></Link>
+        <Link href="/factory/user/list"><a>회원목록 / 관리</a></Link>
         <br />
-        <Link href="/factory/user/providers"><a>판매자관리</a></Link>
+        <Link href="/factory/user/providers"><a>판매자-구매자 관리</a></Link>
         <br />
-        <Link href="/factory/user/create"><a>회원생성</a></Link><br />
+        <Link href="/factory/user/create"><a>회원생성</a></Link>
         <br />
+        <Link href="/factory/user/multi-create"><a>여러 회원 생성</a></Link>
+        <br /><br />
         <Title level={4}><ShopOutlined /> 제품관리</Title>
         <Link href="/factory/item/regist"><a>제품등록</a></Link>
         <br/>

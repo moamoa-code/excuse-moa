@@ -34,9 +34,14 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(200),
       allowNull: true,
     },
+    scope: {
+      type: DataTypes.STRING(10),
+      defaultValue: "PRIVATE", // PRIVATE, GROUP, PUBLIC
+      allowNull: false,
+    },
   },{
-    charset: 'utf8',
-    collate: 'utf8_general_ci' // 한글 처리
+    charset: 'utf8mb4',
+    collate: 'utf8mb4_general_ci' // 한글 처리
   });
   Item.associate = (db) => { // 릴레이션(관계) 정의
     db.Item.belongsTo(db.User); // 제품 등록한 유저

@@ -44,24 +44,28 @@ const ProvidersItemList = () => {
         columns={
           [
             {
+              title: '번호',
+              dataIndex: 'id',
+              key: 'id',
+              render: (text, record) => (
+                <>{text}</>
+              ),
+            }, {
               title: '제품명',
               dataIndex: 'name',
               key: 'name',
               render: (text, record) => (
                 <>{text}</>
               ),
-            },
-            {
+            }, {
               title: '포장종류',
               dataIndex: 'packageName',
               key: 'packageName',
-            },
-            {
+            }, {
               title: '무게단위',
               dataIndex: 'unit',
               key: 'unit',
-            },
-            {
+            }, {
               title: '공급가',
               key: 'supplyPrice',
               dataIndex: 'supplyPrice',

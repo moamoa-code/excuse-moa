@@ -15,6 +15,7 @@ import Item from '../../../interfaces/item';
 import styled from 'styled-components';
 import ItemView from '../../../components/ItemView';
 import { DownOutlined, RightOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+import UserInfoBox from '../../../components/UserInfoBox';
 
 const Container800 = styled.div`
 max-width: 800px;
@@ -67,13 +68,13 @@ const FactoryItemList = () => {
   const [ loading, setLoading ] = useState(false);
   const { data: providerList } = useQuery('userList', loadProvidersAPI);
   const [ itemList, setItemList ] = useState<any>([]);
-  const [selectedProvider, setSelectedProvider] = useState<any>({}) // 선택된 판매자
+  const [selectedProvider, setSelectedProvider] = useState<any>(null) // 선택된 판매자
   const { Title } = Typography;
 
   const onLoadItems = (v) => () => {
     setLoading(true);
     setSelectedProvider(v);
-    loadItemListAPI(v.id)
+    loadItemListAPI(v.key)
     .then((result)=>{
       setItemList(result);
     })
@@ -92,7 +93,11 @@ const FactoryItemList = () => {
               <p className='provider' onClick={onLoadItems(v)}>{v.company}</p>
               ) 
           })}
-        </OptionContainer><br /><br />
+        </OptionContainer>
+        {selectedProvider? 
+          <UserInfoBox userInfo={selectedProvider}/>
+        :null}
+        <br /><br />
         <Title level={4}>{selectedProvider?.company} 제품목록</Title>
         <Table
         size="small"

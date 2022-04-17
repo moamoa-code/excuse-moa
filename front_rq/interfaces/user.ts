@@ -1,5 +1,6 @@
 export default interface User {
-  id: string;
+  id: number;
+  key: string;
   hqNumber: string;
   password: string;
   company: string|null;

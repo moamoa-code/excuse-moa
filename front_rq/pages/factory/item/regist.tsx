@@ -6,7 +6,7 @@ import Router from 'next/router';
 
 import React, { useCallback, useState, useRef } from 'react';
 import Head from 'next/head';
-import { Form, Input, Checkbox, Button, List, Typography, message, Tag } from 'antd';
+import { Form, Input, Checkbox, Button, List, Typography, message, Tag, Select } from 'antd';
 import { dehydrate, QueryClient, useQuery, useQueryClient } from 'react-query';
 
 import { backUrl } from '../../../config/config';
@@ -17,6 +17,8 @@ import AppLayout from '../../../components/AppLayout';
 import useInput from '../../../hooks/useInput';
 import User from '../../../interfaces/user';
 import styled from 'styled-components';
+import { SearchOutlined } from '@ant-design/icons';
+import UserInfoBox from '../../../components/UserInfoBox';
 
 const Container600 = styled.div`
 max-width: 600px;
@@ -26,12 +28,55 @@ margin: 0 auto;
   padding: 10px;
 }
 `
+
+const SearchBlock = styled.div`
+  margin: 18px 0 18px 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  input {
+    flex-grow: 1;
+    height: 38px;
+    margin: 0;
+    padding-left: 5px;
+    box-sizing : border-box;
+    border-radius: 4px 0 0 4px;
+    border: 1px solid #999999;
+  }
+  .search{
+    color: white;
+    font-size: 12pt;
+    font-weight: 800;
+    min-width: 35px;
+    border:0;
+    margin: 0;
+    border-radius: 0 4px 4px 0;
+    background-color:#1890ff;
+  }
+  button {
+    margin-left: 5px;
+    height: 38px;
+    border-radius: 4px;
+    border: 1px solid #999999;
+    background-color:white;
+  }
+  button:active {
+    position: relative; 
+    top:2px;
+  }
+  label {
+    display: block;
+    margin: 0 0 7px 0;
+  }
+`
 const OptionContainer = styled.div`
   padding: 10px 0px 10px 0px;
   display: block;
   overflow:auto;
   max-height:300px;
   p {
+    background-color: white;
     display: inline-block;
     box-sizing: border-box;
     border-radius: 4px;
@@ -77,12 +122,13 @@ const RedBold = styled.span`
 
 const RegistItem = () => {
   const [loading, setLoading] = useState(false);
-  const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
   const { data: providerList } = useQuery('userList', loadProvidersAPI);
   const { Title } = Typography;
   const [codeName, setCodeName] = useState(''); // 제품 코드명 (사용자 비공개)
   const [name, onChangeName] = useInput(''); // 제품 이름
+  const [ searchTxt, onChangeSearchTxt, setSearchTxt ] = useInput('');
   const [packageName, setPackage] = useState(''); // 제품 포장 종류
+  const [scope, setScope] = useState('GROUP'); // 제품 공개 범위
   const [unit, setUnit] = useState(''); // 제품 무게 단위
   const [msrp, setMsrp] = useState(''); // 권장소비가
   const [price, setPrice] = useState(''); // 실제 공급가 
@@ -95,6 +141,7 @@ const RegistItem = () => {
   const codeNames = ['HOUSE', 'DECAFFEIN'];
   const units = ['200g', '500g', '1Kg'];
   const packages = ['M 무지', 'M 브랜드스티커', 'M 브랜드인쇄', '지퍼 무지', '지퍼 브랜드인쇄', '지퍼 브랜드스티커'];
+  const { Option } = Select;
 
   const onChangeCodeName = (e) => {
     setCodeName(e.target.value);
@@ -104,6 +151,10 @@ const RegistItem = () => {
   }
   const onChangePack = (e) => {
     setPackage(e.target.value);
+  }
+  const handleScopeChange = (value) => {
+    console.log(value);
+    setScope(value);
   }
   const onChangeMsrp = useCallback( // 가격 유효성검사
     (e) => {
@@ -157,12 +208,13 @@ const RegistItem = () => {
     setLoading(true);
     const formData = new FormData();
     // data: { codeName: string, package: string, imgSrc: string|null, name: string, unit: string, msrp: string|null, supplyPrice: string|null }
-    if (selectedProvider.id === undefined || selectedProvider.id === null || selectedProvider.id ==='') {
-      message.error('판매회원을 선택해 주세요.')
+    if (selectedProvider.key === undefined || selectedProvider.key === null || selectedProvider.key ==='') {
+      return message.error('판매회원을 선택해 주세요.')
     }
-    formData.append('providerId', selectedProvider.id);
+    formData.append('providerKey', selectedProvider.key);
     formData.append('codeName', codeName);
     formData.append('name', name);
+    formData.append('scope', scope);
     formData.append('packageName', packageName);
     formData.append('unit', unit);
     formData.append('msrp', msrp);
@@ -187,6 +239,26 @@ const RegistItem = () => {
   }, [codeName, selectedProvider, name, packageName, unit, msrp, price, imagePath, description]);
 
   
+  const onSearchClick = () => {
+    if (searchTxt === '') {
+      return message.error('값을 입력해주세요.')
+    }
+    setLoading(true);
+    loadUserAPI(searchTxt)
+      .then((response) => {
+        message.success('판매사 ' + response.company + '선택완료');
+        setSelectedProvider(response);
+      })
+      .catch((error) => {
+        message.error(error.response.data);
+        setSearchTxt('');
+        setLoading(false);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
   const onSearchProvider = (value) => {
     console.log(value);
     setLoading(true);
@@ -219,31 +291,46 @@ const RegistItem = () => {
       ))}</p> */}
       <Title level={3}>제품 등록</Title>
       <Form style={{ margin: '10px 0 20px' }} encType="multipart/form-data" onFinish={onSubmit}>
+        <label style={{margin: '0 0 7px 0'}}>판매자 선택</label>
+        <SearchBlock>
+          <input
+            value={searchTxt}
+            onChange={onChangeSearchTxt}
+          />
+          <button type='button' className='search' onClick={onSearchClick}>
+            <SearchOutlined />
+          </button>
+          <button 
+            type='button' 
+            onClick={()=>{
+              setIsproviderList(!isProviderList);
+            }}>목록보기
+          </button>
+        </SearchBlock>
         <Block>
-          <label htmlFor="item-code"><RedBold>* </RedBold>판매자 선택</label>
+          {/* <label htmlFor="item-code"><RedBold>* </RedBold>판매자 선택</label>
           <Search placeholder="ID / 사업자 등록번호 검색" onSearch={onSearchProvider} enterButton /><br />
           <Button
             onClick={()=>{
               setIsproviderList(!isProviderList);
             }}>
             목록보기
-          </Button><br />
+          </Button><br /> */}
           {isProviderList?
             <OptionContainer>
             {providerList?.map((v)=>{
               return (
                 <p className='provider' onClick={() => {
                   setSelectedProvider(v);
+                  setSearchTxt(v.key);
+                  message.success('판매사 ' + v.company + '선택완료');
                 }}>{v.company}</p>
                 ) 
             })}
           </OptionContainer>
           : null}
           {selectedProvider.id?
-          <div style={{marginTop:'10px'}}>
-            <b>선택된 판매자: </b>
-            <Tag>{selectedProvider?.id} / {selectedProvider?.company}</Tag>
-          </div>
+            <UserInfoBox userInfo={selectedProvider} />
           :null}
         </Block>
         <Block>
@@ -284,6 +371,16 @@ const RegistItem = () => {
               )
             })}
           </OptionContainer>
+        </Block>
+        <Block>
+          <label><RedBold>* </RedBold>제품 열람가능 고객 범위</label>
+          <Select
+            onChange={handleScopeChange}
+            defaultValue={scope}
+          >
+            <Option value='PRIVATE'>특정 고객 전용</Option>
+            <Option value='GROUP'>판매자의 모든 고객에 공개</Option>
+          </Select>
         </Block>
         <Block>
           <label htmlFor="user-msrp">권장소비자가 (구매자 비공개)</label>

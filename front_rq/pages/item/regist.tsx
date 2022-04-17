@@ -6,7 +6,7 @@ import Router from 'next/router';
 
 import React, { useCallback, useState, useRef } from 'react';
 import Head from 'next/head';
-import { Form, Input, Checkbox, Button, List, Typography } from 'antd';
+import { Form, Input, Checkbox, Button, List, Typography, Select } from 'antd';
 import { dehydrate, QueryClient, useQuery, useQueryClient } from 'react-query';
 
 import { backUrl } from '../../config/config';
@@ -80,6 +80,7 @@ const RegistItem = () => {
   const [name, onChangeName] = useInput(''); // 제품 이름
   const [packageName, setPackage] = useState(''); // 제품 포장 종류
   const [unit, setUnit] = useState(''); // 제품 무게 단위
+  const [scope, setScope] = useState('PRIVATE'); // 제품 공개 범위
   const [msrp, setMsrp] = useState(''); // 권장소비가
   const [price, setPrice] = useState(''); // 실제 공급가 
   const [description, onChangeDesc] = useInput(''); // 권장소비가
@@ -88,6 +89,8 @@ const RegistItem = () => {
   const codeNames = ['HOUSE', 'DECAFFEIN'];
   const units = ['200g', '500g', '1Kg'];
   const packages = ['M 무지', 'M 브랜드스티커', 'M 브랜드인쇄', '지퍼 무지', '지퍼 브랜드인쇄', '지퍼 브랜드스티커'];
+  const { Option } = Select;
+
 
   const onChangeCodeName = (e) => {
     setCodeName(e.target.value);
@@ -97,6 +100,10 @@ const RegistItem = () => {
   }
   const onChangePack = (e) => {
     setPackage(e.target.value);
+  }
+  const handleScopeChange = (value) => {
+    console.log(value);
+    setScope(value);
   }
   const onChangeMsrp = useCallback( // 가격 유효성검사
     (e) => {
@@ -151,6 +158,7 @@ const RegistItem = () => {
     const formData = new FormData();
     // data: { codeName: string, package: string, imgSrc: string|null, name: string, unit: string, msrp: string|null, supplyPrice: string|null }
     formData.append('codeName', codeName);
+    formData.append('scope', scope);
     formData.append('name', name);
     formData.append('packageName', packageName);
     formData.append('unit', unit);
@@ -173,7 +181,7 @@ const RegistItem = () => {
     .finally(() => {
       setLoading(false);
     });
-  }, [codeName, name, packageName, unit, msrp, price, imagePath, description]);
+  }, [scope, codeName, name, packageName, unit, msrp, price, imagePath, description]);
 
   return (
     <AppLayout>
@@ -225,6 +233,16 @@ const RegistItem = () => {
               )
             })}
           </OptionContainer>
+        </Block>
+        <Block>
+          <label><RedBold>* </RedBold>제품 열람가능 고객 범위</label>
+          <Select
+            onChange={handleScopeChange}
+            defaultValue={scope}
+          >
+            <Option value='PRIVATE'>특정 고객 전용</Option>
+            <Option value='GROUP'>내 모든 고객에 공개</Option>
+          </Select>
         </Block>
         <Block>
           <label htmlFor="user-msrp">권장소비자가 (구매자 비공개)</label>

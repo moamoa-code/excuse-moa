@@ -19,7 +19,7 @@ import styled from 'styled-components';
 import moment from 'moment';
 import { CheckCircleOutlined, CheckCircleTwoTone, CheckSquareTwoTone, CloseCircleFilled, DoubleRightOutlined, MinusCircleOutlined, PlaySquareFilled, PlaySquareOutlined, PlusOutlined, PrinterTwoTone, SettingOutlined } from '@ant-design/icons';
 import Modal from 'antd/lib/modal/Modal';
-import { loadOrderAPI } from '../../apis/item';
+import { loadOrderAPI } from '../../apis/order';
 import OrderView from '../../components/OrderView';
 import useInput from '../../hooks/useInput';
 
@@ -252,12 +252,6 @@ const orderList = () => {
       return setIsFilterVisiable(true);
     }
     return setIsFilterVisiable(false);
-  }
-
-  const something = (v) => {
-    return( 
-      <>{v}</>
-    )
   }
 
   // 주문 목록 불러오기 API

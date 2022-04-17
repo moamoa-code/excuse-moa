@@ -6,18 +6,19 @@ import Link from 'next/link';
 import { Typography, Button, Divider, Space, message, notification, Descriptions } from 'antd';
 import { useRouter } from 'next/router';
 import { dehydrate, QueryClient, useQuery, useQueryClient  } from 'react-query';
-import { loadAddrsAPI, loadMyInfoAPI, loadProviderAPI, loadProvidersAPI, loadUserAPI } from '../../apis/user';
+import { loadAddrsAPI, loadMyInfoAPI, loadProviderAPI, loadProviderByIdAPI, loadProvidersAPI, loadUserAPI, loadUserByIdAPI } from '../../apis/user';
 import { orderPosItemAPI } from '../../apis/order';
 import AppLayout from '../../components/AppLayout';
 
 import User from '../../interfaces/user';
 import styled from 'styled-components';
-import { CheckCircleOutlined, MinusOutlined, PlusOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, IdcardOutlined, MinusOutlined, PhoneOutlined, PlusOutlined } from '@ant-design/icons';
 import Modal from 'antd/lib/modal/Modal';
 import { loadCustomerItemListAPI, loadItemListAPI } from '../../apis/item';
 import Item from '../../interfaces/item';
 import Text from 'antd/lib/typography/Text';
 import ItemView from '../../components/ItemView';
+import UserInfoBox from '../../components/UserInfoBox';
 
 
 const Container800 = styled.div`
@@ -265,6 +266,7 @@ const ItemSelector = styled.div`
     margin:8px 0px 8px 0px;
   }
 `
+
 const addOrder = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -275,11 +277,11 @@ const addOrder = () => {
   const { data: providers } = useQuery('providers', loadProvidersAPI);
   // 판매자
   const [selectedProvider, setSelectedProvider] = useState('');
-  const [selectedProviderData, setSelectedProviderData] = useState('');
+  const [selectedProviderData, setSelectedProviderData] = useState<any>({});
   // 고객
   const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState('');
-  const [selectedCustomerData, setSelectedCustomerData] = useState('');
+  const [selectedCustomerData, setSelectedCustomerData] = useState<any>({});
   // 제품
   const [items, setItems] = useState<Item[]>([]); // 목록에 나타나는 제품
   const [selectedItems, setSelectedItems] = useState([]); // 카트에 들어간 제품 목록
@@ -419,21 +421,22 @@ const addOrder = () => {
     if (userId === '') {
       return message.error('판매자를 선택해주세요.');
     }
-    loadItemListAPI(userId)
+    loadItemListAPI(selectedProviderData?.key)
     .then((response) => {
       setAllItemsOfProvider(response);
     })
     .catch((error) => {
-      alert(error.response.data);
+      message.error(error.response.data);
     })
     .finally(() => {
 
     })
   }
 
+
   // 판매자 정보 가져오기
   const getProviderData = (userId) => {
-    loadProviderAPI(userId)
+    loadProviderByIdAPI(userId)
     .then((response) => {
       setSelectedProviderData(response);
       setCustomers(response.Customers)
@@ -473,7 +476,7 @@ const addOrder = () => {
 
   // 구매자 정보 가져오기
   const getCustomerData = (userId) => {
-    loadUserAPI(userId)
+    loadUserByIdAPI(userId)
     .then((response) => {
       setSelectedCustomerData(response);
       getCustomersItemList(userId);
@@ -526,7 +529,10 @@ const addOrder = () => {
               })}
             </Space>
           </ListBox>
-        </ContentsBox><br /><br />
+        </ContentsBox><br />
+        {selectedProvider? 
+          <UserInfoBox userInfo={selectedProviderData} />
+        : null}
         <Divider orientation="left">
           <TiTle>
           2. 구매자 선택
@@ -546,7 +552,11 @@ const addOrder = () => {
             </ListBox>
           </ContentsBox>
         }
-        <br /><br />
+        <br />
+        {selectedCustomer? 
+          <UserInfoBox userInfo={selectedCustomerData} />
+        : null}
+        <br />
         <Divider orientation="left">
           <TiTle>
           2-2. 수령지 선택

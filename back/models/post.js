@@ -18,11 +18,21 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(200),
       allowNull: true,
     },
+    scope: {
+      type: DataTypes.STRING(10),
+      defaultValue: "PRIVATE", // PRIVATE, GROUP, PUBLIC
+      allowNull: false,
+    },
+    type : {
+      type: DataTypes.STRING(10),
+      defaultValue: "NOTICE",
+      allowNull: false,
+    }
   },{
     // modelName: 'Post',
     // tableName: 'posts',
-    charset: 'utf8',
-    collate: 'utf8_general_ci' // 한글 처리
+    charset: 'utf8mb4',
+    collate: 'utf8mb4_general_ci' // 한글 처리
   });
   Post.associate = (db) => { // 릴레이션(관계) 정의
     db.Post.belongsTo(db.User); // 글 작성한 유저

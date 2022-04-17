@@ -4,11 +4,10 @@ import { backUrl } from '../config/config';
 import { Descriptions, Tag, Button, Divider, Image } from 'antd';
 import Router from 'next/router';
 
-
 const ItemView = ({ item, myUserInfo }) => {
   return (
     <>
-      <Divider>제품 상세보기</Divider>
+      <Divider>({item.id}) 제품 상세보기</Divider>
       {item.imgSrc ?
         <div style={{ textAlign: 'center' }}>
           <Image src={`${backUrl}/${item.imgSrc}`} style={{ maxHeight: '500px'}} />
@@ -41,6 +40,17 @@ const ItemView = ({ item, myUserInfo }) => {
         : null}
         <Descriptions.Item label="제품명">{item.name}</Descriptions.Item>
         <Descriptions.Item label="포장">{item.packageName}</Descriptions.Item>
+        {myUserInfo?.role === 'ADMINISTRATOR' || myUserInfo?.role === 'PROVIDER'?
+          <Descriptions.Item label="제품 공개 범위">
+            {item.scope === 'PRIVATE'?
+            <>특정 고객 전용</>
+            : item.scope === 'GROUP'?
+            <>내 모든 고객에 공개</>
+            : item.scope === 'PUBLIC'?
+            <>모든 회원에 공개</>
+            : null}
+          </Descriptions.Item>
+        :null}
         <Descriptions.Item label="무게단위">{item.unit}</Descriptions.Item>
         {item.UserId === myUserInfo.id ? 
         <Descriptions.Item label={

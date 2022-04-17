@@ -6,13 +6,13 @@ import { GetServerSidePropsContext } from 'next';
 import React, { useCallback, useState, useEffect } from 'react';
 import { dehydrate, QueryClient, useQuery, useQueryClient } from 'react-query';
 import Head from 'next/head';
-import { Form, Input, Checkbox, Button, notification, Space, Tag, Divider, Popconfirm } from 'antd';
+import { Form, Input, Checkbox, Button, notification, Space, Tag, Divider, Popconfirm, message } from 'antd';
 import { SmileOutlined } from '@ant-design/icons';
 import { Typography } from 'antd';
 import styled from 'styled-components';
 import Router from 'next/router';
 
-import { loadMyInfoAPI, createUserAPI, editUserAPI } from '../../apis/user';
+import { loadMyInfoAPI, createUserAPI, editMyInfoAPI } from '../../apis/user';
 import AppLayout from '../../components/AppLayout';
 import useInput from '../../hooks/useInput';
 import User from '../../interfaces/user';
@@ -49,7 +49,7 @@ const EditUser = () => {
   const queryClient = useQueryClient();
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI,{
     onSuccess(data) {
-      setId(data.id);
+      setKey(data.key);
       setCompany(data.company);
       setName(data.name);
       setPhone(data.phone);
@@ -59,24 +59,7 @@ const EditUser = () => {
     }
   });
 
-  // const [id, onChangeId, setId] = useInput<string>('');
-  // const [company, onChangeCompany, setCompany] = useInput<string>('');
-  // const [name, onChangeName, setName] = useInput<string>('');
-  // const [phone, onChangePhone, setPhone] = useInput<string>('');
-  // const [email, onChangeEmail, setEmail] = useInput<string>('');
-  // const [password, onChangePassword, setPassword] = useInput('');
-  // const [hqNumber, onChangeHq, setHqNum] = useInput('');
-  // const [passwordCheck, setPasswordCheck] = useState('');
-  // const [passwordError, setPasswordError] = useState(false);
-  // const onChangePasswordCheck = useCallback(
-  //   (e) => {
-  //     setPasswordCheck(e.target.value);
-  //     setPasswordError(e.target.value !== password);
-  //   },
-  //   [password],
-  // );
-
-  const [id, setId] = useState('');
+  const [key, setKey] = useState<string>('');
   const [company, onChangeCompany, setCompany] = useInput<string>('');
   const [name, onChangeName, setName] = useInput<string>('');
   const [phone, setPhone] = useState('');
@@ -86,10 +69,18 @@ const EditUser = () => {
   const [passwordCheck, setPasswordCheck] = useState('');
   const [passwordError, setPasswordError] = useState(false);
   const [passwordValidError, setPasswordValidError] = useState(false);
-  const [idValidError, setIdValidError] = useState(false);
+  const [keyValidError, setKeyValidError] = useState(false);
   const [phoneValidError, setPhoneValidError] = useState(false);
 
-
+  const onChangeKey = useCallback( // 아이디 유효성검사
+  (e) => {
+    const regExpId = /^[A-Za-z0-9-@.]{1,25}$/;
+    setKey(e.target.value);
+    setKeyValidError(!regExpId.test(e.target.value));
+  },
+  [key],
+  );
+  
   const onChangePhone = useCallback( // 연락처 유효성검사
     (e) => {
       const regExpPhone = /^[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}/;
@@ -127,23 +118,26 @@ const EditUser = () => {
   };
 
   const onSubmit = useCallback(() => {
+    if (keyValidError) {
+      return message.error('아이디를 올바르게 입력해주세요.')
+    }
     if (password !== passwordCheck) {
       return setPasswordError(true);
     }
     setLoading(true);
-    editUserAPI({ id, password, company, name, phone, email, hqNumber })
+    editMyInfoAPI({ key, password, company, name, phone, email, hqNumber })
       .then((response) => {
-        openNotification(response);
+        message.success('회원정보 수정 완료');
+        queryClient.invalidateQueries('user');
       })
       .catch((error) => {
-        alert(error.response.data);
+        message.error(error.response.data);
       })
       .finally(() => {
-        setLoading(false);
-        queryClient.invalidateQueries('user');
         Router.replace('/');
+        setLoading(false);
       });
-  }, [id, password, company, name, phone, email, passwordCheck]);
+  }, [key, password, company, name, phone, email, passwordCheck]);
 
   return (
   <AppLayout>
@@ -152,105 +146,16 @@ const EditUser = () => {
         <title>회원정보 수정</title>
       </Head>
       <Divider><Title level={4}>회원정보 수정</Title></Divider><br />
-      {/* <Form
-        labelCol={{
-          span: 8,
-        }}
-        wrapperCol={{
-          span: 16,
-        }}
-        onFinish={onSubmit}>
-        <Block>
-          <label>사업자등록번호</label>
-          <input
-            value={id}
-            disabled={true}
-            onChange={onChangeId}
-          />
-        </Block>
-        <Block>
-          <label>본사 사업자등록번호</label>
-          <input
-            value={hqNumber}
-            onChange={onChangeHq}
-          />
-        </Block>
-        <Block>
-          <label><RedBold>* </RedBold>회사명</label>
-          <input
-            value={company}
-            onChange={onChangeCompany}
-            required
-          />
-        </Block>
-        <Block>
-          <label><RedBold>* </RedBold>담당자 성함</label>
-          <input
-            value={name}
-            onChange={onChangeName}
-            required
-          />
-        </Block>
-        <Block>
-          <label><RedBold>* </RedBold>담당자 연락처</label>
-          <input
-            value={phone}
-            onChange={onChangePhone}
-            required
-          />
-        </Block>
-        <Block>
-          <label>담당자 이메일</label>
-          <input
-            value={email}
-            onChange={onChangeEmail}
-            required
-          />
-        </Block>
-        <Block>
-          <label><RedBold>* </RedBold>비밀번호</label>
-          <Input.Password name="user-password" type="password" value={password} required onChange={onChangePassword} />
-        </Block>
-        <Block>
-          <label><RedBold>* </RedBold>비밀번호 확인</label>
-          <Input.Password
-            name="user-password-check"
-            type="password"
-            value={passwordCheck}
-            required
-            onChange={onChangePasswordCheck}
-          />
-        </Block>
-          {passwordError && <ErrorMessage>비밀번호가 일치하지 않습니다.</ErrorMessage>}
-        <div style={{ margin: '15px 0 30px 0'}}>
-          <Button type="primary" htmlType="submit" loading={loading}>
-            수정완료
-          </Button>
-        </div>
-      </Form> */}
-
-
       <Form onFinish={onSubmit}>
-        {/* <Block>
-          <label><RedBold>* </RedBold>회원구분</label>
-        </Block>  
-          <input
-            type='radio'
-          />
-          <span> 구매자 </span>
-          <input
-            type='radio'
-          />
-          <span> 판매자 </span> */}
           
         <Block>
-          <label><RedBold>* </RedBold>사업자등록번호 (ID)</label>
+          <label><RedBold>* </RedBold>사업자등록번호 (아이디)</label>
           <input
-            value={id}
-            disabled={true}
+            onChange={onChangeKey}
+            value={key}
           />
         </Block>
-        {idValidError && <ErrorMessage>숫자, -, 영문(필요시)으로 4~25자 이내</ErrorMessage>}
+        {keyValidError && <ErrorMessage>숫자, -, 영문(필요시)으로 4~25자 이내</ErrorMessage>}
         <Block>
           <label>본사 사업자등록번호</label>
           <input

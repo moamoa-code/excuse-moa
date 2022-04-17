@@ -22,9 +22,9 @@ const ButtonWrapper = styled.div`
 const LoginForm = () => {
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
-  const [id, onChangeId] = useInput('');
+  const [key, onChangeKey] = useInput('');
   const [password, onChangePassword] = useInput('');
-  const mutation = useMutation<User, AxiosError, { id: string; password: string }>('user', logInAPI, {
+  const mutation = useMutation<User, AxiosError, { key: string; password: string }>('user', logInAPI, {
     onMutate: () => {
       setLoading(true);
     },
@@ -40,16 +40,16 @@ const LoginForm = () => {
   });
 
   const onSubmitForm = useCallback(() => {
-    console.log(id, password);
-    mutation.mutate({ id, password });
-  }, [id, password, mutation]);
+    console.log(key, password);
+    mutation.mutate({ key, password });
+  }, [key, password, mutation]);
 
 
   return (
     <Form onFinish={onSubmitForm} style={{ padding: '10px' }}>
       <div>
         <label htmlFor="user-id">아이디</label><br />
-        <Input name="user-id" value={id} onChange={onChangeId} required />
+        <Input name="user-id" value={key} onChange={onChangeKey} required />
       </div>
       <div>
         <label htmlFor="user-password">비밀번호</label><br />

@@ -3,18 +3,62 @@
 import axios from 'axios';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { dehydrate, QueryClient, useQuery, useQueryClient } from 'react-query';
 import Head from 'next/head';
-import { Form, Input, Checkbox, Button, notification, Space, Tag, Select, message } from 'antd';
-import { SmileOutlined } from '@ant-design/icons';
+import { Form, Input, Checkbox, Button, notification, Space, Tag, Select, message, Radio, Modal } from 'antd';
+import { SearchOutlined, SmileOutlined } from '@ant-design/icons';
 import { Typography } from 'antd';
 import styled from 'styled-components';
+import DaumPostcode from 'react-daum-postcode';
 
-import { loadMyInfoAPI, createUserAPI, loadUserAPI } from '../../../apis/user';
+import { loadMyInfoAPI, createUserAPI, loadUserAPI, loadProvidersAPI } from '../../../apis/user';
 import AppLayout from '../../../components/AppLayout';
 import useInput from '../../../hooks/useInput';
 import User from '../../../interfaces/user';
+
+
+const MoDal = styled.div`
+  overflow: auto;
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 8;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: #ffffffe2;
+  animation: fadein 0.2s;
+  @keyframes fadein {
+    from {
+      opacity: 0;
+      top: -100px;
+    }
+    to {
+      opacity: 1;
+      top: 0;
+    }
+}
+  .contents {
+    overflow: auto;
+    min-width: 500px;
+    max-width: 90%;
+    max-height: 90%;
+    z-index: 9;
+    padding: 15px;
+    background-color: white;
+    border-radius: 10px;
+    -webkit-box-shadow: 1px 1px 15px 3px rgba(0,0,0,0.34); 
+    box-shadow: 1px 1px 15px 3px rgba(0,0,0,0.34);
+    transition: opacity 1s;
+  }
+  .close {
+    margin-top: 10px;
+    float:right;
+  }
+`
 
 const ErrorMessage = styled.div`
   color: red;
@@ -35,7 +79,86 @@ const Block = styled.div`
   }
   input {
     width: 100%;
+    padding-left: 5px;
     height: 38px;
+    border: 1px solid #999999;
+    border-radius: 4px;
+  }
+`
+const SearchBlock = styled.div`
+  margin: 18px 0 18px 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  input {
+    flex-grow: 1;
+    height: 38px;
+    margin: 0;
+    padding-left: 5px;
+    box-sizing : border-box;
+    border-radius: 4px 0 0 4px;
+    border: 1px solid #999999;
+  }
+  .search{
+    color: white;
+    font-size: 12pt;
+    font-weight: 800;
+    min-width: 35px;
+    border:0;
+    margin: 0;
+    border-radius: 0 4px 4px 0;
+    background-color:#1890ff;
+  }
+  button {
+    margin-left: 5px;
+    height: 38px;
+    border-radius: 4px;
+    border: 1px solid #999999;
+    background-color:white;
+  }
+  button:active {
+    position: relative; 
+    top:2px;
+  }
+  label {
+    display: block;
+    margin: 0 0 7px 0;
+  }
+`
+const OptionContainer = styled.div`
+  background-color: #f1f8ff;
+  padding: 10px 0px 10px 0px;
+  display: block;
+  overflow:auto;
+  max-height:300px;
+  p {
+    background-color: white;
+    display: inline-block;
+    box-sizing: border-box;
+    border-radius: 4px;
+    padding: 5px 8px 5px 8px;
+    margin: 6px;
+    font-size: 10pt;
+  }
+  p:active {
+    position: relative; 
+    top:2px;
+  }
+  .codeName{
+    background-color:#00B4D8;
+    color: white;
+  }
+  .unit{
+    background-color:#FF5C8D;
+    color: white;
+  }
+  .package{
+    background-color:#ec7728;
+    color: white;
+  }
+  .provider{
+    border: 1px solid #999999;
   }
 `
 
@@ -43,48 +166,50 @@ const CreateUser = () => {
   const { Title, Text } = Typography;
   const [loading, setLoading] = useState(false);
   const queryClient = useQueryClient();
+  const { data: providerList } = useQuery('userList', loadProvidersAPI);
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
-  const [providerId, setProviderId] = useState('');
-  const [selectedProviderId, setSelectedProviderId] = useState('');
+  const [providerKey, setProviderKey] = useState('');
+  const [selectedProviderKey, setSelectedProviderKey] = useState('');
   const [form] = Form.useForm();
-  const { Search } = Input;
+  const [ searchTxt, onChangeSearchTxt, setSearchTxt ] = useInput('');
   const { Option } = Select;
-  const [id, setId] = useState('');
+  const [key, setKey] = useState('');
   const [role, setRole] = useState('PROVIDER');
   const [company, onChangeCompany, setCompany] = useInput('');
   const [name, onChangeName, setName] = useInput('');
   const [phone, setPhone] = useState('');
   const [email, onChangeEmail, setEmail] = useInput('');
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState('123123');
   const [hqNumber, onChangeHq, setHqNumber] = useInput('');
-  const [passwordCheck, setPasswordCheck] = useState('');
+  const [passwordCheck, setPasswordCheck] = useState('123123');
   const [passwordError, setPasswordError] = useState(false);
   const [passwordValidError, setPasswordValidError] = useState(false);
-  const [idValidError, setIdValidError] = useState(false);
+  const [keyValidError, setKeyValidError] = useState(false);
   const [phoneValidError, setPhoneValidError] = useState(false);
   const [disableBtn, setDisableBtn] = useState(true);
-  const [term, setTerm] = useState(false);
-  const [termError, setTermError] = useState(false);
-  const onChangeTerm = useCallback((e) => {
-    setTerm(e.target.checked);
-    setTermError(false);
-  }, []);
+  const [isProviderList, setIsproviderList] = useState(false);
+
+  const [ isVisible, setIsVisible ] = useState(false);
+  const [ zip, setZip ] = useState('');
+  const [ address, onChangeAddress, setAddress ] = useInput<string>('');
+  const [ address2, onChangeAddress2, setAddress2 ] = useInput<string>('');
+  const modalOutside = useRef(); // 모달 바깥부분 클릭시 닫기 위한 ref
 
   useEffect(() => { // 유효성 검사완료시 가입버튼 활성화
-    if (idValidError || phoneValidError || passwordValidError || passwordError || passwordCheck === '' || company === '' || name === '' || !term){
+    if (keyValidError || phoneValidError || passwordValidError || passwordError || passwordCheck === '' || company === '' || name === ''){
       setDisableBtn(true);
     } else {
       setDisableBtn(false);
     }
-  }, [idValidError, phoneValidError, passwordCheck, passwordValidError, passwordError, name, company, term])
+  }, [keyValidError, phoneValidError, passwordCheck, passwordValidError, passwordError, name, company])
 
-  const onChangeId = useCallback( // 아이디 유효성검사
+  const onChangeKey = useCallback( // 아이디 유효성검사
     (e) => {
       const regExpId = /^[A-Za-z0-9-@.]{4,25}$/;
-      setId(e.target.value);
-      setIdValidError(!regExpId.test(e.target.value));
+      setKey(e.target.value);
+      setKeyValidError(!regExpId.test(e.target.value));
     },
-    [id],
+    [key],
   );
 
   const onChangePhone = useCallback( // 연락처 유효성검사
@@ -117,44 +242,90 @@ const CreateUser = () => {
 
   const handleRoleChange = (value) => {
     setRole(value);
+    if (value === 'PROVIDER' || 'NOVICE') {
+      setSelectedProviderKey('');
+    }
   }
+
+  const showModal = () => {
+    setIsVisible(true);
+  };
+
+  const handleCancel = () => {
+    setIsVisible(false);
+  };
+
+  const onCompletePost = (data) => {
+    let fullAddr = data.address;
+    let extraAddr = '';
+
+    if (data.addressType === 'R') {
+      if (data.bname !== '') {
+        extraAddr += data.bname;
+      }
+      if (data.buildingName !== '') {
+        extraAddr += extraAddr !== '' ? `, ${data.buildingName}` : data.buildingName;
+      }
+      fullAddr += extraAddr !== '' ? ` (${extraAddr})` : '';
+    }
+
+    setZip(data.zonecode);
+    setAddress(fullAddr);
+    setIsVisible(false);
+  };
 
 
   const openNotification = (response) => {
     notification.open({
       message: `${response.company} 고객생성이 완료됐습니다.`,
       description:
-        `${response.name}님, 아이디 ${response.id}`,
+        `${response.name}님, 아이디 ${response.key}`,
       icon: <SmileOutlined style={{ color: '#108ee9' }} />,
       duration: 8,
     });
   };
 
   const onSubmit = useCallback(() => {
+    setLoading(true);
     if (password !== passwordCheck) {
       return setPasswordError(true);
     }
-    if (!term) {
-      return setTermError(true);
+    if (role === 'CUSTOMER') {
+      if (selectedProviderKey === '' || selectedProviderKey === null){
+        return message.error('판매자를 선택해 주세요.')
+      }
     }
-    setProviderId(myUserInfo.id);
+    let fullAddress = '';
+    let addrData = {};
+    if (zip !== '') {
+      if (address === '' || address2 === '') {
+        return message.error('상세주소를 작성해주세요.')
+      }
+      fullAddress = address + ' ' + address2;
+      addrData = { zip, address : fullAddress }
+    }    
     // console.log(email, nickname, password);
-    setLoading(true);
-    createUserAPI({ providerId: selectedProviderId, role, id, password, company, name, phone, email, hqNumber })
+    createUserAPI({ providerKey: selectedProviderKey, role, key, password, company, name, phone, email, hqNumber, addrData })
       .then((response) => {
         openNotification(response);
+        if (role !== 'CUSTOMER') {
+          setSearchTxt('');
+          setProviderKey('');
+          setSelectedProviderKey('');
+          setIsproviderList(false);
+        }
+        form.resetFields();
+        setZip('');
+        setAddress('');
+        setAddress2('');
         setHqNumber('');
-        setRole('PROVIDER');
-        setId('');
+        setKey('');
         setCompany('');
         setName('');
         setPhone('');
         setEmail('');
-        setPassword('');
-        setProviderId('');
-        setSelectedProviderId('');
-        setPasswordCheck('');
-        form.resetFields();
+        setPassword('123123');
+        setPasswordCheck('123123');
       })
       .catch((error) => {
         alert(error.response.data);
@@ -162,20 +333,23 @@ const CreateUser = () => {
       .finally(() => {
         setLoading(false);
         queryClient.invalidateQueries('user'); // 카트 목록 다시 불러오기
+        queryClient.invalidateQueries('userList');
       });
-  }, [id, role, selectedProviderId, password, company, name, phone, email, passwordCheck, term, hqNumber]);
+  }, [key, role, selectedProviderKey, password, company, name, phone, email, passwordCheck, hqNumber, zip, address, address2]);
 
-  
-  const onSearch = (value) => {
-    console.log(value);
+  const onSearchClick = () => {
+    if (searchTxt === '') {
+      return message.error('값을 입력해주세요.')
+    }
     setLoading(true);
-    loadUserAPI(String(value))
+    loadUserAPI(searchTxt)
       .then((response) => {
         message.success('판매사 ' + response.company + '선택완료');
-        setSelectedProviderId(response.id);
+        setSelectedProviderKey(response.key);
       })
       .catch((error) => {
         message.error(error.response.data);
+        setSearchTxt('');
         setLoading(false);
       })
       .finally(() => {
@@ -204,23 +378,49 @@ const CreateUser = () => {
           </Select>
         </Block>
         {role === 'CUSTOMER'?
-        <Block>
-          <label>판매자 선택</label>
-          <Search placeholder="ID / 사업자 등록번호" onSearch={onSearch} enterButton/><br />
-          <div><b>선택된 판매자: {selectedProviderId}</b></div>
-        </Block>  
+        <>
+          <label style={{margin: '0 0 7px 0'}}>판매자 선택</label>
+          <SearchBlock>
+            <input
+              value={searchTxt}
+              onChange={onChangeSearchTxt}
+            />
+            <button type='button' className='search' onClick={onSearchClick}>
+              <SearchOutlined />
+            </button>
+            <button 
+              type='button' 
+              onClick={()=>{
+                setIsproviderList(!isProviderList);
+              }}>목록보기
+            </button>
+          </SearchBlock>
+          {isProviderList?
+            <OptionContainer>
+            {providerList?.map((v)=>{
+              return (
+                <p className='provider' onClick={() => {
+                  setSearchTxt(v.key);
+                  setSelectedProviderKey(v.key);
+                  message.success('판매사 ' + v.company + '선택완료');
+                }}>{v.company}</p>
+                ) 
+            })}
+          </OptionContainer>
+          :null}
+        </>  
         : null}
         <Block>
           <label><RedBold>* </RedBold>사업자등록번호 또는 ID</label>
           <input
-            value={id}
-            onChange={onChangeId}
+            value={key}
+            onChange={onChangeKey}
             placeholder=' - 포함하여 작성해주세요.'
             required
             autoComplete="off"
           />
         </Block>
-        {idValidError && <ErrorMessage>숫자, -, 영문(필요시)으로 4~25자 이내</ErrorMessage>}
+        {keyValidError && <ErrorMessage>숫자, -, 영문(필요시)으로 4~25자 이내</ErrorMessage>}
         <Block>
           <label>본사 사업자등록번호</label>
           <input
@@ -259,8 +459,8 @@ const CreateUser = () => {
             onChange={onChangePhone}
             placeholder=' - 없이 숫자만 입력'
             maxLength={13}
-            required
             autoComplete="off"
+            required
           />
         </Block>
         <Block>
@@ -298,13 +498,37 @@ const CreateUser = () => {
             autoComplete="off"
           />
         </Block>
-          {passwordError && <ErrorMessage>비밀번호가 일치하지 않습니다.</ErrorMessage>}
-        <div>
-          <Checkbox name="user-term" checked={term} onChange={onChangeTerm}>
-            이용약관에 동의합니다.
-          </Checkbox> <Link href='/user/term'><a target={'_blank'}><Tag>이용약관</Tag></a></Link>
-          {termError && <ErrorMessage>약관에 동의하셔야 합니다.</ErrorMessage>}
-        </div>
+        {passwordError && <ErrorMessage>비밀번호가 일치하지 않습니다.</ErrorMessage>}
+        <Block>
+          <label>주소 입력 (필요시)</label>
+        </Block>
+        <Button type="primary" onClick={showModal}>
+            우편번호 찾기
+          </Button>
+        <Block>
+          <label>우편번호</label>
+          <input
+            value={zip}
+            placeholder='우편번호 찾기를 통해 입력해주세요.'
+            readOnly
+          />
+        </Block>
+        <Block>
+          <label>주소</label>
+          <input
+            value={address}
+            placeholder='우편번호 찾기를 통해 입력해주세요.'
+            readOnly
+          />
+        </Block>
+        <Block>
+          <label>주소 상세</label>
+          <input
+            value={address2}
+            onChange={onChangeAddress2}
+            placeholder=''
+          />
+        </Block>
         <div style={{ marginTop: 10 }}>
           <Button type="primary" htmlType="submit" loading={loading} disabled={disableBtn}>
             회원생성
@@ -312,6 +536,33 @@ const CreateUser = () => {
         </div>
       </Form>
       <br/><br/>
+      {isVisible?
+        <MoDal 
+          ref={modalOutside}
+          onClick={(e)=>{
+            if(modalOutside.current === e.target) {
+              setIsVisible(false)}
+          }}
+        >
+          <div className='contents'>
+            <DaumPostcode onComplete={onCompletePost } />
+            <div className='close'>
+              <Button onClick={() => { setIsVisible(false) }}>닫기</Button>
+            </div>
+          </div>
+        </MoDal>
+      :null}
+      {/* <Modal
+        visible={isVisible}
+        onCancel={handleCancel}
+        footer={[
+          <Button onClick={handleCancel}>
+            닫기
+          </Button>,
+        ]}
+        >
+          <DaumPostcode onComplete={onCompletePost } />
+      </Modal> */}
     </Container500>
   </AppLayout>
   );
@@ -320,7 +571,7 @@ const CreateUser = () => {
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
   const cookie = context.req ? context.req.headers.cookie : ''; // 쿠키 넣어주기
   axios.defaults.headers.Cookie = '';
-  const id = context.params?.id as string;
+  const key = context.params?.key as string;
   if (context.req && cookie) {
     axios.defaults.headers.Cookie = cookie;
   }

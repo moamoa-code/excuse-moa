@@ -90,9 +90,9 @@ const AddressForm = (props) => {
             required
           />
         </Block>
-          <Button type="primary" onClick={showModal}>
-            우편번호 찾기
-          </Button>
+        <Button type="primary" onClick={showModal}>
+          우편번호 찾기
+        </Button>
         <Block>
           <label>우편번호</label>
           <input

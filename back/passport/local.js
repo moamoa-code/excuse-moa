@@ -9,13 +9,13 @@ const { User } = require('../models');
 
 module.exports = () => {
     passport.use(new LocalStrategy({
-        usernameField: 'id', // form으로 받은 data.id -> req.body.id
+        usernameField: 'key', // form으로 받은 data.id -> req.body.id
         passwordField: 'password', // form으로 받은 data.password -> req.body.password
-    }, async (id, password, done) => {
+    }, async (key, password, done) => {
         try {
             // console.log('local.js',id,password,done);
             const user = await User.findOne({
-                where: { id } // 해당 id db에 있는지 확인.
+                where: { key } // 해당 id db에 있는지 확인.
             });
             if (!user){ // id 없을경우
                 return done(null, false, { reason: '존재하지 않는 사용자 입니다.' });

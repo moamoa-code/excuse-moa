@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Typography, Button, Divider, Space, message, notification, Descriptions, Tag } from 'antd';
 import { useRouter } from 'next/router';
 import { dehydrate, QueryClient, useQuery, useQueryClient  } from 'react-query';
-import { loadAddrsAPI, loadMyInfoAPI, loadProviderAPI, loadProvidersAPI, loadUserAPI } from '../../apis/user';
+import { loadAddrsAPI, loadMyInfoAPI, loadProviderAPI, loadProviderByIdAPI, loadProvidersAPI, loadUserAPI, loadUserByIdAPI } from '../../apis/user';
 import { orderPosItemAPI } from '../../apis/order';
 import AppLayout from '../../components/AppLayout';
 
@@ -21,6 +21,7 @@ import Text from 'antd/lib/typography/Text';
 import ItemView from '../../components/ItemView';
 
 import shortId from 'shortid';
+import UserInfoBox from '../../components/UserInfoBox';
 
 const Container800 = styled.div`
   max-width: 800px;
@@ -368,6 +369,7 @@ const addNewOrder = () => {
   const { data: providers } = useQuery('providers', loadProvidersAPI);
   // 판매자
   const [selectedProvider, setSelectedProvider] = useState();
+  const [selectedProviderData, setSelectedProviderData] = useState<any>({});
   // 고객
   const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState('');
@@ -555,12 +557,12 @@ const addNewOrder = () => {
     if (userId === '') {
       return message.error('판매자를 선택해주세요.');
     }
-    loadItemListAPI(userId)
+    loadItemListAPI(selectedProviderData?.key)
     .then((response) => {
       setAllItemsOfProvider(response);
     })
     .catch((error) => {
-      alert(error.response.data);
+      message.error(error.response.data);
     })
     .finally(() => {
 
@@ -569,9 +571,9 @@ const addNewOrder = () => {
 
   // 판매자 정보 가져오기
   const getProviderData = (userId) => {
-    loadProviderAPI(userId)
+    loadProviderByIdAPI(userId)
     .then((response) => {
-      // setSelectedProviderData(response);
+      setSelectedProviderData(response);
       setCustomers(response.Customers)
     })
     .catch((error) => {
@@ -609,7 +611,7 @@ const addNewOrder = () => {
 
   // 구매자 정보 가져오기
   const getCustomerData = (userId) => {
-    loadUserAPI(userId)
+    loadUserByIdAPI(userId)
     .then((response) => {
       setSelectedCustomerData(response);
       getCustomersItemList(userId);
@@ -662,7 +664,11 @@ const addNewOrder = () => {
               })}
             </Space>
           </ListBox>
-        </ContentsBox><br /><br />
+        </ContentsBox><br />
+        {selectedProvider? 
+          <UserInfoBox userInfo={selectedProviderData} />
+        : null}
+        <br />
         <Divider orientation="left">
           <TiTle>
           2. 구매자 선택
@@ -734,7 +740,12 @@ const addNewOrder = () => {
             : null
             }
           </ContentsBox>
-        }<br /><br />
+        }
+        <br />
+        {selectedCustomer? 
+          <UserInfoBox userInfo={selectedCustomerData} />
+        : null}
+        <br />
         {isNewCustomer ? null :
         <>
           <Divider orientation="left">
@@ -770,7 +781,6 @@ const addNewOrder = () => {
               </ListBox>
             </ContentsBox>
           }
-          <br />
           {selectedAddr !== '공수' && selectedAddr !== '없음' && selectedAddr !== ''?
           <Descriptions
             bordered

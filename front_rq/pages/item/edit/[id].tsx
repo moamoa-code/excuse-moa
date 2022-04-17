@@ -21,73 +21,11 @@ const EditItem = () => {
   const { id } = router.query; // 제품의 id
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
   const { data: item } = useQuery<Item>(['item', id], () => loadItemAPI(Number(id)));
-  const [loading, setLoading] = useState<boolean>(false);
-
-  const [customerId, onChangeCustomerId] = useInput(''); //
-
-  const openNotification = (text) => {
-    notification.open({
-      message: `${text}`,
-      description:
-        ``,
-      icon: <CheckCircleOutlined style={{ color: '#108ee9' }} />,
-      duration: 2,
-    });
-  };
-
-  const onSubmit = (values) => {
-    console.log(values);
-    const itemId = Number(id);
-    setLoading(true);
-    addCustomerToItemAPI({ itemId, values })
-    .then(() => {
-      openNotification('제품을 열람가능한 고객 추가를 완료했습니다.')
-    })
-    .finally(() => {
-      setLoading(false);
-    })
-  }
-
-  const printTags = (myCustomers, customer) => {
-    if (myCustomers.include(customer)) {
-      return <Tag color="blue"><Checkbox value={customer.id}>{customer.company} / {customer.name}</Checkbox> </Tag>
-    }
-    return <Tag><Checkbox value={customer.id}>{customer.company} / {customer.name}</Checkbox> </Tag>
-  }
-
+  
   return (
     <AppLayout>
       <div style={{maxWidth: '800px', padding: '10px', margin: '0 auto'}}>
         <ItemEdit item={item} myUserInfo={myUserInfo} />
-        <br/><br/>
-        <Form 
-          style={{ margin: '10px 0 20px' }}
-          encType="multipart/form-data"
-          onFinish={onSubmit}
-          initialValues={{ // 제품 볼 수 있는 유저 체크
-            'customerIds': item.ItemViewUsers.map((v) => (v.id)),
-          }}
-        >
-        <Divider orientation="left" style={{ marginTop: '30px' }}>열람가능한 고객 추가</Divider>
-          <Form.Item name="customerIds">
-            <Checkbox.Group>
-              <Space size={8} wrap>
-                {myUserInfo.Customers.map((v) => (
-                  <>
-                    {/* {printTags(myUserInfo.Customers, v)} */}
-                    <Tag color="blue"><Checkbox value={v.id}>{v.company} / {v.name}</Checkbox> </Tag>
-                  </>
-                ))}
-              </Space>
-            </Checkbox.Group>
-          </Form.Item>
-          <Space>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              적용 완료
-            </Button>
-            <Button onClick={()=> (Router.replace(`/management/items`))}>목록으로 돌아가기</Button>
-          </Space>
-        </Form>
       </div>
     </AppLayout>
   );

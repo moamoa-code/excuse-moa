@@ -19,6 +19,7 @@ const CustomersItemList = () => {
   // const queryClient = useQueryClient();
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
   const { data: items } = useQuery<Item>(['items'], loadCustomerItemsAPI);
+  // const { data: allItems } = useQuery(['allItems'], loadMyGroupItemsAPI);
   const [loading, setLoading] = useState(false);
   const { Title } = Typography;
 
@@ -26,7 +27,6 @@ const CustomersItemList = () => {
     <AppLayout>
       <div style={{maxWidth: '800px', padding: '10px', margin: '0 auto'}}>
         <Title level={4}>제품목록</Title>
-        {/* <p>{JSON.stringify(items)}</p> */}
         <ItemList items={items} myUserInfo={myUserInfo} />
       </div>
     </AppLayout>

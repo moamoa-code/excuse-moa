@@ -50,7 +50,7 @@ const Signup = () => {
     }
   }, [myUserInfo]);
 
-  const [id, setId] = useState('');
+  const [key, setKey] = useState('');
   const [company, onChangeCompany] = useInput('');
   const [name, onChangeName] = useInput('');
   const [phone, setPhone] = useState('');
@@ -78,13 +78,13 @@ const Signup = () => {
     }
   }, [idValidError, phoneValidError, passwordCheck, passwordValidError, passwordError, name, company, term])
 
-  const onChangeId = useCallback( // 아이디 유효성검사
+  const onChangeKey = useCallback( // 아이디 유효성검사
     (e) => {
       const regExpId = /^[A-Za-z0-9-@.]{4,25}$/;
-      setId(e.target.value);
+      setKey(e.target.value);
       setIdValidError(!regExpId.test(e.target.value));
     },
-    [id],
+    [key],
   );
 
   const onChangePhone = useCallback( // 연락처 유효성검사
@@ -132,7 +132,8 @@ const Signup = () => {
       setLoading(false);
       return;
     } else {
-      signUpAPI({ id, password, company, name, phone, email, hqNumber })
+      const newKey = String(key).trim();
+      signUpAPI({ key: newKey, password, company, name, phone, email, hqNumber })
       .then(() => {
         Router.replace('/');
       })
@@ -145,7 +146,7 @@ const Signup = () => {
     }
     // console.log(email, nickname, password);
 
-  }, [id, password, company, name, phone, email, passwordCheck, term, hqNumber, passwordValidError, idValidError, phoneValidError]);
+  }, [key, password, company, name, phone, email, passwordCheck, term, hqNumber, passwordValidError, idValidError, phoneValidError]);
 
   return (
   <AppLayout>
@@ -170,8 +171,8 @@ const Signup = () => {
         <Block>
           <label><RedBold>* </RedBold>사업자등록번호 (ID)</label>
           <input
-            value={id}
-            onChange={onChangeId}
+            value={key}
+            onChange={onChangeKey}
             placeholder=' - 포함하여 작성해주세요.'
             required
           />

@@ -14,7 +14,7 @@ import { loadRecentPostAPI } from '../apis/post';
 import { PlusOutlined } from '@ant-design/icons';
 import Router from 'next/router';
 import styled from 'styled-components';
-import { loadReceivedOrdersAPI } from '../apis/order';
+import { loadReceivedOrdersAPI, loadRecentReceivedOrdersAPI } from '../apis/order';
 import dayjs from 'dayjs';
 
 const Container800 = styled.div`
@@ -46,7 +46,7 @@ const Home = () => {
           setPostdata(data);
         })
       } if (data?.role === 'PROVIDER' || data?.role === 'ADMINISTRATOR') {
-        loadReceivedOrdersAPI(data.id, 3)
+        loadRecentReceivedOrdersAPI(data.key)
         .then((data) => {
           setOderdata(data);
           console.log('setOderdata',data);

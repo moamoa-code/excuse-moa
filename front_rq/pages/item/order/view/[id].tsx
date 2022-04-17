@@ -5,7 +5,7 @@ import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import { dehydrate, QueryClient, useQuery, useQueryClient } from 'react-query';
 import { loadMyInfoAPI } from '../../../../apis/user';
-import { loadOrderAPI } from '../../../../apis/item';
+import { loadOrderAPI } from '../../../../apis/order';
 import AppLayout from '../../../../components/AppLayout';
 import OrderView from '../../../../components/OrderView';
 import User from '../../../../interfaces/user';

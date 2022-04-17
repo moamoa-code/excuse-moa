@@ -7,7 +7,7 @@ const { Item } = require('../models'); // 시퀄라이즈 - MySQL DB연결
 const { Order } = require('../models'); // 시퀄라이즈 - MySQL DB연결
 const { Op } = require("sequelize"); // 시퀄라이즈 연산자 사용
 
-const { isLoggedIn, isProvider } = require('./middlewears'); // 로그인 검사 미들웨어
+const { isLoggedIn, isProvider, isAdmin } = require('./middlewears'); // 로그인 검사 미들웨어
 const { text } = require('express');
 
 
@@ -214,11 +214,11 @@ router.get('/:userId/:from/:til', async (req, res, next) => {
       include: [{
         model: User,
         as: 'Provider',
-        attributes: ["id", "company", "name", "phone"],
+        attributes: ["id", "company", "key", "name", "phone"],
       }, {
         model: User,
         as: 'Customer',
-        attributes: ["id", "company", "name", "phone"],
+        attributes: ["id", "company", "key", "name", "phone"],
       }]
     });
     if (!order) {
@@ -256,19 +256,25 @@ router.patch('/req-cancel', isLoggedIn, async (req, res, next) => {
 
 
 // 주문확인 완료 (판매자)
-router.patch('/confirm', isLoggedIn, async (req, res, next) => { 
+router.patch('/confirm', isProvider, async (req, res, next) => { 
   // req.body: {orderId: number, message: string}
   console.log('/confirm !@#@!#!@$!', req.user.id);
   try {
+    const me = await User.findOne({
+      where: {
+        id: req.user.id
+      }
+    })
     console.log('/confirm @#@#@##@#', req.body);
     const order = await Order.findOne({ // 주문 찾기
       where: {
         id: req.body.orderId,
       }
     });
-    console.log('/#$@$@#', order.providerId, order);
-    if(order.ProviderId !== req.user.id){
-      return res.status(400).send('판매자만 확인 가능합니다.');
+    if(order.ProviderId !== me.id) {
+      if (me.role !== 'ADMINISTRATOR') {
+        return res.status(400).send('판매자만 확인 가능합니다.');
+      }
     }
     order.update({
       message: req.body.message,
@@ -283,7 +289,7 @@ router.patch('/confirm', isLoggedIn, async (req, res, next) => {
 });
 
 // 주문취소 완료 (판매자)
-router.patch('/cancel', isLoggedIn, async (req, res, next) => { 
+router.patch('/cancel', isProvider, async (req, res, next) => { 
   // req.body: {orderId: number, message: string}
   try {
     const order = await Order.findOne({ // 주문 찾기
@@ -312,7 +318,7 @@ router.patch('/cancel', isLoggedIn, async (req, res, next) => {
 });
 
 // 포장 완료 (생산자)
-router.patch('/pack-complete', isProvider, async (req, res, next) => { 
+router.patch('/pack-complete', isAdmin, async (req, res, next) => { 
   try {
     console.log('/pack-complete @#@#@##@#', req.body);
     const orderDetail = await OrderDetail.findOne({ // 주문 찾기
@@ -331,7 +337,7 @@ router.patch('/pack-complete', isProvider, async (req, res, next) => {
 });
 
 // 포장 완료 취소 (생산자)
-router.patch('/pack-cancel', isProvider, async (req, res, next) => { 
+router.patch('/pack-cancel', isAdmin, async (req, res, next) => { 
   try {
     const orderDetail = await OrderDetail.findOne({ // 주문 찾기
       where: {
@@ -349,7 +355,7 @@ router.patch('/pack-cancel', isProvider, async (req, res, next) => {
 });
 
 // 출하 완료 (판매자)
-router.patch('/task-complete', async (req, res, next) => { 
+router.patch('/task-complete', isAdmin, async (req, res, next) => { 
   // req.body: {orderId: number, message: string}
   console.log('/task-complete !@#@!#!@$!', req.body);
   try {
@@ -385,9 +391,55 @@ router.patch('/task-complete', async (req, res, next) => {
   }
 });
 
+// 일정기간 모든 주문목록 가져오기 (관리자용)
+router.post('/all-orders', isAdmin, async (req, res, next) => { 
+  console.log('#!@#@!#@! all-orders 진입');
+  try {
+    console.log(req.body);
+    let from = new Date(req.body.from);
+    from.setHours('0');
+    let til = new Date(req.body.til);
+    til.setHours('23');
+    til.setMinutes('59');
+    til.setSeconds('59');
+
+    console.log('!@#@!#!@ all-orders', from, til);
+
+    const order = await Order.findAll({
+      where: {
+        date: { [Op.between]: [from, til] },
+      },
+      order: [
+        ['createdAt', 'DESC'],
+      ],
+      // attributes: ["id", "date", "totalPice", "comment", "address", "zip", "phone", "name", "isConfirmed", "isCanceled"],
+      include: [{
+        model: User,
+        as: 'Provider',
+        attributes: ["id", "company", "key", "name", "phone"],
+      }, {
+        model: User,
+        as: 'Customer',
+        attributes: ["id", "company", "key", "name", "phone"],
+      }]
+    }); 
+
+    console.log(order);
+
+    if (!order) {
+      return res.status(403).send('해당 제품이 존재하지 않습니다.');
+    }
+    res.status(200).json(order);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 // 일정기간 주문목록 가져오기 (판매자용)
 router.get('/received-orders-dates/:userId/:from/:til', isProvider, async (req, res, next) => { 
   try {
+    console.log('일정기간 주문목록 가져오기 (판매자용)');
     console.log(req.params.userId);
     let from = new Date(req.params.from);
     from.setHours('0');
@@ -395,6 +447,7 @@ router.get('/received-orders-dates/:userId/:from/:til', isProvider, async (req, 
     til.setHours('23');
     til.setMinutes('59');
     til.setSeconds('59');
+
 
     console.log(from, til)
 
@@ -407,8 +460,10 @@ router.get('/received-orders-dates/:userId/:from/:til', isProvider, async (req, 
     const me = await User.findOne({
       where: { id: req.user.id }
     })
-    if (me.id !== user.id) {
-      return res.status(403)('권한이 없습니다.');
+    if (me.role !== 'ADMINISTRATOR'){
+      if (me.id !== user.id) {
+        return res.status(403)('권한이 없습니다.');
+      }
     }
 
     const order = await Order.findAll({
@@ -423,11 +478,11 @@ router.get('/received-orders-dates/:userId/:from/:til', isProvider, async (req, 
       include: [{
         model: User,
         as: 'Provider',
-        attributes: ["id", "company", "name", "phone"],
+        attributes: ["id", "company", "key", "name", "phone"],
       }, {
         model: User,
         as: 'Customer',
-        attributes: ["id", "company", "name", "phone"],
+        attributes: ["id", "company", "key", "name", "phone"],
       }]
     }); 
 
@@ -441,6 +496,9 @@ router.get('/received-orders-dates/:userId/:from/:til', isProvider, async (req, 
   }
 });
 
+
+
+
 // 모든 주문목록 가져오기 (공장)
 router.get('/all', isProvider, async (req, res, next) => { 
   try {
@@ -451,11 +509,11 @@ router.get('/all', isProvider, async (req, res, next) => {
       include: [{
         model: User,
         as: 'Provider',
-        attributes: ["id", "company", "name", "phone"],
+        attributes: ["id", "company", "key", "name", "phone"],
       }, {
         model: User,
         as: 'Customer',
-        attributes: ["id", "company", "name", "phone"],
+        attributes: ["id", "company", "key", "name", "phone"],
       }, {
         model: OrderDetail
       }]
@@ -496,11 +554,11 @@ router.post('/todos', async (req, res, next) => {
       include: [{
         model: User,
         as: 'Provider',
-        attributes: ["id", "company", "name", "phone"],
+        attributes: ["id", "company", "key", "name", "phone"],
       }, {
         model: User,
         as: 'Customer',
-        attributes: ["id", "company", "name", "phone"],
+        attributes: ["id", "company", "key", "name", "phone"],
       }, {
         model: OrderDetail,
         where: { status: stat3 }
@@ -535,11 +593,11 @@ router.get('/received-orders/:userId', isProvider, async (req, res, next) => {
       include: [{
         model: User,
         as: 'Provider',
-        attributes: ["id", "company", "name", "phone"],
+        attributes: ["id", "company", "key", "name", "phone"],
       }, {
         model: User,
         as: 'Customer',
-        attributes: ["id", "company", "name", "phone"],
+        attributes: ["id", "company", "key", "name", "phone"],
       }]
     });
     if (!order) {
@@ -553,23 +611,16 @@ router.get('/received-orders/:userId', isProvider, async (req, res, next) => {
 });
 
 // 주문목록 3개 가져오기 (판매자용)
-router.get('/received-orders-three/:userId', isProvider, async (req, res, next) => {
+router.get('/recent-received-orders/:userKey', isProvider, async (req, res, next) => {
   try {
     const user = await User.findOne({
-      where: { id: req.params.userId }
+      where: { key: req.params.userKey }
     })
     if (!user) {
       return res.status(403).send('해당 유저가 존재하지 않습니다.');
     }
-    const me = await User.findOne({
-      where: { id: req.user.id }
-    });
-    if ( user.id !== me.id )  {
-      console.log('권한없음');
-      return res.status(403).send('열람권한이 없습니다.');
-    }
     const order = await Order.findAll({
-      where: { providerId: req.params.userId },
+      where: { ProviderId: user.id },
       limit:3,
       order: [
         ['createdAt', 'DESC'],
@@ -578,11 +629,11 @@ router.get('/received-orders-three/:userId', isProvider, async (req, res, next) 
       include: [{
         model: User,
         as: 'Provider',
-        attributes: ["id", "company", "name", "phone"],
+        attributes: ["id", "company", "key", "name", "phone"],
       }, {
         model: User,
         as: 'Customer',
-        attributes: ["id", "company", "name", "phone"],
+        attributes: ["id", "company", "key", "name", "phone"],
       }]
     });
     if (!order) {
@@ -597,7 +648,7 @@ router.get('/received-orders-three/:userId', isProvider, async (req, res, next) 
 
 
 // 주문목록 가져오기 (판매자용)
-router.get('/received-orders/:userId', async (req, res, next) => {
+router.get('/received-orders/:userId', isProvider, async (req, res, next) => {
   try {
     const user = await User.findOne({
       where: { id: req.params.userId }
@@ -620,11 +671,11 @@ router.get('/received-orders/:userId', async (req, res, next) => {
       include: [{
         model: User,
         as: 'Provider',
-        attributes: ["id", "company", "name", "phone"],
+        attributes: ["id", "company", "key", "name", "phone"],
       }, {
         model: User,
         as: 'Customer',
-        attributes: ["id", "company", "name", "phone"],
+        attributes: ["id", "company", "key", "name", "phone"],
       }]
     });
     if (!order) {
@@ -637,6 +688,37 @@ router.get('/received-orders/:userId', async (req, res, next) => {
   }
 });
 
+
+// 주문서 조회
+router.get('/:orderId', isLoggedIn, async (req, res, next) => { // GET /post/1
+  try {
+    console.log(req.params.orderId);
+    const order = await Order.findOne({
+      where: { id: req.params.orderId },
+      // attributes: ["id", "date", "totalPice", "comment", "address", "zip", "phone", "name", "isConfirmed", "isCanceled"],
+      include: [{
+        model: User,
+        as: 'Provider',
+        attributes: ["id", "company", "key", "name", "phone"],
+      }, {
+        model: User,
+        as: 'Customer',
+        attributes: ["id", "company", "key", "name", "phone"],
+      }]
+    });
+    if (!order) {
+      return res.status(404).send('해당 제품이 존재하지 않습니다.');
+    }
+    const orderDetails = await OrderDetail.findAll({
+      where: { OrderId: order.id },
+    })
+    const data = {order, orderDetails};
+    res.status(200).json(data);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
 
 
 module.exports = router;

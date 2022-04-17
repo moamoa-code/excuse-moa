@@ -10,7 +10,7 @@ const { Item } = require('../models'); // 시퀄라이즈 - MySQL DB연결
 const { Order } = require('../models'); // 시퀄라이즈 - MySQL DB연결
 const { Op } = require("sequelize"); // 시퀄라이즈 연산자 사용
 
-const { isLoggedIn } = require('./middlewears'); // 로그인 검사 미들웨어
+const { isLoggedIn, isProvider, isAdmin } = require('./middlewears'); // 로그인 검사 미들웨어
 const { text } = require('express');
 
 // 업로드 폴더 생성
@@ -39,27 +39,31 @@ const upload = multer({
   limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
 });
 // 제품등록
-router.post('/regist', isLoggedIn, upload.none(), async (req, res, next) => {
+router.post('/regist', isProvider, upload.none(), async (req, res, next) => {
   try {
     console.log('제품등록 req.body',req.body);
     let item;
     let userId;
-    if (req.body.providerId === undefined || req.body.providerId === null || req.body.providerId === ''){
+    let scope = req.body.scope;
+    if (req.body.scope !== 'PRIVATE' && req.body.scope !== 'GROUP' && req.body.scope !== 'PUBLIC'){
+      scope = 'PRIVATE';
+    }
+    if (req.body.providerKey === undefined || req.body.providerKey === null || req.body.providerKey === ''){
       userId = req.user.id
     } else {
       const user = await User.findOne({
-        where: {id: req.body.providerId }
+        where: { key: req.body.providerKey }
       });
       if(!user){
         return res.status(400).send('해당 판매자가 존재하지 않습니다.');
       }
       userId = user.id
     }
-
     if (req.body.imgSrc !== undefined) {
       item = await Item.create({
         codeName: req.body.codeName,
         name: req.body.name,
+        scope,
         packageName: req.body.packageName,
         unit: req.body.unit,
         msrp: req.body.msrp,
@@ -72,6 +76,7 @@ router.post('/regist', isLoggedIn, upload.none(), async (req, res, next) => {
       item = await Item.create({
         codeName: req.body.codeName,
         name: req.body.name,
+        scope,
         packageName: req.body.packageName,
         unit: req.body.unit,
         msrp: req.body.msrp,
@@ -80,7 +85,6 @@ router.post('/regist', isLoggedIn, upload.none(), async (req, res, next) => {
         UserId: userId,
       })
     }
-
     console.log('생성함', item);
     res.status(200).json(item);
   } catch (error) {
@@ -100,11 +104,15 @@ router.post('/update', isLoggedIn, upload.none(), async (req, res, next) => {
     if (!exItem) {
       res.status(404).send('해당 제품을 찾을 수 없습니다.')
     }
-
+    let scope = req.body.scope;
+    if (req.body.scope !== 'PRIVATE' && req.body.scope !== 'GROUP' && req.body.scope !== 'PUBLIC'){
+      scope = 'PRIVATE';
+    }
     if (req.body.imgSrc !== undefined) {
       await Item.update({
         codeName: req.body.codeName,
         name: req.body.name,
+        scope,
         packageName: req.body.packageName,
         unit: req.body.unit,
         msrp: req.body.msrp,
@@ -121,6 +129,7 @@ router.post('/update', isLoggedIn, upload.none(), async (req, res, next) => {
         name: req.body.name,
         packageName: req.body.packageName,
         unit: req.body.unit,
+        scope,
         msrp: req.body.msrp,
         description: req.body.description,
         supplyPrice: req.body.supplyPrice,
@@ -194,17 +203,23 @@ router.get('/my', isLoggedIn, async (req, res, next) => { // GET /posts
 
 
 // 특정 판매자 제품 불러오기
-router.get('/list/:userId', isLoggedIn, async (req, res, next) => { // GET /posts
+router.get('/list/:userKey', isLoggedIn, async (req, res, next) => { // GET /posts
   try {
+    const user = await User.findOne({
+      where: {key: req.params.userKey}
+    })
+    if (!user) {
+      return res.status(404).send('회원이 존재하지 않습니다.');
+    }
     const items = await Item.findAll({
-      where: { UserId: req.params.userId },
+      where: { UserId: user.id },
       include: [{
         model: User,
         as: 'ItemViewUsers',
-        attributes: ["id", "company", "name"],
+        attributes: ["id", "key", "company", "name"],
       }, {
         model: User,
-        attributes: ["id", "company"],
+        attributes: ["id", "key", "company"],
       }]
     });
     if (items) {
@@ -227,24 +242,42 @@ router.get('/list-customer/:userId', isLoggedIn, async (req, res, next) => { // 
       where: {id: req.params.userId }
     });
     if (!user) {
-      res.status(404).send('유저가 존재하지 않습니다.');
+      return res.status(404).send('유저가 존재하지 않습니다.');
     }
-    const myItems = await user.getUserViewItems({
+    const myProvider = await User.findOne({
+      where: {id: user.ProviderId},
+    });
+    if (!myProvider) {
+      return res.status(404).send('해당 구매자의 판매자가 등록되지 않았습니다.');
+    }
+    const items = await Item.findAll({  // 판매자의 그룹공개 상품
+      where: { 
+        [Op.and]: [
+          { scope: 'GROUP' }, 
+          { UserId: myProvider.id }
+        ]
+      }, include: [{
+        model: User,
+        as: 'ItemViewUsers',
+        attributes: ["id", "key", "company", "name"],
+      }, {
+        model: User,
+        attributes: ["id", "key", "company"],
+      }]
+    })
+    const myItems = await user.getUserViewItems({ // 내가 볼 수 있는 특정 상품
       include: [{
         model: User,
         as: 'ItemViewUsers',
-        attributes: ["id", "company", "name"],
+        attributes: ["id", "key", "company", "name"],
       }, {
         model: User,
-        attributes: ["id", "company"],
+        attributes: ["id", "key", "company"],
       }]
     });
-    if (myItems) {
-      res.status(200).json(myItems);
-    } else {
-      res.status(404).send('제품이 존재하지 않습니다.');
-    }
-    
+    const itemList = [...new Set([...items, ...myItems])];
+
+    res.status(200).json(itemList);
   } catch (error) {
     console.error(error);
     next(error);
@@ -256,27 +289,53 @@ router.get('/list-customer/:userId', isLoggedIn, async (req, res, next) => { // 
 router.get('/customer', isLoggedIn, async (req, res, next) => { // GET /posts
   try {
     const user = await User.findOne({
-      where: {id: req.user.id }
+      where: {id: req.user.id },
+      include: [
+        {
+          model: User,
+          as: "Providers",
+          attributes: ["id", "key", "company", "name"],
+        }
+      ]
     });
     if (!user) {
-      res.status(404).send('유저가 존재하지 않습니다.');
+      return res.status(404).send('유저가 존재하지 않습니다.');
     }
-    const myItems = await user.getUserViewItems({
+    const myProvider = await User.findOne({
+      where: {id: user.ProviderId},
+    });
+    if (!myProvider) {
+      return res.status(404).send('해당 구매자의 판매자가 등록되지 않았습니다.');
+    }
+    const items = await Item.findAll({  // 판매자의 그룹공개 상품
+      where: { 
+        [Op.and]: [
+          { scope: 'GROUP' }, 
+          { UserId: myProvider.id }
+        ]
+      }, include: [{
+        model: User,
+        as: 'ItemViewUsers',
+        attributes: ["id", "key", "company", "name"],
+      }, {
+        model: User,
+        attributes: ["id", "key", "company"],
+      }]
+    })
+
+    const myItems = await user.getUserViewItems({ // 내가 볼 수 있는 특정 상품
       include: [{
         model: User,
         as: 'ItemViewUsers',
-        attributes: ["id", "company", "name"],
+        attributes: ["id", "key", "company", "name"],
       }, {
         model: User,
-        attributes: ["id", "company"],
+        attributes: ["id", "key", "company"],
       }]
     });
-    if (myItems) {
-      res.status(200).json(myItems);
-    } else {
-      res.status(404).send('제품이 존재하지 않습니다.');
-    }
-    
+    const itemList = [...new Set([...items, ...myItems])];
+
+    res.status(200).json(itemList);
   } catch (error) {
     console.error(error);
     next(error);
@@ -286,15 +345,6 @@ router.get('/customer', isLoggedIn, async (req, res, next) => { // GET /posts
 // 카트에 담긴 제품 불러오기
 router.get('/cart/:userId', isLoggedIn, async (req, res, next) => { 
   try {
-    // const query = `select * from carts`;
-    // db.sequelize.query(query).spread(
-    //   function (results, metadata) {
-    //     console.log('#@!#! results', results)
-    //   },
-    //   function (err) {
-    //     console.log('#@!#! err', err)
-    //   }
-    // )
     console.log('카트 제품 불러오기');
     const user = await User.findOne({
       where: { id: req.params.userId },
@@ -306,18 +356,33 @@ router.get('/cart/:userId', isLoggedIn, async (req, res, next) => {
     const myItemIds = myItems?.map((v) => {
       return v.dataValues.id;
     });
-    console.log('myItems#!@#@!#@!', myItemIds);
-    const myCart = await user.getCartItem();
+    // console.log('myItems#!@#@!#@!', myItemIds);
+    const myCart = await user.getCartItem(
+      {
+        where: {
+          scope: {
+            [Op.not]: 'GROUP' 
+          },
+        },
+      }
+    );
+    // console.log('### myCart', myCart);
     const myCartIds = myCart?.map((v) => {
       return v.dataValues.id;
     });
-    const shouldDeleteIds = myCartIds.filter((v) => !myItemIds.includes(v));
-
-    const deleteCart = await user.getCartItem({ where: { id: shouldDeleteIds }});
-    const deleteItems = await Item.findOne({ where: { id: 25 }});
+    const shouldDeleteIds = myCartIds.filter(
+      (v) => !myItemIds.includes(v)
+    );
     
+    // 삭제해야 하는것
+    // 내 카트안에 든 아이템 중
+    // scope = group이 아니고
+    // 내가 볼 수 있는 아이템 목록에 없는 아이템.
+    // (판매자가 내가 볼 수 있는 아이템 수정했을 경우.)
+
     await user.removeCartItem(shouldDeleteIds);
-    res.status(200).json(myCart);
+    const newCartList = await user.getCartItem();
+    res.status(200).json(newCartList);
   } catch (error) {
     console.error(error);
     next(error);
@@ -468,37 +533,6 @@ router.get('/received-orders/:userId', async (req, res, next) => { // GET /post/
   }
 });
 
-// 주문서 조회
-router.get('/order/:orderId', async (req, res, next) => { // GET /post/1
-  try {
-    console.log(req.params.orderId);
-    const order = await Order.findOne({
-      where: { id: req.params.orderId },
-      // attributes: ["id", "date", "totalPice", "comment", "address", "zip", "phone", "name", "isConfirmed", "isCanceled"],
-      include: [{
-        model: User,
-        as: 'Provider',
-        attributes: ["id", "company", "name", "phone"],
-      }, {
-        model: User,
-        as: 'Customer',
-        attributes: ["id", "company", "name", "phone"],
-      }]
-    });
-    if (!order) {
-      return res.status(404).send('해당 제품이 존재하지 않습니다.');
-    }
-    const orderDetails = await OrderDetail.findAll({
-      where: { OrderId: order.id },
-    })
-    const data = {order, orderDetails};
-    res.status(200).json(data);
-  } catch (error) {
-    console.error(error);
-    next(error);
-  }
-});
-
 // 제품 조회
 router.get('/:itemId', async (req, res, next) => { // GET /post/1
   try {
@@ -513,10 +547,10 @@ router.get('/:itemId', async (req, res, next) => { // GET /post/1
       include: [{
         model: User,
         as: 'ItemViewUsers',
-        attributes: ["id", "company", "name"],
+        attributes: ["id", "key", "company", "name"],
       }, {
         model: User,
-        attributes: ["id", "company"],
+        attributes: ["id", "key", "company"],
       }]
     })
     res.status(200).json(fullPost);

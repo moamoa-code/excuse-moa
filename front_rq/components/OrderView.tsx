@@ -1,10 +1,11 @@
 // 주문확인서 컴포넌트
 import React, { useEffect } from 'react';
-import { Descriptions, Divider, Table, Typography, Space } from 'antd';
-import { PhoneOutlined } from '@ant-design/icons';
+import { Descriptions, Divider, Table, Typography, Space, Button } from 'antd';
+import { PhoneOutlined, PrinterTwoTone } from '@ant-design/icons';
 
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
+import Link from 'next/link';
 
 
 const OrderView = ({ orderData, mode }) => {
@@ -92,7 +93,9 @@ const OrderView = ({ orderData, mode }) => {
         {orderData.order.id}
       </Descriptions.Item>
       <Descriptions.Item label="상태">
-        {orderData.order.status}
+        {orderData.order.factoryStatus === '출하'?
+          <span>출하완료</span>
+        : <span>{orderData.order.status}</span>}
         {orderData.order.message? 
           <> / {orderData.order.message}</>
         : null}
@@ -104,7 +107,7 @@ const OrderView = ({ orderData, mode }) => {
         {orderData.order.Provider?.company}
       </Descriptions.Item>
       <Descriptions.Item label="사업자등록번호">
-        {orderData.order.Provider.id}
+        {orderData.order.Provider.key}
       </Descriptions.Item>
       <Descriptions.Item label="담당자">
         {orderData.order.Provider.name} <PhoneOutlined /> {orderData.order.Provider.phone}
@@ -116,7 +119,7 @@ const OrderView = ({ orderData, mode }) => {
         {orderData.order.Customer?.company}
       </Descriptions.Item>
       <Descriptions.Item label="사업자등록번호">
-      {orderData.order.Customer?.id}
+      {orderData.order.Customer?.key}
       </Descriptions.Item>
       <Descriptions.Item label="담당자">
         {orderData.order.Customer?.name} <PhoneOutlined /> {orderData.order.Customer?.phone}

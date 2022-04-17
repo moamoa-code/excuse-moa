@@ -3,6 +3,7 @@ import User from './user';
 export default interface Item {
   id: number;
   codeName: string;
+  scope: string;
   name: string;
   packageName: string;
   unit: string;

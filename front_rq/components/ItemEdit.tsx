@@ -1,22 +1,28 @@
 import React, { useCallback, useState, useRef } from 'react';
 import { backUrl } from '../config/config';
-import { Descriptions, Form, Button, Input, Divider, Image, Space, notification, Popconfirm } from 'antd';
+import { Descriptions, Form, Button, Input, Divider, Image, Space, notification, Popconfirm, Select, Tag, Checkbox, message } from 'antd';
 import useInput from '../hooks/useInput';
-import { deleteItemAPI, registerItemAPI, updateItemAPI, uploadImageAPI } from '../apis/item';
+import { addCustomerToItemAPI, deleteItemAPI, registerItemAPI, updateItemAPI, uploadImageAPI } from '../apis/item';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import Router from 'next/router';
+import { loadProviderByIdAPI } from '../apis/user';
+import { useQuery } from 'react-query';
 
 const ItemEdit = ({ item, myUserInfo }) => {
   const [loading, setLoading] = useState(false);
-  const [itemId, setItemId] = useState(item.id);
+  const [itemId] = useState(item.id);
   const [codeName, onChangeCodeName] = useInput(item.codeName); // 제품 코드명 (사용자 비공개)
   const [name, onChangeName] = useInput(item.name); // 제품 이름
+  const [scope, setScope] = useState(item.scope); // 제품 공개 범위
+  const [showScope, setShowScope] = useState(item.scope);
   const [packageName, onChangePack] = useInput(item.packageName); // 제품 포장 종류
   const [unit, onChangeUnit] = useInput(item.unit); // 제품 무게 단위
   const [msrp, setMsrp] = useState(item.msrp); // 권장소비가
   const [description, onChangeDesc] = useInput(item.description); // 권장소비가
   const [supplyPrice, setPrice] = useState(item.supplyPrice); // 실제 공급가  
   const [imagePath, setImagePath] = useState<string>(item.imgSrc); // 제품사진 업로드 경로
+  const { data: provider } = useQuery(['provider'], () => loadProviderByIdAPI(Number(item.UserId)));
+  const { Option } = Select;
 
   const onChangeMsrp = useCallback( // 가격 유효성검사
     (e) => {
@@ -49,6 +55,9 @@ const ItemEdit = ({ item, myUserInfo }) => {
       duration: 2,
     });
   };
+  const handleScopeChange = (value) => {
+    setScope(value);
+  }
 
   // 제품사진 업로드
   const imageInput = useRef<HTMLInputElement>(null);
@@ -83,6 +92,7 @@ const ItemEdit = ({ item, myUserInfo }) => {
     formData.append('itemId', itemId );
     formData.append('codeName', codeName);
     formData.append('name', name);
+    formData.append('scope', scope);
     formData.append('packageName', packageName);
     formData.append('unit', unit);
     formData.append('msrp', msrp);
@@ -94,6 +104,7 @@ const ItemEdit = ({ item, myUserInfo }) => {
     console.log('omSubmit imagePath', imagePath)
     updateItemAPI(formData)
     .then((data) => {
+      setShowScope(scope);
       openNotification('제품 수정이 완료되었습니다.');
     })
     .catch((error) => {
@@ -102,18 +113,20 @@ const ItemEdit = ({ item, myUserInfo }) => {
     .finally(() => {
       setLoading(false);
     });
-  }, [codeName, name, packageName, unit, msrp, supplyPrice, imagePath, description]);
+  }, [scope, codeName, name, packageName, unit, msrp, supplyPrice, imagePath, description]);
 
   // 복사생성
   const onCreateSubmit = useCallback(() => {
     setLoading(true);
     const formData = new FormData();
     // data: { codeName: string, package: string, imgSrc: string|null, name: string, unit: string, msrp: string|null, supplyPrice: string|null }
+    formData.append('providerKey', item.User.key);
     formData.append('codeName', codeName);
     formData.append('name', name);
     formData.append('packageName', packageName);
     formData.append('unit', unit);
     formData.append('msrp', msrp);
+    formData.append('scope', scope);
     formData.append('supplyPrice', supplyPrice);
     formData.append('description', description);
     if (imagePath){
@@ -125,9 +138,10 @@ const ItemEdit = ({ item, myUserInfo }) => {
       Router.replace(`/item/${data.id}`);
     })
     .catch((error) => {
-      alert(error.response.data);
+      message.error(error.response.data);
     })
-  }, [codeName, name, packageName, unit, msrp, supplyPrice, imagePath, description]);
+
+  }, [codeName, name, packageName, unit, msrp, supplyPrice, imagePath, description, scope]);
 
   // 제품 제거
   const onDeleteSubmit = useCallback(() => {
@@ -144,6 +158,20 @@ const ItemEdit = ({ item, myUserInfo }) => {
       setLoading(false);
     });
   }, []);
+
+  
+  const onAddCustomerSubmit = (values) => {
+    console.log(values);
+    const itemId = Number(item.id);
+    setLoading(true);
+    addCustomerToItemAPI({ itemId, values })
+    .then(() => {
+      openNotification('제품을 열람가능한 고객 추가를 완료했습니다.')
+    })
+    .finally(() => {
+      setLoading(false);
+    })
+  }
 
   return (
     <>
@@ -190,6 +218,15 @@ const ItemEdit = ({ item, myUserInfo }) => {
           <Descriptions.Item label="공급가">
             <Input value={supplyPrice} onChange={onChangePrice} maxLength={12}/>
           </Descriptions.Item>
+          <Descriptions.Item label='제품 공개 범위'>
+            <Select
+              onChange={handleScopeChange}
+              defaultValue={scope}
+            >
+              <Option value='PRIVATE'>특정 고객 전용</Option>
+              <Option value='GROUP'>내 모든 고객에 공개</Option>
+            </Select>
+          </Descriptions.Item>
           <Descriptions.Item label="제품설명">
             <Input value={description} onChange={onChangeDesc} maxLength={12}/>
           </Descriptions.Item>
@@ -215,6 +252,37 @@ const ItemEdit = ({ item, myUserInfo }) => {
 
         </Space>
       </Form>
+      <br /><br />
+
+      {showScope === 'PRIVATE'?
+        <Form 
+          style={{ margin: '10px 0 20px' }}
+          encType="multipart/form-data"
+          onFinish={onAddCustomerSubmit}
+          initialValues={{ // 제품 볼 수 있는 유저 체크
+            'customerIds': item.ItemViewUsers.map((v) => (v.id)),
+          }}
+        >
+          <Divider orientation="left" style={{ marginTop: '30px' }}>열람가능한 고객 추가</Divider>
+          <Form.Item name="customerIds">
+            <Checkbox.Group>
+              <Space size={8} wrap>
+                {provider?.Customers.map((v) => (
+                  <>
+                    {/* {printTags(myUserInfo.Customers, v)} */}
+                    <Tag color="blue"><Checkbox value={v.id}>{v.company} / {v.name}</Checkbox> </Tag>
+                  </>
+                ))}
+              </Space>
+            </Checkbox.Group>
+          </Form.Item>
+          <Space>
+            <Button type="primary" htmlType="submit" loading={loading}>
+              열람가능 고객 적용
+            </Button>
+          </Space>
+        </Form>
+      : null}
     </>
   )
 }

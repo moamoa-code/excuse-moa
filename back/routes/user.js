@@ -6,7 +6,7 @@ const passport = require('passport');
 
 const { User, Item, Address } = require('../models'); // 시퀄라이즈 - MySQL DB연결
 // const db = require('../models');
-const { isLoggedIn, isNotLoggedIn } = require('./middlewears'); // 로그인 검사 미들웨어
+const { isLoggedIn, isProvider, isNotLoggedIn, isAdmin } = require('./middlewears'); // 로그인 검사 미들웨어
 const e = require('express');
 
 // 판매자 목록 불러오기
@@ -35,6 +35,11 @@ router.get('/show-provider', async (req, res, next) => { //
 router.get('/list', async (req, res, next) => { // 
   try {
     const userList = await User.findAll({
+      where: {
+        role: {
+          [Op.not]: 'ADMINISTRATOR'
+        }
+      },
       order: [['createdAt', 'DESC']],
       attributes: {
         include: ["id", "company", "role", "name", "createdAt"],
@@ -49,12 +54,15 @@ router.get('/list', async (req, res, next) => { //
 });
 
 // 회원 등급 변경하기
-router.patch('/update-role', async (req, res, next) => {
+router.patch('/update-role', isProvider, async (req, res, next) => {
   try {
     console.log(req.body);
     const user = await User.findOne({
       where: { id: req.body.userId }
     });
+    if (user.role === 'ADMINISTRATOR') {
+      return res.status(404).send('관리자는 변경 불가능합니다.');
+    }
     const role = String(req.body.role).toUpperCase().trim();
     if (role !== 'PROVIDER' && role !== 'CUSTOMER' && role !== 'NOVICE' && role !== 'RESIGNED'){
       return res.status(404).send('잘못된 값입니다.');
@@ -75,7 +83,7 @@ router.patch('/update-role', async (req, res, next) => {
 });
 
 // 정보수정
-router.patch('/update', async (req, res, next) => { // post /user
+router.patch('/update', isLoggedIn, async (req, res, next) => { // post /user
   try {
     const user = await User.findOne({ 
       where: {
@@ -85,12 +93,23 @@ router.patch('/update', async (req, res, next) => { // post /user
     if (!user) {
       return res.status(403).send('사용자를 찾을 수 없습니다.');
     }
+    const exUser = await User.findOne({
+      where: {
+        key: req.body.userKey,
+      }
+    })
+    if (exUser) {
+      if (exUser.id !== user.id) {
+        return res.status(403).send('이미 사용중인 아이디 입니다.');
+      }
+    }
     const role = String(req.body.role).toUpperCase().trim();
     if (role !== 'PROVIDER' && role !== 'CUSTOMER' && role !== 'NOVICE'){
       return res.status(404).send('잘못된 값입니다.');
     }
 
     await User.update({
+      key: req.body.userKey,
       company: req.body.company,
       name: req.body.name,
       phone: req.body.phone,
@@ -131,8 +150,9 @@ router.patch('/update-password', async (req, res, next) => { // post /user
   }
 });
 
+
 // 특정 판매자 정보 불러오기
-router.get('/provider/:userId', async (req, res, next) => { // 
+router.get('/provider-id/:userId', isProvider, async (req, res, next) => { // 
   try {
     const userDataWithItems = await User.findOne({
       where: { id: req.params.userId },
@@ -143,7 +163,7 @@ router.get('/provider/:userId', async (req, res, next) => { //
         {
           model: User,
           as: "Customers",
-          attributes: ["id", "company", "name"],
+          attributes: ["id", "key", "company", "name"],
         }
       ]
     });
@@ -160,7 +180,53 @@ router.get('/provider/:userId', async (req, res, next) => { //
           {
             model: User,
             as: "Customers",
-            attributes: ["id", "company", "name"],
+            attributes: ["id", "key", "company", "name"],
+          }
+        ]
+      });
+      if (userData) {
+        const data = userData.toJSON();
+        res.status(200).json(data);
+      } else {
+        res.status(404).send('존재하지 않는 사용자입니다.')
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+// 특정 판매자 정보 불러오기
+router.get('/provider/:userKey', isAdmin, async (req, res, next) => { // 
+  try {
+    const userDataWithItems = await User.findOne({
+      where: { key: req.params.userKey },
+      attributes: {
+        exclude: ["password"],
+      },
+      include: [
+        {
+          model: User,
+          as: "Customers",
+          attributes: ["id", "key", "company", "name"],
+        }
+      ]
+    });
+    if (userDataWithItems) {
+      const data = userDataWithItems.toJSON();
+      res.status(200).json(data);
+    } else {
+      const userData = await User.findOne({
+        where: { key: req.params.userKey },
+        attributes: {
+          exclude: ["password"],
+        },
+        include: [
+          {
+            model: User,
+            as: "Customers",
+            attributes: ["id", "key", "company", "name"],
           }
         ]
       });
@@ -204,18 +270,17 @@ router.patch('/addr/remove', isLoggedIn, async (req, res, next) => { //
   // front의 data: { providerId:string, customerId:string }
   console.log('주소삭제',req.body);
   try {
-    const user = await User.findOne({ // 아이디 찾기
-      where: {
-        id: req.user.id,
-      }
-    });
-    if (!user) {
-      return res.status(403).send('아이디가 존재하지 않습니다.');
-    }
+    // const user = await User.findOne({ // 아이디 찾기
+    //   where: {
+    //     id: req.user.id,
+    //   }
+    // });
+    // if (!user) {
+    //   return res.status(403).send('아이디가 존재하지 않습니다.');
+    // }
     const addr = await Address.findOne({
       where: {
         id: req.body.id,
-        UserId: user.id
       }
     });
     if (!addr) {
@@ -232,7 +297,90 @@ router.patch('/addr/remove', isLoggedIn, async (req, res, next) => { //
   }
 });
 
-router.get("/:userId", isLoggedIn, async (req, res, next) => {
+// 회사명으로 유저목록 검색
+router.get("/search-company/:companyName", isProvider, async (req, res, next) => {
+  try {
+    console.log('req.params~~',req.params);
+
+      const users = await User.findAll({
+        where: {
+          company: {
+            [Op.like]: '%' + req.params.companyName + '%'
+          }
+        },
+          attributes: {
+            exclude: ["password"],
+          },
+          include: [
+            {
+              model: User,
+              as: "Providers",
+              attributes: ["id", "key", "company"],
+            }
+          ]
+      });
+      return res.status(200).json(users);
+
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+// 유저정보 불러오기
+router.get("/:userKey", isLoggedIn, async (req, res, next) => {
+  try {
+    console.log('req.params~~',req.params);
+    const userDataWithItems = await User.findOne({
+      where: { key: req.params.userKey },
+      attributes: {
+        exclude: ["password"],
+      },
+      include: [
+        {
+          model: User,
+          as: "Providers",
+          attributes: ["id", "key", "company"],
+        }, {
+          model: Item,
+          as: "UserViewItems",
+          attributes: ["id", "codeName", "name"],
+          // where: { userKey: req.user.id }
+        }
+      ]
+    });
+    if (userDataWithItems) {
+      const data = userDataWithItems.toJSON();
+      return res.status(200).json(data);
+    } else {
+      const userData = await User.findOne({
+        where: { key: req.params.userKey },
+        attributes: {
+          exclude: ["password"],
+        },
+        include: [
+          {
+            model: User,
+            as: "Providers",
+            attributes: ["id", "key", "company"],
+          }
+        ]
+      });
+      if (userData) {
+        const data = userData.toJSON();
+        return res.status(200).json(data);
+      } else {
+        res.status(404).send('존재하지 않는 사용자입니다.')
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+
+router.get("/id/:userId", isLoggedIn, async (req, res, next) => {
   try {
     console.log('req.params~~',req.params);
     const userDataWithItems = await User.findOne({
@@ -244,12 +392,12 @@ router.get("/:userId", isLoggedIn, async (req, res, next) => {
         {
           model: User,
           as: "Providers",
-          attributes: ["id", "company"],
+          attributes: ["id", "key", "company"],
         }, {
           model: Item,
           as: "UserViewItems",
           attributes: ["id", "codeName", "name"],
-          // where: { UserId: req.user.id }
+          // where: { userId: req.user.id }
         }
       ]
     });
@@ -266,7 +414,7 @@ router.get("/:userId", isLoggedIn, async (req, res, next) => {
           {
             model: User,
             as: "Providers",
-            attributes: ["id", "company"],
+            attributes: ["id", "key", "company"],
           }
         ]
       });
@@ -297,7 +445,7 @@ router.get('/', async (req, res, next) => { // GET /user 로그인 유지 위해
             {
               model: User,
               as: "Customers",
-              attributes: ["id", "company", "name"],
+              attributes: ["id", "key", "company", "name"],
               exclude: ['UsersRelation'],
             }
           ]
@@ -360,25 +508,26 @@ router.post('/create/', isLoggedIn, async (req, res, next) => { // post /user
   try {
     const exUser = await User.findOne({ // 아이디 DB에서 중복체크
       where: {
-        id: req.body.id,
+        key: String(req.body.key).trim(),
       }
     });
     if (exUser) {
       return res.status(403).send('이미 사용중인 아이디 입니다.');
     }
     const hashedPassword = await bcrypt.hash(req.body.password, 10); // 두번째 인자 높을수록 암호화 강함
+
     // role이 없는경우 판매회원의 CUSTOMER 생성
     if (req.body.role === undefined || req.body.role === null || req.body.role === ''){
       const provider = await User.findOne({
         where: {
-          id: req.body.providerId
+          key: req.body.providerKey
         }
       })
       if (!provider) {
         return res.status(403).send('공급사가 존재하지 않습니다.')
       }
       const customer = await User.create({
-        id: req.body.id,
+        key: req.body.key,
         password: hashedPassword, // 암호화된 password
         company: req.body.company,
         name: req.body.name,
@@ -386,14 +535,27 @@ router.post('/create/', isLoggedIn, async (req, res, next) => { // post /user
         email: req.body.email,
         hqNumber: req.body.hqNumber,
         role: 'CUSTOMER',
+        ProviderId: provider.id
       });
-      await provider.addCustomers(customer);
-      return res.status(201).send({ id: customer.id, company: customer.company, name: customer.name });
+      // 주소 있으면 생성
+      if (req.body.addrData.zip !== undefined && req.body.addrData.zip !== null && req.body.addrData.zip !== '') {
+        const addr = await Address.create({
+          addrName: req.body.company,
+          zip: req.body.addrData.zip,
+          address: req.body.addrData.address,
+          name: req.body.name,
+          phone: req.body.phone,
+          UserId: customer.id
+        })
+      }
+      // await provider.addCustomers(customer);
+      await customer.addProviders(provider);
+      return res.status(201).send({ key: customer.key, company: customer.company, name: customer.name });
     }
     // 판매자 회원 생성
     if (String(req.body.role).toUpperCase().trim() === 'PROVIDER') {
       const provider = await User.create({
-        id: req.body.id,
+        key: req.body.key,
         role: 'PROVIDER',
         password: hashedPassword, // 암호화된 password
         company: req.body.company,
@@ -402,19 +564,30 @@ router.post('/create/', isLoggedIn, async (req, res, next) => { // post /user
         email: req.body.email,
         hqNumber: req.body.hqNumber,
       });
-      return res.status(201).send({ id: provider.id, company: provider.company, name: provider.name });
+      // 주소 있으면 생성
+      if (req.body.addrData.zip !== undefined && req.body.addrData.zip !== null && req.body.addrData.zip !== '') {
+        const addr = await Address.create({
+          addrName: req.body.company,
+          zip: req.body.addrData.zip,
+          address: req.body.addrData.address,
+          name: req.body.name,
+          phone: req.body.phone,
+          UserId: provider.id
+        })
+      }
+      return res.status(201).send({ key: provider.key, company: provider.company, name: provider.name });
     }
     // 구매회원 생성
     if (String(req.body.role).toUpperCase().trim() === 'CUSTOMER') {
       let customer;
       const provider = await User.findOne({
         where: {
-          id: req.body.providerId
+          key: req.body.providerKey
         }
       })
       if (!provider) {
         customer = await User.create({
-          id: req.body.id,
+          key: req.body.key,
           role: 'CUSTOMER',
           password: hashedPassword, // 암호화된 password
           company: req.body.company,
@@ -423,10 +596,21 @@ router.post('/create/', isLoggedIn, async (req, res, next) => { // post /user
           email: req.body.email,
           hqNumber: req.body.hqNumber,
         });
-        return res.status(201).send({ id: customer.id, company: customer.company, name: customer.name });
+        // 주소 있으면 생성
+        if (req.body.addrData.zip !== undefined && req.body.addrData.zip !== null && req.body.addrData.zip !== '') {
+          const addr = await Address.create({
+            addrName: req.body.company,
+            zip: req.body.addrData.zip,
+            address: req.body.addrData.address,
+            name: req.body.name,
+            phone: req.body.phone,
+            UserId: customer.id
+          })
+        }
+        return res.status(201).send({ key: customer.key, company: customer.company, name: customer.name });
       }
       customer = await User.create({
-        id: req.body.id,
+        key: req.body.key,
         role: 'CUSTOMER',
         password: hashedPassword, // 암호화된 password
         company: req.body.company,
@@ -434,9 +618,137 @@ router.post('/create/', isLoggedIn, async (req, res, next) => { // post /user
         phone: req.body.phone,
         email: req.body.email,
         hqNumber: req.body.hqNumber,
+        ProviderId: provider.id
       });
-      await provider.addCustomers(customer);
-      return res.status(201).send({ id: customer.id, company: customer.company, name: customer.name });
+      await customer.addProviders(provider);
+      // await provider.addCustomers(customer);
+      // 주소 있으면 생성
+      if (req.body.addrData.zip !== undefined && req.body.addrData.zip !== null && req.body.addrData.zip !== '') {
+        const addr = await Address.create({
+          addrName: req.body.company,
+          zip: req.body.addrData.zip,
+          address: req.body.addrData.address,
+          name: req.body.name,
+          phone: req.body.phone,
+          UserId: customer.id
+        })
+      }
+      return res.status(201).send({ key: customer.key, company: customer.company, name: customer.name });
+    }
+    // 비회원 생성
+    if (String(req.body.role).toUpperCase().trim() === 'NOVICE') {
+      const user = await User.create({
+        key: req.body.key,
+        role: 'NOVICE',
+        password: hashedPassword, // 암호화된 password
+        company: req.body.company,
+        name: req.body.name,
+        phone: req.body.phone,
+        email: req.body.email,
+        hqNumber: req.body.hqNumber,
+      });
+      // 주소 있으면 생성
+      if (req.body.addrData.zip !== undefined && req.body.addrData.zip !== null && req.body.addrData.zip !== '') {
+        const addr = await Address.create({
+          addrName: req.body.company,
+          zip: req.body.addrData.zip,
+          address: req.body.addrData.address,
+          name: req.body.name,
+          phone: req.body.phone,
+          UserId: user.id
+        })
+      }
+      return res.status(201).send('ok');
+
+    }
+
+  } catch (error) {
+    console.error(error);
+    next(error); // status 500
+  }
+});
+
+
+// 복수 회원 생성
+router.post('/multi-create', isProvider, async (req, res, next) => { // post /user
+  console.log('multi-create',req.body);
+  try {
+    const hashedPassword = await bcrypt.hash('123123', 10);
+    // 판매자, 비회원 생성
+    if (req.body.role === 'PROVIDER' || req.body.role === 'NOVICE'){
+      const userDatas = req.body.userDatas.map((v) => { 
+        const randomKey = Math.random().toString(36).substr(2,10); // key자동생성일 경우
+        return {
+          key: req.body.isAutoKey? randomKey : v.key,
+          password: hashedPassword, // 암호화된 password
+          company: v.company,
+          name: v.name,
+          phone: v.phone,
+          role: req.body.role,
+        }
+      });
+      const users = await User.bulkCreate(userDatas); 
+      if(req.body.isAddrMode){ // 주소 있으면 생성
+        const userIds = users.map((v)=>(v.id));
+        const addrDatas = req.body.userDatas.map((v, i) => { 
+          return {
+            addrName: v.name,
+            zip: v.zip,
+            name: v.name,
+            phone: v.phone,
+            address: v.address,
+            UserId: userIds[i],
+          }
+        });
+        const addresses = await Address.bulkCreate(addrDatas); 
+        if (!addresses) {
+          return res.status(400).send('회원생성은 성공했지만 주소생성 중 문제가 발생했습니다.');
+        }
+      }
+      return res.status(200).send('ok');
+    }
+    // 구매자 생성
+    if (req.body.role === 'CUSTOMER'){
+      const provider = await User.findOne({
+        where: {
+          key: req.body.ProviderKey
+        }
+      });
+      if (!provider) {
+        return res.status(404).send('해당 판매자가 존재하지 않습니다.')
+      }
+      const userDatas = req.body.userDatas.map((v) => { 
+        const randomKey = Math.random().toString(36).substr(2,10); // key자동생성일 경우
+        return {
+          key: req.body.isAutoKey? randomKey : v.key,
+          password: hashedPassword, // 암호화된 password
+          company: v.company,
+          name: v.name,
+          phone: v.phone,
+          role: 'CUSTOMER',
+          ProviderId: provider.id
+        }
+      });
+      const users = await User.bulkCreate(userDatas); 
+      await provider.addCustomers(users); // 판매자에 구매자 등록
+      if(req.body.isAddrMode){ // 주소 있으면 생성
+        const userIds = users.map((v)=>(v.id));
+        const addrDatas = req.body.userDatas.map((v, i) => { 
+          return {
+            addrName: v.name,
+            zip: v.zip,
+            name: v.name,
+            phone: v.phone,
+            address: v.address,
+            UserId: userIds[i],
+          }
+        });
+        const addresses = await Address.bulkCreate(addrDatas); 
+        if (!addresses) {
+          return res.status(400).send('회원생성은 성공했지만 주소생성 중 문제가 발생했습니다.');
+        }
+      }
+      return res.status(200).json(users);
     }
   } catch (error) {
     console.error(error);
@@ -444,54 +756,14 @@ router.post('/create/', isLoggedIn, async (req, res, next) => { // post /user
   }
 });
 
-// // 고객생성
-// router.post('/create/', isLoggedIn, async (req, res, next) => { // post /user
-//   // front의 data: { providerId: string, id: string, password: string, company: string, name: string|null, phone: string|null, email: string|null }를 axios 통해 받음
-//   console.log('고객등록 req.body',req.body);
-//   try {
-//     const provider = await User.findOne({
-//       where: {
-//         id: req.body.providerId
-//       }
-//     })
-//     if (!provider) {
-//       return res.status(403).send('공급사가 존재하지 않습니다.')
-//     }
-//     const exUser = await User.findOne({ // 아이디 DB에서 중복체크
-//       where: {
-//           id: req.body.id,
-//       }
-//     });
-//     if (exUser) {
-//       return res.status(403).send('이미 사용중인 아이디 입니다.');
-//     }
-//     const hashedPassword = await bcrypt.hash(req.body.password, 10); // 두번째 인자 높을수록 암호화 강함
-//     const customer = await User.create({
-//       id: req.body.id,
-//       password: hashedPassword, // 암호화된 password
-//       company: req.body.company,
-//       name: req.body.name,
-//       phone: req.body.phone,
-//       email: req.body.email,
-//       hqNumber: req.body.hqNumber,
-//       role: 'CUSTOMER',
-//     });
-//     await provider.addCustomers(customer);
-//     res.status(201).send({ id: customer.id, company: customer.company, name: customer.name });
-//   } catch (error) {
-//     console.error(error);
-//     next(error); // status 500
-//   }
-// });
 
 // 회원가입
 router.post('/', isNotLoggedIn, async (req, res, next) => { // post /user
-  // front의 data: { id: string, password: string, company: string, name: string|null, phone: string|null, email: string|null }를 axios 통해 받음
   console.log('회원가입 req.body',req.body);
   try {
     const exUser = await User.findOne({ // 아이디 DB에서 중복체크
       where: {
-          id: req.body.id,
+        key: req.body.key,
       }
     });
     if (exUser) {
@@ -499,7 +771,7 @@ router.post('/', isNotLoggedIn, async (req, res, next) => { // post /user
     }
     const hashedPassword = await bcrypt.hash(req.body.password, 10); // 두번째 인자 높을수록 암호화 강함
     await User.create({
-      id: req.body.id,
+      key: req.body.key,
       password: hashedPassword, // 암호화된 password
       company: req.body.company,
       name: req.body.name,
@@ -519,17 +791,28 @@ router.post('/', isNotLoggedIn, async (req, res, next) => { // post /user
 router.patch('/edit', isLoggedIn, async (req, res, next) => { // post /user
   console.log('정보수정 req.body',req.body);
   try {
-    const user = await User.findOne({ // 아이디 DB에서 중복체크
+    const user = await User.findOne({
       where: {
-          id: req.user.id,
+        id: req.user.id,
       }
     });
     if (!user) {
-      return res.status(403).send('사용자를 찾을 수 없습니다.');
+      return res.status(403).send('로그인이 필요합니다.');
+    }
+    const exUser = await User.findOne({
+      where: {
+        key: req.body.key,
+      }
+    })
+    if (exUser) {
+      if (exUser.id !== user.id) {
+        return res.status(403).send('이미 사용중인 아이디 입니다.');
+      }
     }
     const hashedPassword = await bcrypt.hash(req.body.password, 10); // 두번째 인자 높을수록 암호화 강함
 
     await User.update({
+      key: req.body.key,
       password: hashedPassword, // 암호화된 password
       company: req.body.company,
       name: req.body.name,
@@ -565,6 +848,46 @@ router.patch('/resign', isLoggedIn, async (req, res, next) => { // post /user
   }
 });
 
+// 회원 삭제
+router.patch('/terminate', isAdmin, async (req, res, next) => { // post /user
+  try {
+    const user = await User.findOne({
+      where: {
+        key: req.body.userKey
+      }
+    });
+    if (!user) {
+      return res.status(403).send('사용자를 찾을 수 없습니다.');
+    }
+    if (user.role === 'TERMINATED') { // 탈퇴된 회원이면 완전삭제
+      await user.destroy({
+        where: { id: user.id }
+      })
+      return res.status(201).send('ok');
+    }
+    user.update({
+      memo: user.key
+    });
+    const newKey = 'X_' + String(req.body.userKey).slice(-4) + Math.random().toString(36).substr(2,4);
+    const exUser = await User.findOne({
+      where: {
+        key: newKey
+      }
+    })
+    if (exUser) {
+      return res.status(403).send('다시 시도해주세요.');
+    }
+    user.update({
+      role: 'TERMINATED',
+      key: newKey
+    });
+    res.status(201).send('ok');
+  } catch (error) {
+    console.error(error);
+    next(error); // status 500
+  }
+});
+
 // 주소 추가
 router.post('/addr', isLoggedIn, async (req, res, next) => { // post /user
   console.log('주소추가 #@#@#@',req.body);
@@ -593,19 +916,48 @@ router.post('/addr', isLoggedIn, async (req, res, next) => { // post /user
   }
 });
 
+// 주소 추가
+router.post('/add-addr', isProvider, async (req, res, next) => { // post /user
+  console.log('주소추가 #@#@#@',req.body);
+  try {
+    const user = await User.findOne({ 
+      where: {
+        id: req.body.UserId,
+      }
+    });
+    if (!user) {
+      return res.status(403).send('회원이 존재하지 않습니다.');
+    }
+    const addr = await Address.create({
+      addrName: req.body.name,
+      zip: req.body.zip,
+      address: req.body.address,
+      name: req.body.name,
+      phone: req.body.phone,
+      UserId: user.id
+    })
+
+    res.status(201).send('ok');
+  } catch (error) {
+    console.error(error);
+    next(error); // status 500
+  }
+});
+
+
 // 고객등록
-router.patch('/addcustomer', isLoggedIn, async (req, res, next) => { // 
+router.patch('/add-customer', isLoggedIn, async (req, res, next) => { // 
   // front의 data: { providerId:string, customerId:string }
   console.log('고객등록',req.body);
   try {
     const customer = await User.findOne({ // 아이디 찾기
       where: {
-        id: req.body.customerId,
+        key: req.body.customerKey,
       }
     });
     const provider = await User.findOne({ // 아이디 찾기
       where: {
-        id: req.body.providerId,
+        key: req.body.providerKey,
       }
     });
     if (!customer || !provider) {
@@ -620,7 +972,7 @@ router.patch('/addcustomer', isLoggedIn, async (req, res, next) => { //
     if (customer.role === 'NOVICE') {
       customer.update({role: 'CUSTOMER'});
     }
-    await provider.addCustomers(req.body.customerId);
+    await provider.addCustomers(customer.id);
     const userDataWithoutPassword = await User.findOne({
       // 프론트로 보낼 유저 정보를 재가공
       where: { id: customer.id },
@@ -636,18 +988,16 @@ router.patch('/addcustomer', isLoggedIn, async (req, res, next) => { //
 });
 
 // 고객삭제
-router.patch('/deletecustomer', isLoggedIn, async (req, res, next) => { // 
-  // front의 data: { providerId:string, customerId:string }
-  console.log('고객삭제',req.body);
+router.patch('/delete-customer', isLoggedIn, async (req, res, next) => { // 
   try {
     const customer = await User.findOne({ // 아이디 찾기
       where: {
-        id: req.body.customerId,
+        key: req.body.customerKey,
       }
     });
     const provider = await User.findOne({ // 판매자 아이디 찾기
       where: {
-        id: req.body.providerId,
+        key: req.body.providerKey,
       }
     });
     if (!customer || !provider) {
@@ -658,7 +1008,7 @@ router.patch('/deletecustomer', isLoggedIn, async (req, res, next) => { //
       where: { UserId: provider.id}
     })
     await customer.removeUserViewItems(items); // 고객에 등록된 판매자 아이템 제거.
-    await provider.removeCustomers(req.body.customerId);
+    await provider.removeCustomers(customer.id);
 
     console.log('@##@%#!', items);
     const userDataWithoutPassword = await User.findOne({
@@ -676,19 +1026,17 @@ router.patch('/deletecustomer', isLoggedIn, async (req, res, next) => { //
 });
 
 // 고객에 열람가능한 제품 추가
-router.patch('/add-item', isLoggedIn, async (req, res, next) => {
+router.patch('/add-item', isProvider, async (req, res, next) => {
   // {itemId: number, customerId: string}
   try {
-
-    console.log(req.body);
     const item = await Item.findOne({
-      where: { id: req.body.itemId}
+      where: { id: req.body.itemId }
     });
     if (!item) {
       return res.status(404).send('해당 제품이 존재하지 않습니다.');
     }
     const user = await User.findOne({
-      where: { id: req.body.customerId}
+      where: { key: req.body.customerKey }
     });
     if (!user) {
       return res.status(404).send('해당 회원이 존재하지 않습니다.')
@@ -703,18 +1051,18 @@ router.patch('/add-item', isLoggedIn, async (req, res, next) => {
 });
 
 // 고객에 열람가능한 제품 제거
-router.patch('/remove-item', isLoggedIn, async (req, res, next) => {
+router.patch('/remove-item', isProvider, async (req, res, next) => {
   // {itemId: number, customerId: string}
   try {
     console.log(req.body);
     const item = await Item.findOne({
-      where: { id: req.body.itemId}
+      where: { id: req.body.itemId }
     });
     if (!item) {
       return res.status(404).send('해당 제품이 존재하지 않습니다.');
     }
     const user = await User.findOne({
-      where: { id: req.body.customerId}
+      where: { key: req.body.customerKey }
     });
     if (!user) {
       return res.status(404).send('해당 회원이 존재하지 않습니다.')

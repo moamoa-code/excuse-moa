@@ -25,8 +25,8 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false, // 
     },
   },{
-    charset: 'utf8',
-    collate: 'utf8_general_ci' // 한글 처리
+    charset: 'utf8mb4',
+    collate: 'utf8mb4_general_ci' // 한글 처리
   });
   Address.associate = (db) => { // 릴레이션(관계) 정의
     db.Address.belongsTo(db.User); // 유저

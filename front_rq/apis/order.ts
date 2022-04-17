@@ -28,26 +28,30 @@ export function loadMyOrdersAPI(userId, dates){
   return axios.get(`/order/${userId}/${dates[0]}/${dates[1]}`).then((response) => response.data);
 }
 
-
 // 공장에서 제품 주문
 export function orderPosItemAPI(data: {items: any[], providerId: string, customerId: string, address: string, name: string, phone: string}){
   return axios.post(`/order/from-factory`, data).then((response) => response.data);
 }
-
-// // 공장에서 제품 주문
-// export function orderPosItemAPI(data: {items: Object, providerId: string, customerId: string, address: string, name: string, phone: string}){
-//   return axios.post(`/order/from-factory`, data).then((response) => response.data);
-// }
 
 // 카트에서 제품 주문
 export function orderItemAPI(data: {items: Object, comment: string, userId: string, zip: string, address: string, name: string, phone: string}){
   return axios.post(`/order/`, data).then((response) => response.data);
 }
 
+// 주문서 불러오기
+export function loadOrderAPI(orderId: number){
+  return axios.get(`/order/${orderId}`).then((response) => response.data);
+}
+
 // 주문서 목록 불러오기 (판매자용)
 // export function loadReceivedOrdersWithDatesAPI(userId: string, dates?: [any, any]){
 export function loadReceivedOrdersWithDatesAPI(userId, dates){
   return axios.get(`/order/received-orders-dates/${userId}/${dates[0]}/${dates[1]}`).then((response) => response.data);
+}
+
+// 특정 날짜 모든 주문서 불러오기
+export function loadAllOrdersWithDatesAPI(data){
+  return axios.post(`/order/all-orders`, data).then((response) => response.data);
 }
 
 export function loadAllOrders(){
@@ -69,6 +73,12 @@ export function loadReceivedOrdersAPI(userId: string, number?: number){
   }
   return axios.get(`/order/received-orders/${userId}`).then((response) => response.data);
 }
+
+
+// 최근 3개 판매자 주문서 불러오기
+export function loadRecentReceivedOrdersAPI(userKey){
+    return axios.get(`/order/recent-received-orders/${userKey}`).then((response) => response.data);
+  }
 
 // 포장 완료 (생산자)
 export function packDoneAPI(data){

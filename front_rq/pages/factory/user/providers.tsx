@@ -11,15 +11,11 @@ import styled from 'styled-components';
 
 import { loadMyInfoAPI, loadUserAPI, addCustomerAPI, 
   deleteCustomerAPI, addItemToCustomerAPI, 
-  removeItemToCustomerAPI, loadAllUserListAPI, updateUserRoleAPI, updateUserAPI, changePasswordAPI, loadProvidersAPI, loadProviderAPI } from '../../../apis/user';
+  removeItemToCustomerAPI, loadProvidersAPI, loadProviderAPI } from '../../../apis/user';
 import { loadItemListAPI, loadMyItemsAPI } from '../../../apis/item';
 import AppLayout from '../../../components/AppLayout';
 import User from '../../../interfaces/user';
-import useInput from '../../../hooks/useInput';
 
-const ErrorMessage = styled.div`
-  color: red;
-`;
 
 const ProviderList = () => {
   const { Title, Text } = Typography;
@@ -40,7 +36,6 @@ const ProviderList = () => {
 
   const divRef = useRef<HTMLDivElement>(null);
 
-  const { Option } = Select;
 
   const openNotification = (text) => {
     notification.open({
@@ -96,10 +91,10 @@ const ProviderList = () => {
       });
   };
 
-  const onViewUserInfo = (id) => () => { // 회원정보 보기
+  const onViewUserInfo = (key) => () => { // 회원정보 보기
     setIsvisible(false);
     setLoading(true);
-    loadProviderAPI(String(id))
+    loadProviderAPI(String(key))
       .then((response) => {
         setSelectedProvider(response);
         setIsCustomerSelected(false);
@@ -115,7 +110,7 @@ const ProviderList = () => {
       .finally(() => {
         setLoading(false);
       });
-    loadItemListAPI(String(id))
+    loadItemListAPI(String(key))
     .then((response) => {
       setItemsOfProvider(response);
       console.log('판매자:',response);
@@ -160,7 +155,7 @@ const ProviderList = () => {
     const itemId = parseInt(e.target.value);
     if (e.target.checked) {
       setLoading(true);
-      addItemToCustomerAPI({ itemId: itemId, customerId: selectedCustomer.id})
+      addItemToCustomerAPI({ itemId: itemId, customerKey: selectedCustomer.key})
       .then(() => {
         
       })
@@ -175,7 +170,7 @@ const ProviderList = () => {
       });
     } else {
       setLoading(true);
-      removeItemToCustomerAPI({ itemId: itemId, customerId: selectedCustomer.id })
+      removeItemToCustomerAPI({ itemId: itemId, customerKey: selectedCustomer.key })
       .then(() => {
         
       })
@@ -195,7 +190,7 @@ const ProviderList = () => {
   const onAddCustomer = () => {
     setLoading(true);
     setIsvisible(false);
-    addCustomerAPI({ providerId: selectedProvider.id, customerId: selectedCustomer.id })
+    addCustomerAPI({ providerKey: selectedProvider.key, customerKey: selectedCustomer.key })
     .then((response) => {
       openNotification('고객 등록이 완료됐습니다.');
       setIsvisible(true);
@@ -213,7 +208,7 @@ const ProviderList = () => {
   const onDeleteCustomer = () => {
     setLoading(true);
     setIsvisible(false);
-    deleteCustomerAPI({ providerId: selectedProvider.id, customerId: selectedCustomer.id })
+    deleteCustomerAPI({ providerKey: selectedProvider.key, customerKey: selectedCustomer.key })
     .then((response) => {
       openNotification('고객 해제가 완료됐습니다.');
       setIsvisible(true);
@@ -231,9 +226,9 @@ const ProviderList = () => {
 
   const userTableColumns = [
     {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
+      title: '아이디',
+      dataIndex: 'key',
+      key: 'key',
       render: (text, record) => (
         <b><p onClick={onViewUserInfo(text)}>{text}</p></b>
       ),
@@ -294,8 +289,8 @@ const ProviderList = () => {
             style={{ marginTop: '30px' }}
             bordered
           >
-            <Descriptions.Item label="ID/사업자번호" span={2}>
-              {selectedProvider?.id}
+            <Descriptions.Item label="아이디/사업자번호" span={2}>
+              {selectedProvider?.key}
             </Descriptions.Item>
             <Descriptions.Item label="회사명" span={2}>
               {selectedProvider?.company}
@@ -313,22 +308,22 @@ const ProviderList = () => {
               {selectedProvider?.role}
             </Descriptions.Item>
           </Descriptions><br />
+          <Title level={4} style={{ marginTop: '30px' }} >구매자 검색</Title>
+          <Search placeholder="ID / 사업자 등록번호" onSearch={onSearchCustomer} enterButton /><br /><br />
           <span style={{fontSize:'15pt', fontWeight:'bold'}}>{selectedProvider?.company}의 고객목록</span><br /><br />
           <Space>
           {selectedProvider.Customers.map((v) => (
             <>
               {/* {printTags(myUserInfo.Customers, v)} */}
-              <Tag color="blue" onClick={onCustomerSelect(v.id)}>{v.company} / {v.name}</Tag>
+              <Tag color="blue" onClick={onCustomerSelect(v.key)}>{v.company} / {v.name}</Tag>
             </>
           ))}
           </Space>
-          <Title level={4} style={{ marginTop: '30px' }} >구매자 검색</Title>
-          <Search placeholder="ID / 사업자 등록번호" onSearch={onSearchCustomer} enterButton />
           {isCustomerSelected ? 
           <>
             <Title level={4} style={{ marginTop: '30px' }} >구매회원 정보</Title>
             <Descriptions style={{ marginTop: '30px' }} bordered>
-              <Descriptions.Item label="사업자등록번호">{selectedCustomer?.id}</Descriptions.Item>
+              <Descriptions.Item label="아이디/사업자등록번호">{selectedCustomer?.key}</Descriptions.Item>
               <Descriptions.Item label="회사명">{selectedCustomer?.company}</Descriptions.Item>
               <Descriptions.Item label="담당자 성함">{selectedCustomer?.name}</Descriptions.Item>
               <Descriptions.Item label="담당자 전화번호">{selectedCustomer?.phone}</Descriptions.Item>
@@ -366,9 +361,13 @@ const ProviderList = () => {
                   <Space size={8} wrap>
                     {itemsOfProvider? 
                       <>
-                        {itemsOfProvider.map((v) => (
-                          <Tag><Checkbox value={v.id} disabled={loading} onClick={onToggleItem}>({v.id}) {v.name} {v.packageName} {v.unit}</Checkbox></Tag>
-                        ))
+                        {itemsOfProvider.map((v) => {
+                          if (v.scope === 'PRIVATE'){
+                            return(
+                            <Tag>
+                              <Checkbox value={v.id} disabled={loading} onClick={onToggleItem}>({v.id}) {v.name} {v.packageName} {v.unit}</Checkbox>
+                            </Tag>)
+                          }})
                         } 
                       </>
                     : null}
@@ -388,7 +387,7 @@ const ProviderList = () => {
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
   const cookie = context.req ? context.req.headers.cookie : ''; // 쿠키 넣어주기
   axios.defaults.headers.Cookie = '';
-  const id = context.params?.id as string;
+  const key = context.params?.key as string;
   if (context.req && cookie) {
     axios.defaults.headers.Cookie = cookie;
   }

@@ -15,11 +15,6 @@ export function loadCartAPI(userId: string){
   return axios.get(`/item/cart/${userId}`).then((response) => response.data);
 }
 
-// 주문서 불러오기
-export function loadOrderAPI(orderId: number){
-  return axios.get(`/item/order/${orderId}`).then((response) => response.data);
-}
-
 // 주문서 목록 불러오기 (고객용)
 export function loadOrdersAPI(userId: string){
   return axios.get(`/item/orders/${userId}`).then((response) => response.data);
@@ -31,14 +26,16 @@ export function loadItemsAPI(){
   return axios.get(`/item/all`).then((response) => response.data);
 }
 
+
+
 // 제품 리스트 불러오기 (판매자)
 export function loadMyItemsAPI(){
   return axios.get(`/item/my`).then((response) => response.data);
 }
 
 // 제품 리스트 불러오기 (특정 판매자)
-export function loadItemListAPI(userId: string){
-  return axios.get(`/item/list/${userId}`).then((response) => response.data);
+export function loadItemListAPI(userKey: string){
+  return axios.get(`/item/list/${userKey}`).then((response) => response.data);
 }
 
 // 제품 리스트 불러오기 (구매자)
@@ -49,6 +46,11 @@ export function loadCustomerItemsAPI(){
 // 제품 리스트 불러오기 (구매자)
 export function loadCustomerItemListAPI(userId){
   return axios.get(`/item/list-customer/${userId}`).then((response) => response.data);
+}
+
+// 제품 리스트 불러오기
+export function loadCustomerGroupItemListAPI(){
+  return axios.get(`/item/list-customer`).then((response) => response.data);
 }
 
 // 제품 등록
