@@ -70,7 +70,16 @@ const EditUser = () => {
   const [passwordError, setPasswordError] = useState(false);
   const [passwordValidError, setPasswordValidError] = useState(false);
   const [keyValidError, setKeyValidError] = useState(false);
-  const [phoneValidError, setPhoneValidError] = useState(false);
+  const [disableBtn, setDisableBtn] = useState(true);
+
+  useEffect(() => { // 유효성 검사완료시 가입버튼 활성화
+    if (keyValidError || passwordValidError || passwordError || passwordCheck === '' || company === '' || name === ''){
+      setDisableBtn(true);
+    } else {
+      setDisableBtn(false);
+    }
+  }, [keyValidError, passwordCheck, passwordValidError, passwordError, name, company])
+
 
   const onChangeKey = useCallback( // 아이디 유효성검사
   (e) => {
@@ -83,9 +92,10 @@ const EditUser = () => {
   
   const onChangePhone = useCallback( // 연락처 유효성검사
     (e) => {
-      const regExpPhone = /^[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}/;
-      setPhone(e.target.value);
-      setPhoneValidError(!regExpPhone.test(e.target.value));
+      const { value } = e.target;
+      const onlyNumber = value.replace(/[^0-9]/g, '');
+      // const regExpPhone = /[^0-9]/;
+      setPhone(onlyNumber);
     },
     [phone],
   );
@@ -106,17 +116,7 @@ const EditUser = () => {
     },
     [passwordCheck],
   );
-
-  const openNotification = (response) => {
-    notification.open({
-      message: `회원정보 수정이 완료됐습니다.`,
-      description:
-        ``,
-      icon: <SmileOutlined style={{ color: '#108ee9' }} />,
-      duration: 4,
-    });
-  };
-
+  
   const onSubmit = useCallback(() => {
     if (keyValidError) {
       return message.error('아이디를 올바르게 입력해주세요.')
@@ -189,12 +189,11 @@ const EditUser = () => {
           <input
             value={phone}
             onChange={onChangePhone}
-            placeholder=' - 포함하여 작성'
+            placeholder=' - 없이 숫자만 입력'
             maxLength={13}
             required
           />
         </Block>
-        {phoneValidError && <ErrorMessage> - 포함하여 작성해주세요.</ErrorMessage>}
         <Block>
           <label>담당자 이메일</label>
           <input
@@ -231,7 +230,7 @@ const EditUser = () => {
         </div>
         <div style={{ marginTop: 10 }}>
           <Space>
-          <Button type="primary" htmlType="submit" loading={loading}>
+          <Button type="primary" htmlType="submit" loading={loading} disabled={disableBtn}>
             수정완료
           </Button>
           <Link href='/user/resign'><a>

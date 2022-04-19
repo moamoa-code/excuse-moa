@@ -39,28 +39,35 @@ const MoDal = styled.div`
     }
     to {
       opacity: 1;
+      dddd
       top: 0;
     }
-}
+  }
   .contents {
     overflow: auto;
-    min-width: 500px;
+    min-width: 240px;
     max-width: 90%;
     max-height: 90%;
     z-index: 9;
-    padding: 15px;
+    padding: 24px;
     background-color: white;
     border-radius: 10px;
     -webkit-box-shadow: 1px 1px 15px 3px rgba(0,0,0,0.34); 
     box-shadow: 1px 1px 15px 3px rgba(0,0,0,0.34);
-    transition: opacity 1s;
+    @media screen and (max-width: 600px) {
+      box-shadow: 1px 1px 12px 2px rgba(0,0,0,0.18);
+      border-radius: 4px;
+      max-width: 96%;
+      max-height: 92%;
+      padding: 10px;
+    }
   }
   .close {
     margin-top: 10px;
+    margin-bottom: 5px;
     float:right;
   }
 `
-
 
 const SearchBlock = styled.div`
   margin: 18px 0 18px 0;
@@ -91,9 +98,10 @@ const SearchBlock = styled.div`
     margin: 0;
     border-radius: 0 4px 4px 0;
     background-color:#1890ff;
+    margin-right:3px;
   }
   button {
-    margin-left: 5px;
+    margin-left: auto;
     height: 38px;
     border-radius: 4px;
     border: 1px solid #999999;

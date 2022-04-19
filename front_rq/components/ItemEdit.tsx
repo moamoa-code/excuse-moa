@@ -1,9 +1,8 @@
 import React, { useCallback, useState, useRef } from 'react';
 import { backUrl } from '../config/config';
-import { Descriptions, Form, Button, Input, Divider, Image, Space, notification, Popconfirm, Select, Tag, Checkbox, message } from 'antd';
+import { Descriptions, Form, Button, Input, Divider, Image, Space, Popconfirm, Select, Tag, Checkbox, message } from 'antd';
 import useInput from '../hooks/useInput';
 import { addCustomerToItemAPI, deleteItemAPI, registerItemAPI, updateItemAPI, uploadImageAPI } from '../apis/item';
-import { CheckCircleOutlined } from '@ant-design/icons';
 import Router from 'next/router';
 import { loadProviderByIdAPI } from '../apis/user';
 import { useQuery } from 'react-query';
@@ -45,16 +44,6 @@ const ItemEdit = ({ item, myUserInfo }) => {
     [supplyPrice],
   );
 
-
-  const openNotification = (text) => {
-    notification.open({
-      message: `${text}`,
-      description:
-        ``,
-      icon: <CheckCircleOutlined style={{ color: '#108ee9' }} />,
-      duration: 2,
-    });
-  };
   const handleScopeChange = (value) => {
     setScope(value);
   }
@@ -105,7 +94,7 @@ const ItemEdit = ({ item, myUserInfo }) => {
     updateItemAPI(formData)
     .then((data) => {
       setShowScope(scope);
-      openNotification('제품 수정이 완료되었습니다.');
+      message.success('제품 수정이 완료되었습니다.');
     })
     .catch((error) => {
       alert(error.response.data);
@@ -135,11 +124,17 @@ const ItemEdit = ({ item, myUserInfo }) => {
     console.log('omSubmit imagePath', imagePath)
     registerItemAPI(formData)
     .then((data) => {
-      Router.replace(`/item/${data.id}`);
+      message.success('제품 복사생성이 완료되었습니다.');
+      // Router.replace(`/item/edit/${data.id}`);
+      window.location.replace(`/item/edit/${data.id}`);
+      setLoading(false);
     })
     .catch((error) => {
       message.error(error.response.data);
     })
+    .finally(() => {
+      setLoading(false);
+    });
 
   }, [codeName, name, packageName, unit, msrp, supplyPrice, imagePath, description, scope]);
 
@@ -166,7 +161,7 @@ const ItemEdit = ({ item, myUserInfo }) => {
     setLoading(true);
     addCustomerToItemAPI({ itemId, values })
     .then(() => {
-      openNotification('제품을 열람가능한 고객 추가를 완료했습니다.')
+      message.success('제품을 열람가능한 고객 추가를 완료했습니다.')
     })
     .finally(() => {
       setLoading(false);
@@ -175,7 +170,7 @@ const ItemEdit = ({ item, myUserInfo }) => {
 
   return (
     <>
-      <Divider>제품 수정 {itemId}</Divider>
+      <Divider>제품 수정ㅇㅈㅂ {itemId}</Divider>
       <Form>
         <div style={{ textAlign: 'center' }}>
           <label htmlFor="user-price">제품사진 (2MB 제한)</label>
@@ -276,7 +271,7 @@ const ItemEdit = ({ item, myUserInfo }) => {
               </Space>
             </Checkbox.Group>
           </Form.Item>
-          <Space>
+          <Space wrap>
             <Button type="primary" htmlType="submit" loading={loading}>
               열람가능 고객 적용
             </Button>

@@ -101,6 +101,12 @@ const TaBle = styled.table`
   tr {
     border-bottom: 3px solid #dadada;
   }
+  tbody tr:nth-of-type(even) {
+    background-color: #f8f8f8;
+  }
+  tbody tr:last-of-type {
+      border-bottom: 2px solid #398AB9;
+  }
   tr:hover{
     background-color:#f1f1f1;
   }
@@ -569,6 +575,7 @@ const orderList = () => {
                   <CodeName><span>&nbsp;</span>&nbsp;{codeName.name}</CodeName>
                 </td>
               </tr>
+              <tbody>
             {orders?.map((order => {
               const item =
               order.OrderDetails.filter((v) => 
@@ -620,20 +627,19 @@ const orderList = () => {
                       {/* {i?.status === '포장완료'?
                         <Tag color='#108ee9'>{i?.status}</Tag>
                         :<Tag>{i?.status}</Tag>} */}
-
                       {/* {order.status === '취소요청중' || order.status === '주문취소완료'?
                         <Tag color='#ff2424'>{order.status}</Tag>
                         :<Tag>{order.status}</Tag>}
                       {i?.status === '포장완료'?
                         <Tag color='#108ee9'>{i?.status}</Tag>
                         :<Tag>{i?.status}</Tag>} */}
-                    </td>
-                    <td  className='th9'>
-                      {i?.status === '포장완료'?
-                      <Button loading={loading} onClick={onPackCancelClick(i.id)} danger>취소</Button>
-                      :<Button loading={loading} type='primary' onClick={onConfirmClick(i.id)}>완료</Button> }
-                    </td>
-                  </tr>
+                      </td>
+                      <td  className='th9'>
+                        {i?.status === '포장완료'?
+                        <Button loading={loading} onClick={onPackCancelClick(i.id)} danger>취소</Button>
+                        :<Button loading={loading} type='primary' onClick={onConfirmClick(i.id)}>완료</Button> }
+                      </td>
+                    </tr>
                   ))
                 )
               }
@@ -641,6 +647,7 @@ const orderList = () => {
             <tr>
               <td colSpan={11}><DoubleRightOutlined /> 총 {amount}Kg</td>
             </tr>
+            </tbody>
             </>
           )})}
         </TaBle><br /><br />

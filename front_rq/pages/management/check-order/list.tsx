@@ -1,9 +1,9 @@
 // @ts-nocheck
 // -> locale 타입 문제
 // 주문서 목록
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import { GetServerSidePropsContext } from 'next';
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Table, Typography, Input, Button, Tag, Checkbox, Divider, Space, DatePicker, message } from 'antd';
 import { useRouter } from 'next/router';
@@ -19,6 +19,21 @@ import User from '../../../interfaces/user';
 import Order from '../../../interfaces/order';
 import styled from 'styled-components';
 import moment from 'moment';
+
+const PageSizer = styled.div`
+  font-size: 11pt;
+  span {
+    margin-right: 5px;
+  }
+  input {
+    text-align: center;
+    box-sizing : border-box;
+    width: 50px;
+    border: 1px solid #999999;
+    border-radius: 4px;
+  }
+
+`
 
 const pickerLocale = {
   "lang": {
@@ -85,7 +100,6 @@ margin: 0 auto;
 `
 
 const Orders = () => {
-  const router = useRouter();
   const queryClient = new QueryClient();
   const { Title } = Typography;
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
@@ -94,6 +108,7 @@ const Orders = () => {
   const [ datesVal, setDatesVal ] = useState([moment().subtract(2, 'months').format('YYYY-MM-DD'), moment().format('YYYY-MM-DD')]);
   const [ startDate, setStartDate ] = useState(moment().subtract(2, 'months'));
   const [ endDate, setEndDate ] = useState(moment());
+  const [ pageSize, setPageSize ] = useState(10);
   // const { data: orders } = useQuery<Order[]>(['orders', id, datesVal], () => loadReceivedOrdersAPI(String(id), null, datesVal));
   const getTotalPrice = (orders) => { // 총 금액 계산
     console.log('getTotalPrice')
@@ -101,7 +116,7 @@ const Orders = () => {
     if(orders) {
       orders.map((v) => {
         let price = Number(v.totalPrice)?? 0;
-        if (isNaN(price) || v.status !== '주문확인완료') {
+        if (isNaN(price) || v.status.includes('주문취소')) {
           price = 0;
         }
         total = total + Number(price);
@@ -122,6 +137,12 @@ const Orders = () => {
     }
   ); // 데이터 불러오기, 총 금액 계산
 
+  const onChangePageSize = (e) => {
+    if (e.target.value >= 100) {
+      return setPageSize(100);
+    }
+    return setPageSize(e.target.value);
+  }
 
   const onChangeStartDate = (date, dateString) => {
     setStartDate(date)
@@ -211,13 +232,25 @@ const Orders = () => {
         </Space>
         <p></p>
         <Table 
-          size="small"
+          size="middle"
           rowKey="id"
           columns={columns}
           dataSource={orders}
+          pagination={{pageSize:pageSize}}
+          /><br />
+        <PageSizer>
+          <span>페이지크기</span>
+          <input 
+            type='number'
+            max={100}
+            maxLength={3}
+            value={pageSize}
+            onChange={onChangePageSize}
           />
+        </PageSizer>
+
         {totalPrice?
-        <Divider orientation="right">완료된 주문 총 금액: {String(totalPrice).toString()
+        <Divider orientation="right">취소되지 않은 주문 총 금액: {String(totalPrice).toString()
           .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원</Divider>
         : null}
       </Container800>

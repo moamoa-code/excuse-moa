@@ -120,9 +120,13 @@ router.post('/from-factory', async (req, res, next) => {
     let name = req.body.name;
     if (req.body.name === '') {
       name = customer?.company;
-    } 
+    }
+    let comment = req.body.comment;
+    if (comment === null || comment === undefined || comment.length === 0) {
+      comment = 'POS입력'
+    }
     const order = await Order.create({ // 주문 INSERT
-      comment: '공장POS입력',
+      comment: comment,
       address: req.body.address,
       zip: '',
       name: name,

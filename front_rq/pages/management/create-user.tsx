@@ -248,18 +248,6 @@ const CreateUser = () => {
       <Title level={3}>고객 생성</Title>
       <Text>{myUserInfo.company}사의 고객 생성</Text>
       <Form onFinish={onSubmit} form={form}>
-        {/* <Block>
-          <label><RedBold>* </RedBold>회원구분</label>
-        </Block>  
-          <input
-            type='radio'
-          />
-          <span> 구매자 </span>
-          <input
-            type='radio'
-          />
-          <span> 판매자 </span> */}
-          
         <Block>
           <label><RedBold>* </RedBold>사업자등록번호 또는 ID</label>
           <input

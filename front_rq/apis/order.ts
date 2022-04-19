@@ -29,7 +29,7 @@ export function loadMyOrdersAPI(userId, dates){
 }
 
 // 공장에서 제품 주문
-export function orderPosItemAPI(data: {items: any[], providerId: string, customerId: string, address: string, name: string, phone: string}){
+export function orderPosItemAPI(data: {items: any[], comment: string, providerId: string, customerId: string, address: string, name: string, phone: string}){
   return axios.post(`/order/from-factory`, data).then((response) => response.data);
 }
 

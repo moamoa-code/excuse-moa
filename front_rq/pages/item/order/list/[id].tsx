@@ -19,6 +19,20 @@ import 'moment/locale/ko';
 import locale from 'antd/lib/locale/ko_KR';
 import styled from 'styled-components';
 
+const PageSizer = styled.div`
+  font-size: 11pt;
+  span {
+    margin-right: 5px;
+  }
+  input {
+    text-align: center;
+    box-sizing : border-box;
+    width: 50px;
+    border: 1px solid #999999;
+    border-radius: 4px;
+  }
+`
+
 const pickerLocale = { // antd DatePicker 로케일 설정
   "lang": {
     "locale": "ko_KR",
@@ -54,13 +68,14 @@ const OrderList = () => {
   const [ startDate, setStartDate ] = useState(moment().subtract(2, 'months'));
   const [ endDate, setEndDate ] = useState(moment());
   const [ totalPrice, setTotalPrice ] = useState(0);
+  const [ pageSize, setPageSize ] = useState(10);
   const getTotalPrice = (orders) => { // 총 금액 계산
     console.log('getTotalPrice')
     let total = 0
     if(orders) {
       orders.map((v) => {
         let price = Number(v.totalPrice)?? 0;
-        if (isNaN(price) || v.status !== '주문확인완료') {
+        if (isNaN(price) || v.status.includes('주문취소')) {
           price = 0;
         }
         total = total + Number(price);
@@ -79,6 +94,13 @@ const OrderList = () => {
       }
     }
   ); // 데이터 불러오기, 총 금액 계산
+
+  const onChangePageSize = (e) => {
+    if (e.target.value >= 100) {
+      return setPageSize(100);
+    }
+    return setPageSize(e.target.value);
+  }
 
   const onLoadOrdersWithDates = () => {
     if(!startDate || !endDate){
@@ -174,7 +196,18 @@ const OrderList = () => {
           columns={columns}
           dataSource={orders}
           loading={isLoading}
+          pagination={{pageSize:pageSize}}
           />
+        <PageSizer>
+          <span>페이지크기</span>
+          <input 
+            type='number'
+            max={100}
+            maxLength={3}
+            value={pageSize}
+            onChange={onChangePageSize}
+          />
+        </PageSizer>
         {totalPrice?
         <Divider orientation="right">완료된 주문 총 금액: {String(totalPrice).toString()
           .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원</Divider>

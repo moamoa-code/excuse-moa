@@ -267,6 +267,16 @@ const CreateUser = () => {
   // 폼 전송
   const onReqCreatUsers = (e) => {
     e.preventDefault();
+    let error = false;
+    if (isAutoKey === false) {
+      userInputs?.map((v)=>{
+        if (v.key.length < 4) {
+          error = true;
+        }
+      })
+    } if (error) {
+      return message.error('아이디를 4자이상 입력해주세요.')
+    }
     setLoading(true);
     const datas = {
       role: userRole,
@@ -279,7 +289,7 @@ const CreateUser = () => {
     createUsersAPI(datas)
     .then((result) => {
       message.success('회원생성이 완료됐습니다.')
-      console.log(result);
+      onInitField();
     })
     .catch((error) => {
       message.error('아이디 중복, 잘못된 입력 등의 이유로 회원생성에 실패했습니다.');

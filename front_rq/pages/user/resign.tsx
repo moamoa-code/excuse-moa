@@ -9,6 +9,7 @@ import User from '../../interfaces/user';
 import styled from 'styled-components';
 import { Button, Divider, notification, Popconfirm, Typography } from 'antd';
 import router from 'next/router';
+import Head from 'next/head';
 
 const Container600 = styled.div`
   max-width: 600px;
@@ -22,7 +23,7 @@ const RegistAddress = () => {
 
   const openNotification = () => {
     notification.open({
-      message: `계정 삭제 신청이 완료되었습니다.`,
+      message: `회원 탈퇴 신청이 완료되었습니다.`,
       description:
         `그동안 이용해 주셔서 대단히 감사드립니다.`,
       duration: 10,
@@ -44,25 +45,29 @@ const RegistAddress = () => {
   return (
     <AppLayout>
       <Container600>
-        <Divider><Title level={4}>계정 삭제</Title></Divider><br />
+      <Head>
+        <title>회원 탈퇴</title>
+      </Head>
+        <Divider><Title level={4}>회원 탈퇴</Title></Divider><br />
         <Paragraph>
           <pre>
-            완전한 계정 삭제에는 시간이 소요되며 관리자가 확인하여 처리 해 드립니다.
+            완전한 회원 탈퇴에는 시간이 소요되며 관리자가 확인하여 처리 해 드립니다.
             주문내역 등의 일부 데이터는 서버에 남아있을 수 있습니다.<br />
-            초기화, 기능장애등의 이유로 탈퇴 후 재 가입을 원하시는 경우는 관리자에게 문의해 주세요.
+            초기화, 기능장애등의 이유로 탈퇴 후 재 가입을 원하시는 경우는 관리자에게 문의해 주세요.<br />
+            회원 탈퇴신청 즉시 모든 서비스를 이용 하실 수 없습니다.
 
             <span><br /><br />동의하실 경우 아래의 버튼을 눌러 계정삭제 신청을 해 주세요.</span>
           </pre>
         </Paragraph>
 
         <Popconfirm
-              title="계정 삭제에 동의하십니까?"
+              title="회원 탈퇴에 동의하십니까?"
               onConfirm={onResign}
-              okText="계정 삭제"
+              okText="회원 탈퇴"
               cancelText="아니오"
             >
               <Button danger loading={loading}>
-                계정 삭제 신청
+                회원 탈퇴 신청
               </Button>
             </Popconfirm>
       </Container600>

@@ -515,7 +515,9 @@ router.post('/create/', isLoggedIn, async (req, res, next) => { // post /user
       return res.status(403).send('이미 사용중인 아이디 입니다.');
     }
     const hashedPassword = await bcrypt.hash(req.body.password, 10); // 두번째 인자 높을수록 암호화 강함
-
+    if (req.body.key.length < 1) {
+      return res.status(403).send('아이디를 입력해 주세요.')
+    }
     // role이 없는경우 판매회원의 CUSTOMER 생성
     if (req.body.role === undefined || req.body.role === null || req.body.role === ''){
       const provider = await User.findOne({
@@ -674,6 +676,18 @@ router.post('/multi-create', isProvider, async (req, res, next) => { // post /us
   console.log('multi-create',req.body);
   try {
     const hashedPassword = await bcrypt.hash('123123', 10);
+    let error = false;
+    const errorCheck = req.body.userDatas.map((v) => {
+      if (!req.body.isAutoKey) {
+        if (v.key.length < 1) {
+          return error = true;
+        }
+      }
+    });
+    if (error) {
+      return res.status(400).send('아이디를 입력해 주세요.')
+    }
+
     // 판매자, 비회원 생성
     if (req.body.role === 'PROVIDER' || req.body.role === 'NOVICE'){
       const userDatas = req.body.userDatas.map((v) => { 
@@ -970,9 +984,11 @@ router.patch('/add-customer', isLoggedIn, async (req, res, next) => { //
       }
     }
     if (customer.role === 'NOVICE') {
-      customer.update({role: 'CUSTOMER'});
+      await customer.update({role: 'CUSTOMER'});
     }
-    await provider.addCustomers(customer.id);
+    await customer.addProviders(provider);
+    await customer.update({ProviderId: provider.id});
+    // await provider.addCustomers(customer.id);
     const userDataWithoutPassword = await User.findOne({
       // 프론트로 보낼 유저 정보를 재가공
       where: { id: customer.id },
@@ -1009,6 +1025,7 @@ router.patch('/delete-customer', isLoggedIn, async (req, res, next) => { //
     })
     await customer.removeUserViewItems(items); // 고객에 등록된 판매자 아이템 제거.
     await provider.removeCustomers(customer.id);
+    await customer.update({ProviderId: null});
 
     console.log('@##@%#!', items);
     const userDataWithoutPassword = await User.findOne({

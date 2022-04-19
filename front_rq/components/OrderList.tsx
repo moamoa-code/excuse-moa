@@ -96,7 +96,7 @@ const OrderList = ({ userInfo, mode }) => {
     if(orders) {
       orders.map((v) => {
         let price = Number(v.totalPrice)?? 0;
-        if (isNaN(price) || v.status !== '주문확인완료') {
+        if (isNaN(price) || v.status.includes('주문취소')) {
           price = 0;
         }
         total = total + Number(price);
@@ -287,7 +287,6 @@ const OrderList = ({ userInfo, mode }) => {
               :null}
             </tbody>
           </ListTable>
-          {totalPrice}
           {totalPrice === 0?
           null
           : <div>

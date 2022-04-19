@@ -227,7 +227,7 @@ const Customers = () => {
         dataSource={myUserInfo?.Customers}
       />
       <Title level={4} style={{ marginTop: '30px' }} >회원 검색</Title>
-      <Search placeholder="사업자 등록번호" onSearch={onSearch} enterButton />
+      <Search placeholder="사업자 등록번호(아이디)" onSearch={onSearch} enterButton />
       {isVisible ? 
         <div ref={divRef}>
           <Descriptions title="검색결과" style={{ marginTop: '30px' }} bordered>

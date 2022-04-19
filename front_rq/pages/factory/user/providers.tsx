@@ -311,7 +311,7 @@ const ProviderList = () => {
           <Title level={4} style={{ marginTop: '30px' }} >구매자 검색</Title>
           <Search placeholder="ID / 사업자 등록번호" onSearch={onSearchCustomer} enterButton /><br /><br />
           <span style={{fontSize:'15pt', fontWeight:'bold'}}>{selectedProvider?.company}의 고객목록</span><br /><br />
-          <Space>
+          <Space wrap>
           {selectedProvider.Customers.map((v) => (
             <>
               {/* {printTags(myUserInfo.Customers, v)} */}

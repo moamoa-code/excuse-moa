@@ -194,6 +194,7 @@ const RegistItem = () => {
         <p>{v.id}</p>
       ))}</p> */}
       <Title level={3}>제품 등록</Title>
+      <p>{myUserInfo?.company}사의 제품 등록</p>
       <Form style={{ margin: '10px 0 20px' }} encType="multipart/form-data" onFinish={onSubmit}>
         <Block>
           <label htmlFor="item-code"><RedBold>* </RedBold>제품 코드명 (구매자 비공개)</label>
@@ -225,7 +226,7 @@ const RegistItem = () => {
         </Block>
         <Block>
           <label htmlFor="user-unit"><RedBold>* </RedBold>무게 단위</label>
-          <Input name="user-unit" value={unit} onChange={onChangeUnit} maxLength={10}/>
+          <Input name="user-unit" value={unit} maxLength={10} placeholder='아래에서 선택'/>
           <OptionContainer>
             {units.map((v)=>{
               return (
@@ -238,7 +239,7 @@ const RegistItem = () => {
           <label><RedBold>* </RedBold>제품 열람가능 고객 범위</label>
           <Select
             onChange={handleScopeChange}
-            defaultValue={scope}
+            defaultValue={'PRIVATE'}
           >
             <Option value='PRIVATE'>특정 고객 전용</Option>
             <Option value='GROUP'>내 모든 고객에 공개</Option>

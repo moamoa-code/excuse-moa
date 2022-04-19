@@ -73,11 +73,37 @@ const ProvidersItemList = () => {
                 <>{text.toString()
                   .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")}</>
               ),
+            }, {
+              title: '열람',
+              key: 'scope',
+              dataIndex: 'scope',
+              render: (text, record) => (
+                <>
+                  {text === 'PRIVATE'?
+                    <span>전용</span>
+                  : text === 'GROUP'?
+                    <span>공개</span>
+                  : null}
+                </>
+              ),
+              filters: [
+                {
+                  text: '전용',
+                  value: 'PRIVATE'
+                }, {
+                  text: '공개',
+                  value: 'GROUP'
+                }
+              ],
+              onFilter: (value, record) => record.role?.indexOf(value) === 0,
             },
           ]}
         expandable={{
+          expandRowByClick: true,
           expandedRowRender: (record) => 
-          <ItemView item={record} myUserInfo={myUserInfo} />,
+          <div style={{margin: '15px'}}>
+            <ItemView item={record} myUserInfo={myUserInfo} />
+          </div>,
           columnWidth: 20,
           expandIcon: ({ expanded, onExpand, record }) =>
           expanded ? (

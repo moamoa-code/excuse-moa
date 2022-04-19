@@ -19,6 +19,7 @@ import Item from '../../interfaces/item';
 import Text from 'antd/lib/typography/Text';
 import ItemView from '../../components/ItemView';
 import UserInfoBox from '../../components/UserInfoBox';
+import useInput from '../../hooks/useInput';
 
 
 const Container800 = styled.div`
@@ -33,6 +34,20 @@ const Container800 = styled.div`
 `
 const Red = styled.span`
   color: red;
+`
+
+const CommentInput = styled.div`
+  padding: 5px 15px 5px 15px;
+  font-size: 12pt;
+  p {
+    font-weight: bold;
+  }
+  textarea  {
+    width: 100%;
+    height: 2em;
+    resize: none;
+    border-radius: 4px;
+  }
 `
 
 const CartItems = styled.div`
@@ -293,6 +308,7 @@ const addOrder = () => {
   const [ phone, setPhone ] = useState('');
   const [ address, setAddress ] = useState('');
   const [ zip, setZip ] = useState('');
+  const [ comment, onChangeComment ] = useInput('');
   // 총 수량
   const [totalQty, setTotalQty] = useState(0);
   //제품 보기 모달
@@ -335,6 +351,7 @@ const addOrder = () => {
       { items : selectedItems, 
         providerId: selectedProvider, 
         customerId: selectedCustomer,
+        comment,
         address,
         name,
         phone,
@@ -801,8 +818,16 @@ const addOrder = () => {
             )
           })}
         </CartItems>
-
-        <br /><br />
+        <br />
+        <CommentInput>
+          <p>기타요구사항</p>
+          <textarea
+            value={comment}
+            maxLength={50}
+            onChange={onChangeComment}
+          />
+        </CommentInput>
+        <br />
         <Space>
           <Button 
             size='large'

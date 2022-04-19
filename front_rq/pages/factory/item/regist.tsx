@@ -236,7 +236,7 @@ const RegistItem = () => {
     .finally(() => {
       setLoading(false);
     });
-  }, [codeName, selectedProvider, name, packageName, unit, msrp, price, imagePath, description]);
+  }, [scope, codeName, selectedProvider, name, packageName, unit, msrp, price, imagePath, description]);
 
   
   const onSearchClick = () => {

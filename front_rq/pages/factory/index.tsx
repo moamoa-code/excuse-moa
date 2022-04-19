@@ -25,15 +25,24 @@ const Container800 = styled.div`
 max-width: 800px;
 padding: 20px;
 margin: 0 auto;
+a:link { text-decoration: none;}
+a:visited { text-decoration: none;}
+a:hover { text-decoration: underline;}
+span {
+  font-size:12pt;
+  margin: 10px 0 10px 0;
+}
+p {
+  font-size:20px;
+}
 `
+
 
 
 const Factory = () => {
   const [loading, setLoading] = useState(false);
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
-
   const { Title } = Typography;
-
   return (
     <AppLayout>
       <Head>
@@ -41,18 +50,18 @@ const Factory = () => {
       </Head>
       <Container800>
         <Title level={4}><UserOutlined /> 고객관리</Title>
-        <Link href="/factory/user/list"><a>회원목록 / 관리</a></Link>
+        <Link href="/factory/user/list" passHref><a><span>회원목록</span></a></Link>
         <br />
-        <Link href="/factory/user/providers"><a>판매자-구매자 관리</a></Link>
+        <Link href="/factory/user/providers" passHref><a><span>판매자-구매자 관리</span></a></Link>
         <br />
-        <Link href="/factory/user/create"><a>회원생성</a></Link>
+        <Link href="/factory/user/create" passHref><a><span>회원생성</span></a></Link>
         <br />
-        <Link href="/factory/user/multi-create"><a>여러 회원 생성</a></Link>
+        <Link href="/factory/user/multi-create" passHref><a><span>여러 회원 생성</span></a></Link>
         <br /><br />
         <Title level={4}><ShopOutlined /> 제품관리</Title>
-        <Link href="/factory/item/regist"><a>제품등록</a></Link>
+        <Link href="/factory/item/regist" passHref><a><span>제품등록</span></a></Link>
         <br/>
-        <Link href="/factory/item/list"><a>제품목록</a></Link>
+        <Link href="/factory/item/list" passHref><a><span>제품목록</span></a></Link>
         <br />
       </Container800>
   </AppLayout>
