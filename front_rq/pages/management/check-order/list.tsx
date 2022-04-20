@@ -32,7 +32,6 @@ const PageSizer = styled.div`
     border: 1px solid #999999;
     border-radius: 4px;
   }
-
 `
 
 const pickerLocale = {
@@ -105,8 +104,8 @@ const Orders = () => {
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
   const [ id, setId ] = useState(myUserInfo.id);
   const [ totalPrice, setTotalPrice ] = useState(0);
-  const [ datesVal, setDatesVal ] = useState([moment().subtract(2, 'months').format('YYYY-MM-DD'), moment().format('YYYY-MM-DD')]);
-  const [ startDate, setStartDate ] = useState(moment().subtract(2, 'months'));
+  const [ datesVal, setDatesVal ] = useState([moment().subtract(1, 'months').format('YYYY-MM-DD'), moment().format('YYYY-MM-DD')]);
+  const [ startDate, setStartDate ] = useState(moment().subtract(1, 'months'));
   const [ endDate, setEndDate ] = useState(moment());
   const [ pageSize, setPageSize ] = useState(10);
   // const { data: orders } = useQuery<Order[]>(['orders', id, datesVal], () => loadReceivedOrdersAPI(String(id), null, datesVal));
@@ -237,7 +236,7 @@ const Orders = () => {
           columns={columns}
           dataSource={orders}
           pagination={{pageSize:pageSize}}
-          /><br />
+          />
         <PageSizer>
           <span>페이지크기</span>
           <input 
@@ -248,11 +247,11 @@ const Orders = () => {
             onChange={onChangePageSize}
           />
         </PageSizer>
-
         {totalPrice?
         <Divider orientation="right">취소되지 않은 주문 총 금액: {String(totalPrice).toString()
           .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원</Divider>
         : null}
+        <Button type='primary'><Link href={'/management/add-order'}><a>+ 새로운 주문 추가</a></Link></Button>
       </Container800>
     </AppLayout>
   );

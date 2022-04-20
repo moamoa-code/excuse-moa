@@ -567,7 +567,7 @@ const orderList = () => {
             <th className='th9'>완료</th>
           </tr>
           {itemCodes?.map((codeName) => {
-            let amount = 0;
+            let amount = 0.0;
             return (
             <>
               <tr key={codeName.name} className='code'>

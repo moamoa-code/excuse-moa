@@ -123,6 +123,7 @@ const AppLayout: FC = ({ children }) => {
               {myUserInfo?.role === 'PROVIDER'?
               (<>
                 <MenuLi underline={false}><Link href={`/management/check-order/list`}><A>주문확인</A></Link></MenuLi>
+                <MenuLi underline={false}><Link href={`/management/add-order`}><A>주문추가</A></Link></MenuLi>
                 <MenuLi underline={false}><Link href={`/management`}><A>판매자페이지</A></Link></MenuLi>
               </>)
               : null}
@@ -147,6 +148,7 @@ const AppLayout: FC = ({ children }) => {
               {myUserInfo?.role === 'PROVIDER' || myUserInfo?.role === 'ADMINISTRATOR'?
               (<>
                 <MenuLi underline={true}><Link href={`/management/check-order/list`}><A>주문확인</A></Link></MenuLi>
+                <MenuLi underline={true}><Link href={`/management/add-order`}><A>주문추가</A></Link></MenuLi>
                 <MenuLi underline={true}><Link href={`/management`}><A>판매자페이지</A></Link></MenuLi>
                 <p></p><br />
               </>)

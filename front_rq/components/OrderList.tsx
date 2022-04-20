@@ -216,7 +216,6 @@ const OrderList = ({ userInfo, mode }) => {
               :null}
             </tbody>
           </ListTable>
-          {totalPrice}
           {totalPrice === 0?
           null
           : <div>

@@ -30,10 +30,15 @@ const addNewOrder = () => {
   const [ loading, setLoading ] = useState(false);
   // 목록 불러오기 필터 state
   const { Title } = Typography;
-  const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
-  const { data: providers } = useQuery('providers', loadProvidersAPI);
+  const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI,{
+    onSuccess(data) {
+      setSelectedProvider(data.id);
+      setSelectedProviderData(data);
+      setCustomers(data.Customers)
+    }
+  });
   // 판매자
-  const [selectedProvider, setSelectedProvider] = useState();
+  const [selectedProvider, setSelectedProvider] = useState(null);
   const [selectedProviderData, setSelectedProviderData] = useState<any>({});
   // 고객
   const [customers, setCustomers] = useState([]);
@@ -96,7 +101,7 @@ const addNewOrder = () => {
   const onOrderClick = () => {
     setLoading(true);
     // message.error(selectedItems.length)
-    if (selectedProvider === '' || selectedCustomer === '' || selectedItems.length <= 0){
+    if (selectedCustomer === '' || selectedItems.length <= 0){
       setLoading(false);
       return message.error('선택 안한 항목이 있습니다.');
     }
@@ -111,7 +116,7 @@ const addNewOrder = () => {
     console.log('onOrderClick selectedItems', selectedItems);
     orderPosItemAPI(
       { items : selectedItems, 
-        providerId: selectedProvider, 
+        providerId: (selectedProvider), 
         customerId: customerId,
         comment,
         address,
@@ -127,7 +132,7 @@ const addNewOrder = () => {
       alert(error.response.data);
     })
     .finally(() => {
-      router.replace(`/factory/order-list`);
+      router.replace(`/management/check-order/list`);
     });
   }
   // 판매자 선택
@@ -184,7 +189,7 @@ const addNewOrder = () => {
   // 새로운제품 추가시 제품이름 자동생성
   const createProductName = (codeName, productTag) => {
     let company = '';
-    company = providers.find((v)=>(v.id === selectedProvider))?.company;
+    company = myUserInfo?.company;
     return setProductName(company + ' ' + codeName + ' ' + productTag);
   }
 
@@ -309,29 +314,15 @@ const addNewOrder = () => {
           ]}
         >
         <ItemView item={selectedItem} myUserInfo={myUserInfo} />
-      </Modal>
-      
+      </Modal>      
         <OrderTypeSelects>
-          <div><Link href='/factory/add-order'><a><p>기존 회원 주문</p></a></Link></div>
-          <div  className='selected'><p>비회원 신규 주문</p></div>
+          <div  className='selected'><p>새로운 주문 추가</p></div>
         </OrderTypeSelects>
         <Divider orientation="left">
           <TiTle>
           1. 판매자/브랜드 선택
           </TiTle>
         </Divider>
-        <ContentsBox>
-          <ListBox>
-            <Space wrap>
-              {providers?.map((v) => {
-                if (v.id === selectedProvider) {
-                  return <Button size='large' type="primary">{v.company}</Button>
-                }
-                return <Button size='large' type="dashed" onClick={onProviderSelectClick(v.id)}>{v.company}</Button>
-              })}
-            </Space>
-          </ListBox>
-        </ContentsBox><br />
         {selectedProvider? 
           <UserInfoBox userInfo={selectedProviderData} />
         : null}
@@ -479,7 +470,7 @@ const addNewOrder = () => {
           </Descriptions>
           :
           null}
-          <br /><br />
+          <br />
         </>
         }
         {selectedProvider?
@@ -519,6 +510,7 @@ const addNewOrder = () => {
               </ItemsContainer>
             </ContentsBox>
           :null}
+          <br/>
           <CenteredDiv>
             <Space wrap>
               <Button size='large' type="dashed" onClick={onGetItemListClick(selectedProvider)}><PlusOutlined /> 판매자의 모든 제품 보기</Button>

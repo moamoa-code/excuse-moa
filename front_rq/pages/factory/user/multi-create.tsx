@@ -15,6 +15,7 @@ import { loadMyInfoAPI, createUserAPI, loadUserAPI, loadProvidersAPI, createUser
 import AppLayout from '../../../components/AppLayout';
 import useInput from '../../../hooks/useInput';
 import UserInfoBox from '../../../components/UserInfoBox';
+import { Red } from '../../../components/Styled';
 
 
 const UserFormTable = styled.table`
@@ -141,10 +142,10 @@ const OptionContainer = styled.div`
 
 const CreateUser = () => {
   const [ loading, setLoading ] = useState(false);
-  const [ userRole, setUserRole ] = useState('PROVIDER');
+  const [ userRole, setUserRole ] = useState('CUSTOMER');
   const [ selectedProvider, setSelectedProvider ] = useState();
   const [ selectedProviderKey, setSelectedProviderKey ] = useState('');
-  const [ isAutoKey, setIsAutoKey ] = useState(false);
+  const [ isAutoKey, setIsAutoKey ] = useState(true);
   const [ isAddrMode, setIsAddrMode ] = useState(false);
   const [ userInputs, setUserInputs ] = useState([{
     key: '', company: '', name: '', phone: '', zip: '', address: ''  
@@ -157,8 +158,8 @@ const CreateUser = () => {
 
   const onSetFieldMax = () => {
     let inputs = [...userInputs];
-    const input = { key: '', company: '', name: '', phone: '', zip: '', address: '' };
     for (let i = userInputs.length; i < 10; i++){
+      const input = { key: '', company: '', name: '', phone: '', zip: '', address: '' };
       inputs.push(input);
     }
     setUserInputs(inputs);
@@ -207,9 +208,9 @@ const CreateUser = () => {
   // }
 
   // 회원등급 변경
-  const handleRoleChange = (value) => {
-    setUserRole(value);
-    if (value === 'PROVIDER' || 'NOVICE') {
+  const handleRoleChange = (e) => {
+    setUserRole(e.target.value);
+    if (e.target.value === 'PROVIDER' || 'NOVICE') {
       setSelectedProviderKey('');
       setSelectedProvider(null);
       setSearchTxt('');
@@ -277,6 +278,9 @@ const CreateUser = () => {
     } if (error) {
       return message.error('아이디를 4자이상 입력해주세요.')
     }
+    if (userRole === 'CUSTOMER' && selectedProviderKey === '') {
+      return message.error('판매자를 선택해주세요.');
+    }
     setLoading(true);
     const datas = {
       role: userRole,
@@ -307,16 +311,21 @@ const CreateUser = () => {
           <title>회원 생성</title>
         </Head>
         <Title level={3}>회원 생성</Title><br />
-      <Radio.Group onChange={handleAutoKeyChange} defaultValue={false}>
+      <Radio.Group onChange={handleAutoKeyChange} defaultValue={true}>
         <Radio.Button value={false}>아이디 수동입력</Radio.Button>
         <Radio.Button value={true}>아이디 자동생성</Radio.Button>
       </Radio.Group><br /><br />
       <Radio.Group onChange={handleAddrModeChange} defaultValue={false}>
         <Radio.Button value={false}>주소 없음</Radio.Button>
         <Radio.Button value={true}>주소 입력</Radio.Button>
-      </Radio.Group>
+      </Radio.Group><br /><br />
+      <Radio.Group onChange={handleRoleChange} defaultValue='CUSTOMER'>
+        <Radio.Button value='PROVIDER'>판매자</Radio.Button>
+        <Radio.Button value='CUSTOMER'>구매자</Radio.Button>
+        <Radio.Button value='NOVICE'>비회원</Radio.Button>
+      </Radio.Group><br /><br />
       <form onSubmit={onReqCreatUsers}>
-        <Block>
+        {/* <Block>
           <label><RedBold>* </RedBold>회원 구분</label>
           <Select
             onChange={handleRoleChange}
@@ -326,10 +335,10 @@ const CreateUser = () => {
             <Option value='CUSTOMER'>구매자</Option>
             <Option value='NOVICE'>비회원</Option>
           </Select>
-        </Block>
+        </Block> */}
         {userRole === 'CUSTOMER'?
           <>
-            <label style={{margin: '0 0 7px 0'}}>판매자 선택</label>
+            <label style={{margin: '0 0 7px 0', fontWeight: 'bold'}}><Red>*</Red> 판매자 선택</label>
             <SearchBlock>
               <input
                 value={searchTxt}
@@ -385,7 +394,7 @@ const CreateUser = () => {
           {userInputs.map((x, i) => {
             if (isAddrMode) {
               return (
-                <tr>
+                <tr key={i}>
                   <td>
                     <input
                       name="key"

@@ -445,7 +445,7 @@ router.get('/', async (req, res, next) => { // GET /user 로그인 유지 위해
             {
               model: User,
               as: "Customers",
-              attributes: ["id", "key", "company", "name"],
+              attributes: ["id", "key", "company", "name", "phone"],
               exclude: ['UsersRelation'],
             }
           ]
