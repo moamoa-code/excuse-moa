@@ -25,7 +25,7 @@ import { CartItems, CenteredDiv, CommentInput, Container800, ContentsBox, Custom
 const addOrder = () => {
   const router = useRouter();
   const [ loading, setLoading ] = useState(false);
-  const { isLoading, data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI, {
+  const { isLoading, data: myUserInfo } = useQuery<User>('me', loadMyInfoAPI, {
     onSuccess(data) {
       setSelectedProvider(data.id);
       setSelectedProviderData(data);
