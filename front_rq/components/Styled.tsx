@@ -12,11 +12,26 @@ export const Container800 = styled.div`
   }
 `
 
+// 레이아웃 대짜
+export const ContainerBig = styled.div`
+  max-width: 1024px;
+  margin 0 auto;
+  padding: 15px;
+`
+
+// 레이아웃 중간
+export const ContainerMid = styled.div`
+  max-width: 600px;
+  margin 0 auto;
+  padding: 10px;
+`
+
 // 공장-주문추가-상단 버튼
 export const OrderTypeSelects = styled.div`
   display: flex;
   flex-wrap: wrap;
   justify-content:space-between;
+  gap: 10px;
   a {
     text-decoration:none !important;
   }
@@ -44,7 +59,6 @@ export const OrderTypeSelects = styled.div`
     height: 50px;
     font-size: 16pt;
     font-wight: 600;
-    margin:7px;
     border: 1px solid #111111;
     border-radius: 15px;
     flex: 1;
@@ -130,6 +144,13 @@ export const CartItems = styled.div`
       border-radius: 25px;
     }
   }
+  .weight{
+    position: absolute;
+    font-size:12pt;
+    font-wight:bold;
+    top: 23px;
+    right: 40px;
+  }
   .delete{
     position: absolute;
     top: 23px;
@@ -170,8 +191,8 @@ export const CartItems = styled.div`
 `
 // 공장-주문추가 목록컨테이너
 export const ListBox = styled.div`
-  overflow:auto;
-  max-height:400px;
+  overflow: auto;
+  max-height: 500px;
 `
 
 // 공장-주문추가 
@@ -346,4 +367,260 @@ export const ItemSelector = styled.div`
     width: 100%;
     margin:8px 0px 8px 0px;
   }
+`
+
+// 공통
+
+//모달
+export const MoDal = styled.div`
+  overflow: auto;
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 8;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: #ffffffe2;
+  animation: fadein 0.2s;
+  @keyframes fadein {
+    from {
+      opacity: 0;
+      top: -100px;
+    }
+    to {
+      opacity: 1;
+      top: 0;
+    }
+}
+  .contents {
+    overflow: auto;
+    min-width: 500px;
+    max-width: 90%;
+    max-height: 90%;
+    z-index: 9;
+    padding: 15px;
+    background-color: white;
+    border-radius: 10px;
+    -webkit-box-shadow: 1px 1px 15px 3px rgba(0,0,0,0.34); 
+    box-shadow: 1px 1px 15px 3px rgba(0,0,0,0.34);
+    transition: opacity 1s;
+  }
+  .close {
+    margin-top: 10px;
+    float:right;
+  }
+`
+export const ErrorMessage = styled.div`
+  color: red;
+`;
+
+
+// 입력 폼 한줄
+export const Block = styled.div`
+  margin: 18px 0 18px 0;
+  label {
+    display: block;
+    margin: 0 0 7px 0;
+  }
+  input {
+    width: 100%;
+    padding-left: 5px;
+    height: 38px;
+    border: 1px solid #999999;
+    border-radius: 4px;
+  }
+`
+// 검색
+export const SearchBlock = styled.div`
+  margin: 18px 0 18px 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  input {
+    flex-grow: 1;
+    height: 38px;
+    margin: 0;
+    padding-left: 5px;
+    box-sizing : border-box;
+    border-radius: 4px 0 0 4px;
+    border: 1px solid #999999;
+  }
+  .search{
+    color: white;
+    font-size: 12pt;
+    font-weight: 800;
+    min-width: 35px;
+    border:0;
+    margin: 0;
+    border-radius: 0 4px 4px 0;
+    background-color:#1890ff;
+  }
+  button {
+    margin-left: 5px;
+    height: 38px;
+    border-radius: 4px;
+    border: 1px solid #999999;
+    background-color:white;
+  }
+  button:active {
+    position: relative; 
+    top:2px;
+  }
+  label {
+    display: block;
+    margin: 0 0 7px 0;
+  }
+`
+// 검색결과, 각종 옵션
+export const OptionContainer = styled.div`
+  background-color: #f1f8ff;
+  padding: 10px 0px 10px 0px;
+  display: block;
+  overflow:auto;
+  max-height:300px;
+  p {
+    background-color: white;
+    display: inline-block;
+    box-sizing: border-box;
+    border-radius: 4px;
+    padding: 5px 8px 5px 8px;
+    margin: 6px;
+    font-size: 10pt;
+  }
+  p:active {
+    position: relative; 
+    top:2px;
+  }
+  .codeName{
+    background-color:#00B4D8;
+    color: white;
+  }
+  .unit{
+    background-color:#FF5C8D;
+    color: white;
+  }
+  .package{
+    background-color:#ec7728;
+    color: white;
+  }
+  .provider{
+    border: 1px solid #999999;
+  }
+`
+
+// 여러 회원생성
+// 입력 폼 테이블
+export const InputFormTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #444444;
+  th {
+    font-size: 12pt;
+    height: 40px;
+    background-color: #f6f6f6;
+    border: 1px solid #444444;
+  }
+  td {
+    text-align: center;
+    border: 1px solid #444444;
+  }
+  input {
+    width: 100%;
+    padding: 4px 0px 4px 0px;
+    border: none;
+  }
+  tr {
+    margin-bottom: 5px;
+  }
+`
+
+export const SearchAndTitle = styled.div`
+margin: 18px 0 18px 0;
+width: 100%;
+display: flex;
+justify-content: space-between;
+flex-wrap: wrap;
+hr {
+  flex-grow: 1;
+  width: 50px;
+  margin: 0 5px 0 5px;
+  border : 0px;
+  border-top: 1px solid #cfcfcf;
+}
+.left {
+  width: 15px;
+  margin-right: 10px;
+}
+.search input {
+  height: 38px;
+  margin: 0;
+  padding-left: 5px;
+  box-sizing : border-box;
+  border-radius: 4px 0 0 4px;
+  border: 1px solid #999999;
+}
+.search Button{
+  height: 38px;
+  color: white;
+  font-size: 12pt;
+  font-weight: 800;
+  min-width: 35px;
+  border:0;
+  margin: 0;
+  border-radius: 0 4px 4px 0;
+  background-color:#1890ff;
+}
+.listBtn {
+  margin-left: 5px;
+  height: 38px;
+  border-radius: 4px;
+  border: 1px solid #999999;
+  background-color:white;
+}
+.listBtn:active {
+  position: relative; 
+  top:2px;
+}
+.textBox {
+  font-size: 16pt;
+  font-weight: bold;
+  margin: 0px 10px 0px 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+`
+
+
+// 로딩중 모달
+export const LoadingModal = styled.div`
+overflow: auto;
+display: flex;
+position: fixed;
+top: 0;
+left: 0;
+z-index: 8;
+align-items: center;
+justify-content: center;
+width: 100vw;
+height: 100vh;
+background-color: rgba(255, 255, 255, 0.5);
+animation: fadein 0.2s;
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+div {
+  overflow: auto;
+  z-index: 9;
+  padding: 15px;
+}
 `

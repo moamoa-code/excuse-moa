@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false, // 필수
     },
     name : { // 담당자 이름
-      type: DataTypes.STRING(10),
+      type: DataTypes.STRING(12),
       allowNull: true, 
     },
     phone: { // 담당자 전화번호

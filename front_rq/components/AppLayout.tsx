@@ -130,7 +130,7 @@ const AppLayout: FC = ({ children }) => {
               {myUserInfo?.role === 'ADMINISTRATOR'?
               (<>
                 <MenuLi underline={true}><Link href={`/factory/order-list`}><A>주문현황</A></Link></MenuLi>
-                <MenuLi underline={false}><Link href={`/management`}><A>판매자페이지</A></Link></MenuLi>
+                <MenuLi underline={true}><Link href={`/factory/add-order`}><A>주문추가</A></Link></MenuLi>
                 <MenuLi underline={true}><Link href={`/factory`}><A>관리자페이지</A></Link></MenuLi>
                 <p></p><br />
               </>)
@@ -156,6 +156,7 @@ const AppLayout: FC = ({ children }) => {
               {myUserInfo?.role === 'ADMINISTRATOR'?
               (<>
                 <MenuLi underline={true}><Link href={`/factory/order-list`}><A>주문현황</A></Link></MenuLi>
+                <MenuLi underline={true}><Link href={`/factory/add-order`}><A>주문추가</A></Link></MenuLi>
                 <MenuLi underline={true}><Link href={`/factory`}><A>관리자페이지</A></Link></MenuLi>
                 <p></p><br />
               </>)

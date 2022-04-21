@@ -14,11 +14,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true, //
     },
     comment: { // 배송 요구사항
-      type: DataTypes.STRING(200),
+      type: DataTypes.STRING(100),
       allowNull: true, //
     },
     message: { // 취소 사유, 송장번호 등
-      type: DataTypes.STRING(100),
+      type: DataTypes.STRING(50),
       allowNull: true, //
     },
     // 기록의 성격이기 때문에 유저의 주소를 참조로 가져오지 않고 값을 복사한다.

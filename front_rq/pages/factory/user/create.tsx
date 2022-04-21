@@ -16,151 +16,7 @@ import { loadMyInfoAPI, createUserAPI, loadUserAPI, loadProvidersAPI } from '../
 import AppLayout from '../../../components/AppLayout';
 import useInput from '../../../hooks/useInput';
 import User from '../../../interfaces/user';
-
-
-const MoDal = styled.div`
-  overflow: auto;
-  display: flex;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 8;
-  align-items: center;
-  justify-content: center;
-  width: 100vw;
-  height: 100vh;
-  background-color: #ffffffe2;
-  animation: fadein 0.2s;
-  @keyframes fadein {
-    from {
-      opacity: 0;
-      top: -100px;
-    }
-    to {
-      opacity: 1;
-      top: 0;
-    }
-}
-  .contents {
-    overflow: auto;
-    min-width: 500px;
-    max-width: 90%;
-    max-height: 90%;
-    z-index: 9;
-    padding: 15px;
-    background-color: white;
-    border-radius: 10px;
-    -webkit-box-shadow: 1px 1px 15px 3px rgba(0,0,0,0.34); 
-    box-shadow: 1px 1px 15px 3px rgba(0,0,0,0.34);
-    transition: opacity 1s;
-  }
-  .close {
-    margin-top: 10px;
-    float:right;
-  }
-`
-
-const ErrorMessage = styled.div`
-  color: red;
-`;
-const RedBold = styled.span`
-  color:red;
-`
-const Container500 = styled.div`
-  max-width: 500px;
-  margin 0 auto;
-  padding: 10px;
-`
-const Block = styled.div`
-  margin: 18px 0 18px 0;
-  label {
-    display: block;
-    margin: 0 0 7px 0;
-  }
-  input {
-    width: 100%;
-    padding-left: 5px;
-    height: 38px;
-    border: 1px solid #999999;
-    border-radius: 4px;
-  }
-`
-const SearchBlock = styled.div`
-  margin: 18px 0 18px 0;
-  width: 100%;
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  input {
-    flex-grow: 1;
-    height: 38px;
-    margin: 0;
-    padding-left: 5px;
-    box-sizing : border-box;
-    border-radius: 4px 0 0 4px;
-    border: 1px solid #999999;
-  }
-  .search{
-    color: white;
-    font-size: 12pt;
-    font-weight: 800;
-    min-width: 35px;
-    border:0;
-    margin: 0;
-    border-radius: 0 4px 4px 0;
-    background-color:#1890ff;
-  }
-  button {
-    margin-left: 5px;
-    height: 38px;
-    border-radius: 4px;
-    border: 1px solid #999999;
-    background-color:white;
-  }
-  button:active {
-    position: relative; 
-    top:2px;
-  }
-  label {
-    display: block;
-    margin: 0 0 7px 0;
-  }
-`
-const OptionContainer = styled.div`
-  background-color: #f1f8ff;
-  padding: 10px 0px 10px 0px;
-  display: block;
-  overflow:auto;
-  max-height:300px;
-  p {
-    background-color: white;
-    display: inline-block;
-    box-sizing: border-box;
-    border-radius: 4px;
-    padding: 5px 8px 5px 8px;
-    margin: 6px;
-    font-size: 10pt;
-  }
-  p:active {
-    position: relative; 
-    top:2px;
-  }
-  .codeName{
-    background-color:#00B4D8;
-    color: white;
-  }
-  .unit{
-    background-color:#FF5C8D;
-    color: white;
-  }
-  .package{
-    background-color:#ec7728;
-    color: white;
-  }
-  .provider{
-    border: 1px solid #999999;
-  }
-`
+import { Block, ContainerMid, MoDal, OptionContainer, Red, SearchBlock } from '../../../components/Styled';
 
 const CreateUser = () => {
   const { Title, Text } = Typography;
@@ -360,14 +216,14 @@ const CreateUser = () => {
 
   return (
   <AppLayout>
-    <Container500>
+    <ContainerMid>
       <Head>
         <title>회원 생성</title>
       </Head>
       <Title level={3}>회원 생성</Title>
       <Form onFinish={onSubmit} form={form}>
         <Block>
-          <label><RedBold>* </RedBold>회원 구분</label>
+          <label><Red>* </Red>회원 구분</label>
           <Select
             onChange={handleRoleChange}
             defaultValue={role}
@@ -411,7 +267,7 @@ const CreateUser = () => {
         </>  
         : null}
         <Block>
-          <label><RedBold>* </RedBold>사업자등록번호 또는 ID</label>
+          <label><Red>* </Red>사업자등록번호 또는 ID</label>
           <input
             value={key}
             onChange={onChangeKey}
@@ -420,7 +276,7 @@ const CreateUser = () => {
             autoComplete="off"
           />
         </Block>
-        {keyValidError && <ErrorMessage>숫자, -, 영문(필요시)으로 4~25자 이내</ErrorMessage>}
+        {keyValidError && <Red>숫자, -, 영문(필요시)으로 4~25자 이내</Red>}
         <Block>
           <label>본사 사업자등록번호</label>
           <input
@@ -432,7 +288,7 @@ const CreateUser = () => {
           />
         </Block>
         <Block>
-          <label><RedBold>* </RedBold>회사명 또는 성함</label>
+          <label><Red>* </Red>회사명 또는 성함</label>
           <input
             value={company}
             onChange={onChangeCompany}
@@ -443,7 +299,7 @@ const CreateUser = () => {
           />
         </Block>
         <Block>
-          <label><RedBold>* </RedBold>담당자 성함</label>
+          <label><Red>* </Red>담당자 성함</label>
           <input
             value={name}
             onChange={onChangeName}
@@ -453,7 +309,7 @@ const CreateUser = () => {
           />
         </Block>
         <Block>
-          <label><RedBold>* </RedBold>담당자 연락처</label>
+          <label><Red>* </Red>담당자 연락처</label>
           <input
             value={phone}
             onChange={onChangePhone}
@@ -474,7 +330,7 @@ const CreateUser = () => {
           />
         </Block>
         <Block>
-          <label><RedBold>* </RedBold>비밀번호</label>
+          <label><Red>* </Red>비밀번호</label>
           <input
             name="user-password"
             type="password"
@@ -485,9 +341,9 @@ const CreateUser = () => {
             autoComplete="no"
           />
         </Block>
-        {passwordValidError && <ErrorMessage>6자 이상 15자 이하로 입력해 주세요.</ErrorMessage>}
+        {passwordValidError && <Red>6자 이상 15자 이하로 입력해 주세요.</Red>}
         <Block>
-          <label><RedBold>* </RedBold>비밀번호 확인</label>
+          <label><Red>* </Red>비밀번호 확인</label>
           <input
             name="user-password-check"
             type="password"
@@ -498,7 +354,7 @@ const CreateUser = () => {
             autoComplete="off"
           />
         </Block>
-        {passwordError && <ErrorMessage>비밀번호가 일치하지 않습니다.</ErrorMessage>}
+        {passwordError && <Red>비밀번호가 일치하지 않습니다.</Red>}
         <Block>
           <label>주소 입력 (필요시)</label>
         </Block>
@@ -563,7 +419,7 @@ const CreateUser = () => {
         >
           <DaumPostcode onComplete={onCompletePost } />
       </Modal> */}
-    </Container500>
+    </ContainerMid>
   </AppLayout>
   );
 };

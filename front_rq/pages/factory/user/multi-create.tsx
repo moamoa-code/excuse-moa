@@ -9,136 +9,12 @@ import Head from 'next/head';
 import { Form, Input, Checkbox, Button, notification, Space, Tag, Select, message, Radio } from 'antd';
 import { SearchOutlined, SmileOutlined } from '@ant-design/icons';
 import { Typography } from 'antd';
-import styled from 'styled-components';
 
 import { loadMyInfoAPI, createUserAPI, loadUserAPI, loadProvidersAPI, createUsersAPI } from '../../../apis/user';
 import AppLayout from '../../../components/AppLayout';
 import useInput from '../../../hooks/useInput';
 import UserInfoBox from '../../../components/UserInfoBox';
-import { Red } from '../../../components/Styled';
-
-
-const UserFormTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  border: 1px solid #444444;
-  th {
-    font-size: 12pt;
-    height: 40px;
-    background-color: #f6f6f6;
-    border: 1px solid #444444;
-  }
-  td {
-    text-align: center;
-    border: 1px solid #444444;
-  }
-  input {
-    width: 100%;
-    padding: 4px 0px 4px 0px;
-    border: none;
-  }
-  tr {
-    margin-bottom: 5px;
-  }
-`
-const RedBold = styled.span`
-  color:red;
-`
-const Container1024 = styled.div`
-  max-width: 1024px;
-  margin 0 auto;
-  padding: 15px;
-`
-const Block = styled.div`
-  margin: 18px 0 18px 0;
-  label {
-    display: block;
-    margin: 0 0 7px 0;
-  }
-  input {
-    width: 100%;
-    padding-left: 5px;
-    height: 38px;
-    border: 1px solid #999999;
-    border-radius: 4px;
-  }
-`
-const SearchBlock = styled.div`
-  margin: 18px 0 18px 0;
-  width: 100%;
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  input {
-    flex-grow: 1;
-    height: 38px;
-    margin: 0;
-    padding-left: 5px;
-    box-sizing : border-box;
-    border-radius: 4px 0 0 4px;
-    border: 1px solid #999999;
-  }
-  .search{
-    color: white;
-    font-size: 12pt;
-    font-weight: 800;
-    min-width: 35px;
-    border:0;
-    margin: 0;
-    border-radius: 0 4px 4px 0;
-    background-color:#1890ff;
-  }
-  button {
-    margin-left: 5px;
-    height: 38px;
-    border-radius: 4px;
-    border: 1px solid #999999;
-    background-color:white;
-  }
-  button:active {
-    position: relative; 
-    top:2px;
-  }
-  label {
-    display: block;
-    margin: 0 0 7px 0;
-  }
-`
-const OptionContainer = styled.div`
-  background-color: #f1f8ff;
-  padding: 10px 0px 10px 0px;
-  display: block;
-  overflow:auto;
-  max-height:300px;
-  p {
-    background-color: white;
-    display: inline-block;
-    box-sizing: border-box;
-    border-radius: 4px;
-    padding: 5px 8px 5px 8px;
-    margin: 6px;
-    font-size: 10pt;
-  }
-  p:active {
-    position: relative; 
-    top:2px;
-  }
-  .codeName{
-    background-color:#00B4D8;
-    color: white;
-  }
-  .unit{
-    background-color:#FF5C8D;
-    color: white;
-  }
-  .package{
-    background-color:#ec7728;
-    color: white;
-  }
-  .provider{
-    border: 1px solid #999999;
-  }
-`
+import { ContainerBig, InputFormTable, OptionContainer, Red, SearchBlock } from '../../../components/Styled';
 
 const CreateUser = () => {
   const [ loading, setLoading ] = useState(false);
@@ -306,7 +182,7 @@ const CreateUser = () => {
 
   return (
   <AppLayout>
-      <Container1024>
+      <ContainerBig>
       <Head>
           <title>회원 생성</title>
         </Head>
@@ -325,17 +201,6 @@ const CreateUser = () => {
         <Radio.Button value='NOVICE'>비회원</Radio.Button>
       </Radio.Group><br /><br />
       <form onSubmit={onReqCreatUsers}>
-        {/* <Block>
-          <label><RedBold>* </RedBold>회원 구분</label>
-          <Select
-            onChange={handleRoleChange}
-            defaultValue={userRole}
-          >
-            <Option value='PROVIDER'>판매자</Option>
-            <Option value='CUSTOMER'>구매자</Option>
-            <Option value='NOVICE'>비회원</Option>
-          </Select>
-        </Block> */}
         {userRole === 'CUSTOMER'?
           <>
             <label style={{margin: '0 0 7px 0', fontWeight: 'bold'}}><Red>*</Red> 판매자 선택</label>
@@ -378,7 +243,7 @@ const CreateUser = () => {
           </>
         : null}
         <Title level={4}>정보 입력</Title>
-        <UserFormTable>
+        <InputFormTable>
           <tr>
             <th>아이디</th>
             <th>회사명</th>
@@ -421,7 +286,7 @@ const CreateUser = () => {
                       value={x.name}
                       onChange={(e) => (handleInputChange(e, i))}
                       autoComplete="off"
-                      maxLength={20}
+                      maxLength={10}
                     />
                   </td>
                   <td>
@@ -464,6 +329,7 @@ const CreateUser = () => {
                     disabled={isAutoKey}
                     placeholder='숫자, -, 영문(필요시)으로 4~25자 이내'
                     maxLength={20}
+                    autoComplete="off"
                     required={!isAutoKey}
                   />
                   </td>
@@ -474,15 +340,17 @@ const CreateUser = () => {
                     onChange={(e) => (handleInputChange(e, i))}
                     maxLength={20}
                     required
+                    autoComplete="off"
                   />
                   </td>
                 <td>
                   <input 
                     name="name"
                     value={x.name}
-                    maxLength={20}
+                    maxLength={12}
                     onChange={(e) => (handleInputChange(e, i))}
                     required
+                    autoComplete="off"
                   />
                 </td>
                 <td>
@@ -499,7 +367,7 @@ const CreateUser = () => {
               </tr>
             )
           })}
-        </UserFormTable>
+        </InputFormTable>
         <Button onClick={onAddField}>+ 입력 필드 추가</Button>
         <Button onClick={onRemoveField}>- 입력 필드 제거</Button>
         <Button onClick={onSetFieldMax}>10개 입력</Button>
@@ -508,7 +376,7 @@ const CreateUser = () => {
         <Button htmlType="submit" loading={loading} type='primary'>회원 생성</Button>
       </form>
       
-    </Container1024>
+    </ContainerBig>
   </AppLayout>
   );
 };

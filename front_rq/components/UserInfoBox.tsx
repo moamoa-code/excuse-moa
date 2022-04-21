@@ -7,7 +7,7 @@ const UserInfoDiv = styled.div`
   width:100%;
   margin: 10px 0px 10px px;
   padding: 15px;
-  border-radius: 4px;
+  border-radius: 12px;
   border: 1px solid #d4d4d4;
   .company{
     font-size:14pt;
