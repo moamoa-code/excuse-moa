@@ -3,8 +3,6 @@ const router = express.Router();
 const { Op } = require('sequelize'); // Operator. 연산자
 const bcrypt = require('bcrypt'); // 비밀번호 암호화 라이브러리
 const passport = require('passport');
-const wait = require('waait');
-
 const { User, Item, Address } = require('../models'); // 시퀄라이즈 - MySQL DB연결
 // const db = require('../models');
 const { isLoggedIn, isProvider, isNotLoggedIn, isAdmin } = require('./middlewears'); // 로그인 검사 미들웨어
@@ -434,7 +432,6 @@ router.get("/id/:userId", isLoggedIn, async (req, res, next) => {
 
 // 로그인 유저 정보 얻기
 router.get('/', async (req, res, next) => { // GET /user 로그인 유지 위해 로그인한 유저의 정보 전송
-  wait(30000);
   try {
       if (req.user) { // 로그인 됐을경우
         const userDataWithoutPassword = await User.findOne({

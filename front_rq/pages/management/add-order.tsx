@@ -1,7 +1,7 @@
 // 주문서 목록
 import axios, { AxiosError } from 'axios';
 import { GetServerSidePropsContext } from 'next';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Button, Divider, Space, message, notification, Descriptions, Tag, Spin } from 'antd';
 import { useRouter } from 'next/router';
@@ -9,7 +9,6 @@ import { dehydrate, QueryClient, useQuery, useQueryClient  } from 'react-query';
 import { loadAddrsAPI, loadMyInfoAPI, loadProviderAPI, loadProviderByIdAPI, loadProvidersAPI, loadUserAPI, loadUserByIdAPI } from '../../apis/user';
 import { orderPosItemAPI } from '../../apis/order';
 import AppLayout from '../../components/AppLayout';
-
 import 'dayjs/locale/ko';
 import User from '../../interfaces/user';
 import { CheckCircleOutlined, DeleteOutlined, MinusOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
@@ -18,22 +17,21 @@ import { loadCustomerItemListAPI, loadItemListAPI } from '../../apis/item';
 import Item from '../../interfaces/item';
 import Text from 'antd/lib/typography/Text';
 import ItemView from '../../components/ItemView';
-
 import shortId from 'shortid';
 import UserInfoBox from '../../components/UserInfoBox';
 import useInput from '../../hooks/useInput';
 import { CartItems, CenteredDiv, CommentInput, Container800, ContentsBox, CustomerForm, ItemForm, ItemsContainer, ItemSelector, ListBox, LoadingModal, OrderTypeSelects, Red, SearchAndTitle, TiTle } from '../../components/Styled';
 
-const addNewOrder = () => {
+const addOrder = () => {
   const router = useRouter();
   const [ loading, setLoading ] = useState(false);
-  const { isLoading, data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI,{
+  const { isLoading, data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI, {
     onSuccess(data) {
       setSelectedProvider(data.id);
       setSelectedProviderData(data);
-      setCustomers(data.Customers)
+      setCustomers(data.Customers);
     }
-  });  const { data: providers } = useQuery('providers', loadProvidersAPI);
+  });
   // 판매자
   const [selectedProvider, setSelectedProvider] = useState(null);
   const [selectedProviderData, setSelectedProviderData] = useState<any>({});
@@ -74,14 +72,6 @@ const addNewOrder = () => {
   // style useMemo
   const minusButtonStyle = useMemo(() => ({fontSize:'14pt', color:'#ff4d4f'}), []);
   const plusButtonStyle = useMemo(() => ({fontSize:'14pt', color:'#1890ff'}), []);
-
-  useEffect(() => {
-    if (!myUserInfo) {
-      setLoading(true);
-    } else {
-      setLoading(false);
-    }
-  }, [myUserInfo]);
 
   // 알림창 띄우기
   const openNotification = (text) => { 
@@ -151,7 +141,7 @@ const addNewOrder = () => {
       message.error(error.response.data);
     })
     .finally(() => {
-      router.replace(`/factory/order-list`);
+      router.replace(`/management/check-order/list`);
     });
   }
 
@@ -271,7 +261,6 @@ const addNewOrder = () => {
       setLoading(false);
     })
   }
-
 
   // 구매자 주소 가져오기
   const getAddrData = (userId) => {
@@ -886,7 +875,7 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
       },
     };
   }
-  await queryClient.prefetchQuery(['user'], () => loadMyInfoAPI());
+  await queryClient.prefetchQuery('user', loadMyInfoAPI);
   return {
     props: {
       dehydratedState: JSON.parse(JSON.stringify(dehydrate(queryClient))),
@@ -894,4 +883,4 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
   };
 };
 
-export default addNewOrder;
+export default addOrder;
