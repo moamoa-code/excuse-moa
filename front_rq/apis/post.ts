@@ -28,9 +28,14 @@ export function loadPostAPI(data: number){
   return axios.get(`/post/${data}`).then((response) => response.data);
 }
 
-// 최근 단일 게시글 조회
+// 최근 공지사항 3개
 export function loadRecentPostAPI(){
   return axios.get(`/post/recent`).then((response) => response.data);
+}
+
+// 최근 공지사항 3개
+export function loadAdnminPostAPI(){
+  return axios.get(`/post/admin-recent`).then((response) => response.data);
 }
 
 // 구매자가 볼 수 있는 게시글 리스트
@@ -41,6 +46,11 @@ export function loadPostListAPI(){
 // 판매자가 작성한 게시글 리스트
 export function loadMyPostListAPI(){
   return axios.get(`/post/my`).then((response) => response.data);
+}
+
+// 모든 게시글 불러오기
+export function loadAllPostsAPI(){
+  return axios.get(`/post/all`).then((response) => response.data);
 }
 
 // 게시글 사진 업로드

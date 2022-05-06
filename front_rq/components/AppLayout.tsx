@@ -74,16 +74,18 @@ const Logo = styled.div`
   padding-top: 10px;
 `
 const MenuModal = styled.div`
-  position: absolute;
-  margin: 0px;
-  right:0;
-  top: 50px;
-  z-index: 99;
-  width: 320px;
-  box-shadow: -5px 5px 13px -12px rgba(0,0,0,0.53);
-  background-color: #ffffff;
-  @media screen and (max-width: 600px) {
-    width: 100%;
+  .container { 
+    position: absolute;
+    margin: 0px;
+    right:0;
+    top: 50px;
+    z-index: 99;
+    width: 320px;
+    box-shadow: 0px 17px 35px -10px rgba(0,0,0,0.53);
+    background-color: #ffffff;
+    @media screen and (max-width: 600px) {
+      width: 100%;
+    }
   }
 `
 const A = styled.a`
@@ -115,8 +117,8 @@ const AppLayout: FC = ({ children }) => {
             <MenuLi underline={false}><Link href="/"><A><span style={{ width: '100%'}}>홈</span></A></Link></MenuLi>
               {myUserInfo?.role === 'CUSTOMER'?
                 <>
-                  <MenuLi underline={false}><Link href="/item/list"><A>제품목록</A></Link></MenuLi>
-                  <MenuLi underline={false}><Link href={`/item/cart/${myUserInfo?.id}`}><A>빠른주문</A></Link></MenuLi>
+                  <MenuLi underline={false}><Link href={`/post/list`}><A>공지사항</A></Link></MenuLi>
+                  <MenuLi underline={false}><Link href={`/order/order-items`}><A>주문하기</A></Link></MenuLi>
                   <MenuLi underline={false}><Link href={`/item/order/list/${myUserInfo?.id}`}><A>주문목록</A></Link></MenuLi>
                 </>
               : null}
@@ -142,10 +144,11 @@ const AppLayout: FC = ({ children }) => {
         </HeaderBar>
         {showMenuModal?
           <MenuModal>
+            <div className='container'>
             { myUserInfo ? <UserProfile /> : <LoginForm /> }
             <MenuUl horizon={false}>
               <MenuLi underline={true}><Link href="/"><A>홈</A></Link></MenuLi>
-              {myUserInfo?.role === 'PROVIDER' || myUserInfo?.role === 'ADMINISTRATOR'?
+              {myUserInfo?.role === 'PROVIDER'?
               (<>
                 <MenuLi underline={true}><Link href={`/management/check-order/list`}><A>주문확인</A></Link></MenuLi>
                 <MenuLi underline={true}><Link href={`/management/add-order`}><A>주문추가</A></Link></MenuLi>
@@ -161,14 +164,15 @@ const AppLayout: FC = ({ children }) => {
                 <p></p><br />
               </>)
               : null}
-              {myUserInfo?
+              {myUserInfo?.role === 'CUSTOMER'?
                 <>
-                  <MenuLi underline={true}><Link href="/item/list"><A>제품목록</A></Link></MenuLi>
-                  <MenuLi underline={true}><Link href={`/item/cart/${myUserInfo?.id}`}><A>빠른주문</A></Link></MenuLi>
+                  <MenuLi underline={true}><Link href="/post/list"><A>공지사항</A></Link></MenuLi>
+                  <MenuLi underline={true}><Link href="/order/order-items"><A>주문하기</A></Link></MenuLi>
                   <MenuLi underline={true}><Link href={`/item/order/list/${myUserInfo?.id}`}><A>주문목록</A></Link></MenuLi>
                 </>
-              : <MenuLi underline={true}><Link href="/user/signup"><A>회원가입</A></Link></MenuLi>}
+              : null}
             </MenuUl>
+            </div>
           </MenuModal>
         : null}
 

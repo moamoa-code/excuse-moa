@@ -194,7 +194,7 @@ const ItemEdit = ({ item, myUserInfo }) => {
           : null}
         >
           <Descriptions.Item label={
-              <>제품 코드명<span style={{color: 'blue'}}>*</span></>
+              <>제품 코드명</>
           }>
             <Input value={codeName} onChange={onChangeCodeName} maxLength={10}/>
           </Descriptions.Item>

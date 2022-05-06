@@ -18,104 +18,9 @@ import Link from 'next/link';
 import DaumPostcode from 'react-daum-postcode';
 import { SearchOutlined } from '@ant-design/icons';
 import OrderList from '../../../components/OrderList'
-
-const MoDal = styled.div`
-  overflow: auto;
-  display: flex;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 8;
-  align-items: center;
-  justify-content: center;
-  width: 100vw;
-  height: 100vh;
-  background-color: #ffffffe2;
-  animation: fadein 0.2s;
-  @keyframes fadein {
-    from {
-      opacity: 0;
-      top: -100px;
-    }
-    to {
-      opacity: 1;
-      dddd
-      top: 0;
-    }
-  }
-  .contents {
-    overflow: auto;
-    min-width: 240px;
-    max-width: 90%;
-    max-height: 90%;
-    z-index: 9;
-    padding: 24px;
-    background-color: white;
-    border-radius: 10px;
-    -webkit-box-shadow: 1px 1px 15px 3px rgba(0,0,0,0.34); 
-    box-shadow: 1px 1px 15px 3px rgba(0,0,0,0.34);
-    @media screen and (max-width: 600px) {
-      box-shadow: 1px 1px 12px 2px rgba(0,0,0,0.18);
-      border-radius: 4px;
-      max-width: 96%;
-      max-height: 92%;
-      padding: 10px;
-    }
-  }
-  .close {
-    margin-top: 10px;
-    margin-bottom: 5px;
-    float:right;
-  }
-`
-
-const SearchBlock = styled.div`
-  margin: 18px 0 18px 0;
-  width: 100%;
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  select {
-    height: 38px;
-    border-radius: 4px 0 0 4px;
-    border: 1px solid #999999;
-    background-color:white;
-  }
-  input {
-    flex-grow: 1;
-    height: 38px;
-    margin: 0;
-    padding-left: 5px;
-    box-sizing : border-box;
-    border: 1px solid #999999;
-  }
-  .search{
-    color: white;
-    font-size: 12pt;
-    font-weight: 800;
-    min-width: 35px;
-    border:0;
-    margin: 0;
-    border-radius: 0 4px 4px 0;
-    background-color:#1890ff;
-    margin-right:3px;
-  }
-  button {
-    margin-left: auto;
-    height: 38px;
-    border-radius: 4px;
-    border: 1px solid #999999;
-    background-color:white;
-  }
-  button:active {
-    position: relative; 
-    top:2px;
-  }
-  label {
-    display: block;
-    margin: 0 0 7px 0;
-  }
-`
+import { ContainerWide, HGap, MoDal, SearchBlock } from '../../../components/Styled';
+import { useMediaQuery } from 'react-responsive';
+import MyTable from '../../../components/MyTable';
 
 const UserList = () => {
   const { Title, Text } = Typography;
@@ -169,6 +74,9 @@ const UserList = () => {
   const divRef = useRef<HTMLDivElement>(null);
   const modalOutside = useRef(); // 모달 바깥부분 클릭시 닫기 위한 ref
   const { Option } = Select;
+  const isMobile = useMediaQuery({
+    query: "(min-width:0px) and (max-width:768px)",
+  });
 
   const onChangeUKey = useCallback( // 아이디 유효성검사
   (e) => {
@@ -533,16 +441,18 @@ const UserList = () => {
     {
       title: '아이디',
       dataIndex: 'key',
+      type: 'id',
       key: 'key',
-      render: (text, record) => (
-        <b><p onClick={onViewUserInfo(text)}>{text}</p></b>
-      ),
-    },
-    {
+      render: (text, record) => 
+        {
+          return(<span onClick={onViewUserInfo(text)}>{text}</span>)
+        },
+    }, {
       title: '회사명',
       dataIndex: 'company',
-      key: 'company'
-    },{
+      type: 'title',
+      key: 'company',
+    }, {
       title: '회원구분',
       key: 'role',
       dataIndex: 'role',
@@ -562,51 +472,68 @@ const UserList = () => {
         }, {
           text: '삭제완료',
           value: 'TERMINATED'
-        }
+        }, 
       ],
       onFilter: (value, record) => record.role?.indexOf(value) === 0,
-    },
-    {
+    }, {
       title: '이름',
       dataIndex: 'name',
       key: 'name',
+    }, {
+      title: '',
+      key: 'action',
+      type: 'right',
+      render: (text, record) => (
+        <span style={{color: '#4aa9ff'}} onClick={onViewUserInfo(record.key)} >보기</span>
+      ),
     },
   ]
 
   return (
   <AppLayout>
-    <div style={{maxWidth: '800px', padding: '10px', margin: '0 auto'}}>
+    <ContainerWide>
       <Head>
         <title>고객 등록</title>
       </Head>
       <Title level={4} style={{ marginTop: '30px' }} >회원 검색</Title>
       <SearchBlock>
-        <select name='searchType' onChange={onSearchTypeChange}>
-          <option key='COMPANY' value='COMPANY'>회사명</option>
-          <option key='KEY' value='KEY'>사업자등록번호(ID)</option>
-        </select>
-        <input
-          value={searchTxt}
-          onChange={onChangeSearchTxt}
-        />
-        <button type='button' className='search' onClick={onSearchClick}>
-          <SearchOutlined />
-        </button>
+        <div>
+          <select name='searchType' onChange={onSearchTypeChange}>
+            <option key='COMPANY' value='COMPANY'>회사명</option>
+            <option key='KEY' value='KEY'>사업자등록번호(ID)</option>
+          </select>
+          <input
+            value={searchTxt}
+            onChange={onChangeSearchTxt}
+          />
+          <button type='button' className='search' onClick={onSearchClick}>
+            <SearchOutlined />
+          </button>
+        </div>
         <button 
           type='button' 
           onClick={onLoadAllUsers}>
             전체목록
         </button>
       </SearchBlock>
-
       <Title level={4} >회원 목록</Title>
-      <Table
-        loading={loading}
-        size="small"
-        rowKey="id"
-        columns={userTableColumns}
-        dataSource={userList}
-      />
+      {isMobile?
+        <MyTable 
+          rowKey="id"
+          loading={loading}
+          columns={userTableColumns}
+          dataSource={userList}
+        />
+      :
+        <Table 
+          loading={loading}
+          size="small"
+          rowKey="id"
+          columns={userTableColumns}
+          dataSource={userList}
+        />
+      }
+      <HGap /><HGap />
       {isVisible ? 
         <div id={'editForm'} ref={divRef}>
           <br/>
@@ -860,7 +787,7 @@ const UserList = () => {
       : null}<br/><br/>
       <Link href='/factory/user/create'><a><Button 
         loading={loading} type='primary'>+ 회원 생성</Button></a></Link>
-    </div>
+    </ContainerWide>
     {isDaumZipVisible?
       <MoDal 
         ref={modalOutside}

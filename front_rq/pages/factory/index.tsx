@@ -62,6 +62,11 @@ const Factory = () => {
         <Link href="/factory/item/regist" passHref><a><span>제품등록</span></a></Link>
         <br/>
         <Link href="/factory/item/list" passHref><a><span>제품목록</span></a></Link>
+        <br /><br />
+        <Title level={4}><UnorderedListOutlined /> 공지사항 관리</Title>
+        <Link href="/factory/post/regist"><a><span>공지사항 등록</span></a></Link>
+        <br />
+        <Link href="/factory/post/list"><a><span>공지사항 목록</span></a></Link>
         <br />
       </Container800>
   </AppLayout>
@@ -84,7 +89,7 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
       },
     };
   }
-  if (response.role !== 'PROVIDER' && response.role !== 'ADMINISTRATOR') { // 로그인 안했으면 홈으로
+  if (response.role !== 'ADMINISTRATOR') { // 로그인 안했으면 홈으로
     return {
       redirect: {
         destination: '/unauth',

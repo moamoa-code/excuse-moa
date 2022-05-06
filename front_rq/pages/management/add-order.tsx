@@ -11,7 +11,7 @@ import { orderPosItemAPI } from '../../apis/order';
 import AppLayout from '../../components/AppLayout';
 import 'dayjs/locale/ko';
 import User from '../../interfaces/user';
-import { CheckCircleOutlined, DeleteOutlined, MinusOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, DeleteOutlined, InfoCircleTwoTone, MinusOutlined, PlusOutlined, SearchOutlined, WarningTwoTone } from '@ant-design/icons';
 import Modal from 'antd/lib/modal/Modal';
 import { loadCustomerItemListAPI, loadItemListAPI } from '../../apis/item';
 import Item from '../../interfaces/item';
@@ -55,7 +55,7 @@ const addOrder = () => {
   const [totalWeight, setTotalWeight] = useState(0);
   // 제품 보기 모달
   const [ isVisible, setIsVisible ] = useState(false);
-  const [ selectedItem, setSelectedItem ] = useState();
+  const [ selectedItem, setSelectedItem ] = useState(null);
   // 입력 모드 상태
   const [ isNewCustomer, setIsNewCustomer ] = useState(false); // 구매자 새로입력
   const [ isNewProduct, setIsNewProduct ] = useState(false); // 제품 새로 입력
@@ -70,6 +70,7 @@ const addOrder = () => {
   const [productName, setProductName] = useState('');
   const [packageName, setPackageName] = useState('');
   // style useMemo
+  const opacityStyle = useMemo(() => ({opacity: '0.5'}), []);
   const minusButtonStyle = useMemo(() => ({fontSize:'14pt', color:'#ff4d4f'}), []);
   const plusButtonStyle = useMemo(() => ({fontSize:'14pt', color:'#1890ff'}), []);
 
@@ -97,10 +98,12 @@ const addOrder = () => {
     let totalWeight = 0;
     array.map((v) => {
       let weight = 0;
-      if (v.weight.toUpperCase().slice(-2) === 'KG') {
-        weight = Number(v.weight.toUpperCase().replace('KG', ''));
+      if (v.weight.toUpperCase().replace(' ','').slice(-2) === 'KG') {
+        weight = Number(v.weight.toUpperCase().replace(' ','').replace('KG', ''));
+      } else if (v.weight.toUpperCase().replace(' ','').slice(-2) !== 'KG' && v.weight.toUpperCase().replace(' ','').slice(-1) === 'G') {
+        weight = Number(v.weight.toUpperCase().replace(' ','').replace('G', '')) * 0.001;
       } else {
-        weight = Number(v.weight.toUpperCase().replace('G', '')) * 0.001;
+        weight = 0;
       }
       totalWeight = totalWeight + weight;
     });
@@ -109,7 +112,6 @@ const addOrder = () => {
   // 주문완료 버튼
   const onOrderClick = () => {
     setLoading(true);
-    // message.error(selectedItems.length)
     if (selectedProvider === '' || selectedCustomer === '' || selectedItems.length <= 0){
       setLoading(false);
       return message.error('선택 안한 항목이 있습니다.');
@@ -119,10 +121,8 @@ const addOrder = () => {
       return message.error('구매자 이름을 입력하세요.');
     }
     let customerId = selectedCustomer;
-    // if (isNewCustomer) {
-    //   customerId = 'anonymous'
-    // }
     console.log('onOrderClick selectedItems', selectedItems);
+    const tWeight = totalWeight.toFixed(1);
     orderPosItemAPI(
       { items : selectedItems, 
         providerId: selectedProvider, 
@@ -131,6 +131,7 @@ const addOrder = () => {
         address,
         name,
         phone,
+        totalWeight: tWeight
       })
     .then((result) => {
       console.log(result);
@@ -170,6 +171,12 @@ const addOrder = () => {
       setAddress('');
       return;
     }
+    if (addr.id === '키페') {
+      setName('카페수령');
+      setPhone('');
+      setAddress('');
+      return;
+    }
     if (addr.id === '없음') {
       setName('');
       setPhone('');
@@ -192,15 +199,15 @@ const addOrder = () => {
     item.qty = 1;
     item.tag = '';
     item.weight = '';
-    if (String(item.unit).toUpperCase() === '1KG') {
+    if (String(item.unit).toUpperCase().replace(' ','') === '1KG') {
       item.weight = '1kg'
-    } if (String(item.unit).toUpperCase() === '500G') {
+    } if (String(item.unit).toUpperCase().replace(' ','') === '500G') {
       item.weight = '500g'
-    } if (String(item.unit).toUpperCase() === '400G') {
+    } if (String(item.unit).toUpperCase().replace(' ','') === '400G') {
       item.weight = '400g'
-    }if (String(item.unit).toUpperCase() === '200G') {
+    }if (String(item.unit).toUpperCase().replace(' ','') === '200G') {
       item.weight = '200g'
-    } if (String(item.unit).toUpperCase() === '100G') {
+    } if (String(item.unit).toUpperCase().replace(' ','') === '100G') {
       item.weight = '100g'
     }
     if (selectedItems.findIndex((v) => v.id === item.id) !== -1) {
@@ -517,6 +524,16 @@ const addOrder = () => {
                   }
                   return (
                     <ItemSelector onClick={onItemSelectClick(v)} className={className}>
+                      <span 
+                        className='showModalClick'
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedItem(v);
+                          setIsVisible(true);
+                        }}
+                      >
+                        <InfoCircleTwoTone style={opacityStyle}/>
+                      </span>
                       <div>
                         <span className='underline'>
                           <span className='codeName'>{v.codeName}</span>
@@ -559,6 +576,9 @@ const addOrder = () => {
           <ContentsBox>
             <ItemForm>
               <div>
+                <div style={{textAlign:'center'}}>
+                  <WarningTwoTone /> 판매자와 사전협의되지 않은 제품 입력시 주문이 취소될 수 있습니다.
+                </div>
                 <div className='optionName'>A. 원두 코드 <Red>*</Red></div>
                 <input 
                   value={codeName} 
@@ -581,9 +601,7 @@ const addOrder = () => {
               <div>
                 <div className='optionName'>B. 무게 단위 <Red>*</Red></div>
                 {/* <input value={unit} placeholder='아래에서 선택하세요.' readOnly/> */}
-                <input value={unit} placeholder='아래에서 선택하세요.'   onChange={(e) => {
-                  setUnit(e.target.value)
-                  }}/>
+                <input value={unit} placeholder='아래에서 선택하세요.'/>
                 <div className='optionContainer'>
                   {units.map((v)=>{
                     return (
@@ -607,7 +625,7 @@ const addOrder = () => {
                 </div>
               </div>
               <div>
-                <div className='optionName'>D. 표기사항 (라벨 등)</div>
+                <div className='optionName'>D. 표기사항 / 옵션 (라벨 등)</div>
                 <input 
                   maxLength={12}
                   value={productTag}
@@ -655,21 +673,31 @@ const addOrder = () => {
                 }
                 return (
                   <ItemSelector onClick={onItemSelectClick(v)} className={className}>
-                  <div>
-                    <span className='underline'>
-                      <span className='codeName'>{v.codeName}</span>
-                      <div className='space' />
-                      <span>({v.id}) </span>
-                      <span className='name'>{v.name}</span>
+                    <span 
+                      className='showModalClick'
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedItem(v);
+                        setIsVisible(true);
+                      }}
+                    >
+                      <InfoCircleTwoTone />
                     </span>
-                  </div>
-                  <div className='second'>
-                    <span className='unit'>{v.unit}</span>
-                    <div className='space' />
-                    <span className='packageName'>{v.packageName}</span>
-                    <span> ({v.supplyPrice})</span>
-                  </div>
-                </ItemSelector>
+                    <div>
+                      <span className='underline'>
+                        <span className='codeName'>{v.codeName}</span>
+                        <div className='space' />
+                        <span>({v.id}) </span>
+                        <span className='name'>{v.name}</span>
+                      </span>
+                    </div>
+                    <div className='second'>
+                      <span className='unit'>{v.unit}</span>
+                      <div className='space' />
+                      <span className='packageName'>{v.packageName}</span>
+                      <span> ({v.supplyPrice})</span>
+                    </div>
+                  </ItemSelector>
                   )
               })}
             </ItemsContainer>
@@ -691,16 +719,7 @@ const addOrder = () => {
                   >
                   <span className='codeName'>{item.codeName}</span>
                   <div className='space' />
-                  <span 
-                    className='name'
-                    onClick={() => {
-                        setSelectedItem(item);
-                        if(String(item.id).includes('F_')) {
-                          return;
-                        }
-                        setIsVisible(true);
-                    }}
-                  >
+                  <span className='name'>
                     {item.name}
                   </span>
                 </div>
@@ -714,13 +733,14 @@ const addOrder = () => {
                   }}
                 >X 
                 </button>
-                <div className='weight'>
-                  총 {item?.weight}
-                </div>
+
                 <div className='second'>
                   <span className='unit'>{item.unit}</span>
                   <div className='space' />
                   <span className='packageName'>{item.packageName}</span>
+                  <div className='weight'>
+                    총 {item?.weight}
+                  </div>
                 </div>
                 <div className='bottom'>
                   <div className='tagInputBox'>
@@ -748,16 +768,18 @@ const addOrder = () => {
                             return;
                           }
                           const newQty = Number(array[idx].qty) - 1;
-                          if (String(item.unit).toUpperCase() === '1KG') {
+                          if (String(item.unit).toUpperCase().replace(' ','') === '1KG') {
                             array[idx].weight = newQty * 1 + 'Kg'
-                          } if (String(item.unit).toUpperCase() === '500G') {
+                          } else if (String(item.unit).toUpperCase().replace(' ','') === '500G') {
                             array[idx].weight = (newQty * 0.5).toFixed(1)+ 'Kg'
-                          } if (String(item.unit).toUpperCase() === '400G') {
+                          } else if (String(item.unit).toUpperCase().replace(' ','') === '400G') {
                             array[idx].weight = (newQty * 0.4).toFixed(1)+ 'Kg'
-                          }if (String(item.unit).toUpperCase() === '200G') {
+                          } else if (String(item.unit).toUpperCase().replace(' ','') === '200G') {
                             array[idx].weight = (newQty * 0.2).toFixed(1) + 'Kg'
-                          } if (String(item.unit).toUpperCase() === '100G') {
+                          } else if (String(item.unit).toUpperCase().replace(' ','') === '100G') {
                             array[idx].weight = (newQty * 0.1).toFixed(1)+ 'Kg'
+                          } else {
+                            array[idx].weight = '0';
                           }
                           array[idx].qty = newQty;
                           getTotalQty(array);
@@ -798,16 +820,18 @@ const addOrder = () => {
                             return;
                           }
                           const newQty = Number(array[idx].qty) + 1;
-                          if (String(item.unit).toUpperCase() === '1KG') {
+                          if (String(item.unit).toUpperCase().replace(' ','') === '1KG') {
                             array[idx].weight = newQty * 1 + 'Kg'
-                          } if (String(item.unit).toUpperCase() === '500G') {
+                          } else if (String(item.unit).toUpperCase().replace(' ','') === '500G') {
                             array[idx].weight = (newQty * 0.5).toFixed(1)+ 'Kg'
-                          } if (String(item.unit).toUpperCase() === '400G') {
+                          } else if (String(item.unit).toUpperCase().replace(' ','') === '400G') {
                             array[idx].weight = (newQty * 0.4).toFixed(1)+ 'Kg'
-                          }if (String(item.unit).toUpperCase() === '200G') {
+                          } else if (String(item.unit).toUpperCase().replace(' ','') === '200G') {
                             array[idx].weight = (newQty * 0.2).toFixed(1) + 'Kg'
-                          } if (String(item.unit).toUpperCase() === '100G') {
+                          } else if (String(item.unit).toUpperCase().replace(' ','') === '100G') {
                             array[idx].weight = (newQty * 0.1).toFixed(1)+ 'Kg'
+                          } else {
+                            array[idx].weight = '0';
                           }
                           array[idx].qty = newQty;
                           getTotalQty(array);
@@ -834,7 +858,7 @@ const addOrder = () => {
           />
         </CommentInput>
         <br />
-        <Space>
+        <CenteredDiv>
           <Button 
             size='large'
             type='primary'
@@ -843,8 +867,7 @@ const addOrder = () => {
           >
             {totalQty}개 ({totalWeight.toFixed(1)}Kg) 주문 추가 완료
           </Button>
-          <Link href={`/factory/order-list`}><a><Button size='large' danger>취소</Button></a></Link>
-        </Space>
+        </CenteredDiv>
       </Container800>
     </AppLayout>
   );

@@ -19,106 +19,7 @@ import User from '../../../interfaces/user';
 import styled from 'styled-components';
 import { SearchOutlined } from '@ant-design/icons';
 import UserInfoBox from '../../../components/UserInfoBox';
-
-const Container600 = styled.div`
-max-width: 600px;
-padding: 20px;
-margin: 0 auto;
-@media screen and (max-width: 600px) {
-  padding: 10px;
-}
-`
-
-const SearchBlock = styled.div`
-  margin: 18px 0 18px 0;
-  width: 100%;
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  input {
-    flex-grow: 1;
-    height: 38px;
-    margin: 0;
-    padding-left: 5px;
-    box-sizing : border-box;
-    border-radius: 4px 0 0 4px;
-    border: 1px solid #999999;
-  }
-  .search{
-    color: white;
-    font-size: 12pt;
-    font-weight: 800;
-    min-width: 35px;
-    border:0;
-    margin: 0;
-    border-radius: 0 4px 4px 0;
-    background-color:#1890ff;
-  }
-  button {
-    margin-left: 5px;
-    height: 38px;
-    border-radius: 4px;
-    border: 1px solid #999999;
-    background-color:white;
-  }
-  button:active {
-    position: relative; 
-    top:2px;
-  }
-  label {
-    display: block;
-    margin: 0 0 7px 0;
-  }
-`
-const OptionContainer = styled.div`
-  padding: 10px 0px 10px 0px;
-  display: block;
-  overflow:auto;
-  max-height:300px;
-  p {
-    background-color: white;
-    display: inline-block;
-    box-sizing: border-box;
-    border-radius: 4px;
-    padding: 5px 8px 5px 8px;
-    margin: 6px;
-    font-size: 10pt;
-  }
-  p:active {
-    position: relative; 
-    top:2px;
-  }
-  .codeName{
-    background-color:#00B4D8;
-    color: white;
-  }
-  .unit{
-    background-color:#FF5C8D;
-    color: white;
-  }
-  .package{
-    background-color:#ec7728;
-    color: white;
-  }
-  .provider{
-    border: 1px solid #999999;
-  }
-`
-const Block = styled.div`
-  margin: 18px 0 18px 0;
-  label {
-    display: block;
-    margin: 0 0 7px 0;
-  }
-  input {
-    width: 100%;
-    height: 38px;
-  }
-`
-const RedBold = styled.span`
-  color:red;
-`
-
+import { Block, ContainerMid, OptionContainer, Red, SearchBlock } from '../../../components/Styled';
 
 const RegistItem = () => {
   const [loading, setLoading] = useState(false);
@@ -139,7 +40,7 @@ const RegistItem = () => {
   const [isProviderList, setIsproviderList] = useState(false);
   // 옵션선택
   const codeNames = ['HOUSE', 'DECAFFEIN'];
-  const units = ['200g', '500g', '1Kg'];
+  const units = ['200g', '500g', '1Kg', '100g', '400g'];
   const packages = ['M 무지', 'M 브랜드스티커', 'M 브랜드인쇄', '지퍼 무지', '지퍼 브랜드인쇄', '지퍼 브랜드스티커'];
   const { Option } = Select;
 
@@ -281,25 +182,24 @@ const RegistItem = () => {
 
   return (
     <AppLayout>
-    <Container600>
+    <ContainerMid>
       <Head>
         <title>제품등록</title>
       </Head>
-      {/* <div>{JSON.stringify(myUserInfo)}</div><br /> */}
-      {/* <p>{myUserInfo.Customers.map((v) => (
-        <p>{v.id}</p>
-      ))}</p> */}
       <Title level={3}>제품 등록</Title>
       <Form style={{ margin: '10px 0 20px' }} encType="multipart/form-data" onFinish={onSubmit}>
         <label style={{margin: '0 0 7px 0'}}>판매자 선택</label>
         <SearchBlock>
-          <input
-            value={searchTxt}
-            onChange={onChangeSearchTxt}
-          />
-          <button type='button' className='search' onClick={onSearchClick}>
-            <SearchOutlined />
-          </button>
+          <div>
+            <input
+              value={searchTxt}
+              className='searchInput'
+              onChange={onChangeSearchTxt}
+            />
+            <button type='button' className='search' onClick={onSearchClick}>
+              <SearchOutlined />
+            </button>
+          </div>
           <button 
             type='button' 
             onClick={()=>{
@@ -308,14 +208,6 @@ const RegistItem = () => {
           </button>
         </SearchBlock>
         <Block>
-          {/* <label htmlFor="item-code"><RedBold>* </RedBold>판매자 선택</label>
-          <Search placeholder="ID / 사업자 등록번호 검색" onSearch={onSearchProvider} enterButton /><br />
-          <Button
-            onClick={()=>{
-              setIsproviderList(!isProviderList);
-            }}>
-            목록보기
-          </Button><br /> */}
           {isProviderList?
             <OptionContainer>
             {providerList?.map((v)=>{
@@ -334,7 +226,7 @@ const RegistItem = () => {
           :null}
         </Block>
         <Block>
-          <label htmlFor="item-code"><RedBold>* </RedBold>제품 코드명 (구매자 비공개)</label>
+          <label htmlFor="item-code"><Red>* </Red>제품 코드명</label>
           <Input name="item-code" value={codeName} required onChange={onChangeCodeName} maxLength={10}/>
           <OptionContainer>
             {codeNames.map((v)=>{
@@ -347,7 +239,7 @@ const RegistItem = () => {
           </OptionContainer>
         </Block>
         <Block>
-          <label htmlFor="item-code"><RedBold>* </RedBold>제품 포장 종류</label>
+          <label htmlFor="item-code"><Red>* </Red>제품 포장 종류</label>
           <Input name="item-package" value={packageName} required onChange={onChangePack} maxLength={20}/>
           <OptionContainer>
             {packages.map((v)=>{
@@ -358,12 +250,18 @@ const RegistItem = () => {
           </OptionContainer>
         </Block>
         <Block>
-          <label htmlFor="user-name"><RedBold>* </RedBold>제품명</label>
+          <label htmlFor="user-name"><Red>* </Red>제품명</label>
           <Input name="user-name" value={name} required onChange={onChangeName} maxLength={25}/>
         </Block>
         <Block>
-          <label htmlFor="user-unit"><RedBold>* </RedBold>무게 단위</label>
-          <Input name="user-unit" value={unit} onChange={onChangeUnit} maxLength={10}/>
+          <label htmlFor="user-unit"><Red>* </Red>무게 단위</label>
+          <Input 
+            name="user-unit"
+            value={unit} onChange={onChangeUnit}
+            maxLength={10}
+            placeholder='아래에서 선택'
+            readOnly
+          />
           <OptionContainer>
             {units.map((v)=>{
               return (
@@ -373,7 +271,7 @@ const RegistItem = () => {
           </OptionContainer>
         </Block>
         <Block>
-          <label><RedBold>* </RedBold>제품 열람가능 고객 범위</label>
+          <label><Red>* </Red>제품 열람가능 고객 범위</label>
           <Select
             onChange={handleScopeChange}
             defaultValue={scope}
@@ -415,7 +313,7 @@ const RegistItem = () => {
         </div>
       </Form>
       {/* <ItemAddCustomer myUserInfo={myUserInfo} itemId={1}/> */}
-    </Container600>
+    </ContainerMid>
   </AppLayout>
   );
 };

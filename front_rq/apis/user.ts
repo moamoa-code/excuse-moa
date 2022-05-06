@@ -17,6 +17,7 @@ export function searchUsersByCompanyAPI(keyword) {
 export function loadUserAPI(data: string) { // key로 찾음
   return axios.get(`/user/${data}`).then((response) => response.data);
 }
+
 // 유저정보 불러오기
 export function loadUserByIdAPI(data: number) { // id:string 으로 찾음
   return axios.get(`/user/id/${data}`).then((response) => response.data);

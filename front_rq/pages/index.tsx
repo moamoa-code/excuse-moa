@@ -10,40 +10,30 @@ import { loadMyInfoAPI } from '../apis/user';
 import User from '../interfaces/user';
 import { Typography, Button, Table } from 'antd';
 import PostView from '../components/PostView';
-import { loadRecentPostAPI } from '../apis/post';
+import { loadAdnminPostAPI, loadRecentPostAPI } from '../apis/post';
 import { PlusOutlined } from '@ant-design/icons';
 import Router from 'next/router';
 import styled from 'styled-components';
 import { loadReceivedOrdersAPI, loadRecentReceivedOrdersAPI } from '../apis/order';
 import dayjs from 'dayjs';
+import { Container800, ContainerMid, HGap } from '../components/Styled';
+import MyTable from '../components/MyTable';
+import { useMediaQuery } from 'react-responsive';
 
-const Container800 = styled.div`
-max-width: 800px;
-padding: 20px;
-margin: 0 auto;
-@media screen and (max-width: 600px) {
-  padding: 10px;
-}
-`
-const Container500 = styled.div`
-max-width: 500px;
-padding: 20px;
-margin: 0 auto;
-@media screen and (max-width: 600px) {
-  padding: 10px;
-}
-`
 
 // 메인 페이지
 const Home = () => {
-  const [ postData, setPostdata ] = useState({});
+  const [ posts, setPosts ] = useState([]);
   const [ orderData, setOderdata ] = useState([]);
+  const isMobile = useMediaQuery({
+    query: "(min-width:0px) and (max-width:768px)",
+  });
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI, {
     onSuccess(data) {
       if(data?.role === 'CUSTOMER'){
         loadRecentPostAPI()
         .then((data) => {
-          setPostdata(data);
+          setPosts(data);
         })
       } if (data?.role === 'PROVIDER' || data?.role === 'ADMINISTRATOR') {
         loadRecentReceivedOrdersAPI(data.key)
@@ -51,11 +41,91 @@ const Home = () => {
           setOderdata(data);
           console.log('setOderdata',data);
         })
+      } if (data?.role === 'PROVIDER') {
+        loadAdnminPostAPI()
+        .then((data) => {
+          setPosts(data);
+          console.log('setOderdata',data);
+        })
       }
     }
   });
   const [ isLoggedin, setIsloggedin ] = useState(false)
   const { Title } = Typography;
+
+  const postColumns = [
+    {
+      title: 'ID',
+      dataIndex: 'id',
+      type: 'id',
+      key: 'id',
+    }, {
+      title: '제목',
+      dataIndex: 'title',
+      type: 'title',
+      key: 'title',
+    }, {
+      title: '작성자',
+      dataIndex: 'User',
+      key: 'User',
+      render: (text, record) => (
+        <>{text?.company}</>
+      ),
+    }, {
+      title: '작성일',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      width: 140,
+      render: (text, record) => (
+        <>{dayjs(text).format('YY.MM.DD HH:mm')}{}</>
+      ),
+    }, 
+  ]
+
+  const orderColumns = [
+    {
+      title: '주문번호',
+      dataIndex: 'id',
+      type: 'id',
+      key: 'id',
+    }, {
+      title: '총 공급가',
+      key: 'totalPrice',
+      dataIndex: 'totalPrice',
+    }, {
+      title: '총 중량',
+      key: 'totalWeight',
+      type: 'right',
+      dataIndex: 'totalWeight',
+    }, {
+      title: '고객사',
+      dataIndex: 'Customer',
+      type: 'title',
+      key: 'Customer',
+      render: (text, record) => {
+        return <>{text?.company ?? record.name}</>
+      },
+    }, {
+      title: '주문일시',
+      dataIndex: 'date',
+      key: 'date',
+      type: 'sub',
+      render: (text, record) => (
+        <>{dayjs(text).format('YY.MM.DD HH:mm')}</>
+      ),
+    }, {
+      title: '주문상태',
+      dataIndex: 'status',
+      key: 'status',
+    }, {
+      title: '',
+      key: 'action',
+      type: 'right',
+      render: (text, record) => (
+        <Link href={`/management/check-order/${record.id}`}><a>보기</a></Link>
+      ),
+    }
+  ]
 
   useEffect(() => {
     console.log('myUserInfo');
@@ -71,10 +141,10 @@ const Home = () => {
   if (!isLoggedin) {
     return (
       <AppLayout>
-        <Container500>
+        <ContainerMid>
           <Title level={4}>로그인이 필요한 서비스 입니다.</Title>
           { myUserInfo ? <UserProfile /> : <LoginForm /> }
-        </Container500>
+        </ContainerMid>
       </AppLayout>
     )
   }
@@ -87,61 +157,96 @@ const Home = () => {
             <p>관리자의 승인 이후 이용 가능합니다.</p>
           :null}
           {myUserInfo?.role === 'RESIGNED' ?
-            <p>계정삭제 처리 중 입니다.</p>
+            <p>회원탈퇴 처리 중 입니다.</p>
           :null}
           {myUserInfo?.role === 'CUSTOMER'?
             <>
-              <Title level={5}>판매자 공지사항</Title>
-              <PostView post={postData} />
+              <Title level={5}>공지사항</Title>
+              <PostView post={posts[0]} /><HGap />
+              {isMobile?
+                <MyTable 
+                  columns={postColumns}
+                  dataSource={posts.slice(0,2)}
+                  rowKey="id"
+                  expandable={{
+                    expandedRowRender: (record) => 
+                    <PostView post={record}/>,
+                  }}
+                />
+              :<>
+                <Table
+                  columns={postColumns}
+                  dataSource={posts.slice(0,2)}
+                  pagination={{ hideOnSinglePage: true }}
+                  rowKey="id"
+                  expandable={{
+                    expandedRowRender: (record) => 
+                    <PostView post={record}/>,
+                  }}
+                />
+              </>}
+
               <Button 
                 onClick={() => (Router.replace(`/post/list`))}
-                type="dashed"
                 size="large"
+                type="text"
                 block>
                   <PlusOutlined /> 전체 공지사항 보기
               </Button>
             </>
           : null }
-          {myUserInfo?.role === 'PROVIDER' || myUserInfo?.role === 'ADMINISTRATOR'?
+          {myUserInfo?.role === 'PROVIDER'?
           <>
+          <Title level={5}>관리자 공지사항</Title>
+            {isMobile?
+              <MyTable 
+                columns={postColumns}
+                dataSource={posts.slice(0,2)}
+                rowKey="id"
+                expandable={{
+                  expandedRowRender: (record) => 
+                  <PostView post={record}/>,
+                }}
+              />
+            :<>
+              <Table
+                columns={postColumns}
+                dataSource={posts.slice(0,2)}
+                pagination={{ hideOnSinglePage: true }}
+                rowKey="id"
+                expandable={{
+                  expandedRowRender: (record) => 
+                  <PostView post={record}/>,
+                }}
+              />
+            </>}
+            <Button 
+              onClick={() => (Router.replace(`/post/list`))}
+              type="text"
+              size="large"
+              block>
+              <PlusOutlined /> 전체 공지사항 보기
+            </Button>
+            <HGap /><HGap />
             <Title level={5}>최근 주문현황</Title>
-            <Table
-              pagination={false}
-              size="small"
-              rowKey="id"
-              columns={[
-                {
-                  title: '주문일시',
-                  dataIndex: 'date',
-                  key: 'date',
-                  render: (text, record) => (
-                    <>{dayjs(text).format('YY.MM.DD HH:mm')}</>
-                  ),
-                }, {
-                  title: '고객사',
-                  dataIndex: 'Customer',
-                  key: 'date',
-                  render: (text, record) => (
-                    <>{text?.company ?? record.name}</>
-                  ),
-                }, {
-                  title: '주문상태',
-                  dataIndex: 'status',
-                  key: 'status',
-                }, {
-                  title: '',
-                  key: 'action',
-                  render: (text, record) => (
-                    <Link href={`/management/check-order/${record.id}`}><a>자세히</a></Link>
-                  ),
-                }
-              ]}
-              dataSource={orderData}
-            />
+            {isMobile?
+              <MyTable 
+                columns={orderColumns}
+                dataSource={orderData}
+                rowKey="id"
+              />
+            :<>
+              <Table
+                columns={orderColumns}
+                dataSource={orderData}
+                pagination={{ hideOnSinglePage: true }}
+                rowKey="id"
+              />
+            </>}
             <Link href="/management/check-order/list"><a>            
                 <Button 
                 // onClick={() => (Router.replace(`/management/check-order/list`))}
-                type="dashed"
+                type="text"
                 size="large"
                 block>
                   <PlusOutlined /> 전체 주문 목록 보기

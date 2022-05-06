@@ -78,7 +78,7 @@ router.post('/', isLoggedIn, async (req, res, next) => {
 });
 
 // 공장에서 제품 주문
-router.post('/from-factory', async (req, res, next) => { 
+router.post('/from-factory', isLoggedIn, async (req, res, next) => { 
   try {
     console.log(req.body);
     const itemsArray = req.body.items;
@@ -125,6 +125,7 @@ router.post('/from-factory', async (req, res, next) => {
     if (comment === null || comment === undefined || comment.length === 0) {
       comment = 'POS입력'
     }
+    const tWeight = req.body.totalWeight + 'kg'
     const order = await Order.create({ // 주문 INSERT
       comment: comment,
       address: req.body.address,
@@ -133,6 +134,7 @@ router.post('/from-factory', async (req, res, next) => {
       phone: req.body.phone,
       ProviderId: provider.id,
       CustomerId: req.body.customerId,
+      totalWeight: tWeight
     })
 
     let orderDetail = [];

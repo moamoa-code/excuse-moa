@@ -14,12 +14,18 @@ import PostList from '../../components/PostList';
 import PostView from '../../components/PostView';
 import { DownOutlined, RightOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { useMediaQuery } from 'react-responsive';
+import MyTable from '../../components/MyTable';
+import { ContainerBig, HGap } from '../../components/Styled';
 
 const ProviderPostList = () => {
   // const queryClient = useQueryClient();
   const { data: posts } = useQuery<Item[]>(['myposts'], loadMyPostListAPI);
   const { Title } = Typography;
   const [pageSize, setPageSize] = useState<number>(10);
+  const isMobile = useMediaQuery({
+    query: "(min-width:0px) and (max-width:768px)",
+  });
 
   const togglePageSize = () => {
     if (pageSize === 10){
@@ -31,80 +37,78 @@ const ProviderPostList = () => {
 
   const columns = [
     {
+      title: 'ID',
+      dataIndex: 'id',
+      type: 'id',
+      key: 'id',
+    }, {
       title: '제목',
       dataIndex: 'title',
+      type: 'title',
       key: 'title',
-      render: (text, record) => (
-        <>{text}</>
-      ),
     }, {
       title: '작성일',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      align: 'right',
       render: (text, record) => (
-        <>{dayjs(text).format('YYYY.MM.DD HH:mm')}{}</>
+        <>{dayjs(text).format('YY.MM.DD HH:mm')}{}</>
       ),
+    }, {
+      title: '열람범위',
+      dataIndex: 'scope',
+      key: 'scope',
+      render: (text, record) => {
+        if (text === 'GROUP') {
+          return <>모든 고객</>
+        } else if (text === 'PRIVATE') {
+          return <>특정 고객</>
+        } else {
+          return <>{text}</>
+        }
+      },
     }, {
       title: '',
       key: 'action',
-      align: 'right',
+      type: 'right',
       render: (text, record) => (
-        <Link href={`/post/edit/${record.id}`}><a>수정/열람회원 등록</a></Link>
+        <Link href={`/post/edit/${record.id}`}><a>수정</a></Link>
       ),
     },
   ]
 
+  const expandable = {
+    expandedRowRender: (record) => 
+    <PostView post={record}/>,
+    expandIcon: ({ expanded, onExpand, record }) =>
+    expanded ? (
+      <DownOutlined style={{color: '#64707a', fontSize: '8pt'}} onClick={e => onExpand(record, e)} />
+    ) : (
+      <RightOutlined style={{color: '#64707a', fontSize: '8pt'}} onClick={e => onExpand(record, e)} />
+    ),
+    expandRowByClick: true
+  };
+
   return (
     <AppLayout>
-      <div style={{maxWidth: '800px', padding: '10px', margin: '0 auto'}}>
+      <ContainerBig>
         <Title level={4}>작성한 공지사항 목록</Title>
-        <Table 
-          size="small"
+        {isMobile?
+        <MyTable
           rowKey="id"
-          columns={[
-            {
-              title: '제목',
-              dataIndex: 'title',
-              key: 'title',
-              render: (text, record) => (
-                <>{text}</>
-              ),
-            }, {
-              title: '작성일',
-              dataIndex: 'createdAt',
-              key: 'createdAt',
-              align: 'right',
-              render: (text, record) => (
-                <>{dayjs(text).format('YYYY.MM.DD HH:mm')}{}</>
-              ),
-            }, {
-              title: '',
-              key: 'action',
-              align: 'right',
-              render: (text, record) => (
-                <Link href={`/post/edit/${record.id}`}><a>수정/열람회원 등록</a></Link>
-              ),
-            },
-          ]}
-          expandable={{
-            expandedRowRender: (record) => 
-            <PostView post={record}/>,
-            expandIcon: ({ expanded, onExpand, record }) =>
-            expanded ? (
-              <DownOutlined style={{color: '#64707a', fontSize: '8pt'}} onClick={e => onExpand(record, e)} />
-            ) : (
-              <RightOutlined style={{color: '#64707a', fontSize: '8pt'}} onClick={e => onExpand(record, e)} />
-            ),
-            expandRowByClick: true
-          }}
-          pagination={{
-            pageSize: pageSize
-          }}
+          columns={columns}
+          expandable={expandable}
           dataSource={posts}
-        />
-        <Button onClick={togglePageSize}>페이지 확장/축소</Button>
-      </div>
+        />  
+        :
+        <Table 
+          rowKey="id"
+          columns={columns}
+          expandable={expandable}
+          dataSource={posts}
+        />}
+        <HGap />
+        <Link href='/post/regist'><a><Button type='primary'>+ 새로운 글 작성</Button></a></Link>
+      </ContainerBig>
     </AppLayout>
   );
 };

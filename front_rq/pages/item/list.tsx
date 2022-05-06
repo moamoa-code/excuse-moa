@@ -12,10 +12,13 @@ import AppLayout from '../../components/AppLayout';
 import ItemList from '../../components/ItemList'; // 제품 상세정보 보기 컴포넌트
 import User from '../../interfaces/user';
 import Item from '../../interfaces/item';
+import { useMediaQuery } from 'react-responsive';
 
 
 const CustomersItemList = () => {
-  const router = useRouter();
+  const isMobile = useMediaQuery({
+    query: "(min-width:0px) and (max-width:768px)",
+  });
   // const queryClient = useQueryClient();
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
   const { data: items } = useQuery<Item>(['items'], loadCustomerItemsAPI);

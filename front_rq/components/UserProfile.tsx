@@ -36,8 +36,7 @@ const UserProfile = () => {
   );
 
   return (
-    <Card
-    >
+    <Card>
       <Card.Meta
         title={myUserInfo.company}
       />

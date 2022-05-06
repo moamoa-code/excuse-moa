@@ -237,13 +237,15 @@ const CreateUser = () => {
         <>
           <label style={{margin: '0 0 7px 0'}}>판매자 선택</label>
           <SearchBlock>
-            <input
-              value={searchTxt}
-              onChange={onChangeSearchTxt}
-            />
-            <button type='button' className='search' onClick={onSearchClick}>
-              <SearchOutlined />
-            </button>
+            <div>
+              <input
+                value={searchTxt}
+                onChange={onChangeSearchTxt}
+              />
+              <button type='button' className='search' onClick={onSearchClick}>
+                <SearchOutlined />
+              </button>
+            </div>
             <button 
               type='button' 
               onClick={()=>{

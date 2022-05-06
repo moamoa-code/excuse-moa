@@ -7,14 +7,12 @@ import { Table, Typography, Input, Button, Tag, Checkbox, Divider, Space, DatePi
 import { useRouter } from 'next/router';
 import { dehydrate, QueryClient, useQuery, useMutation, useQueryClient, QueryCache  } from 'react-query';
 import { loadMyInfoAPI } from '../../apis/user';
-import { cancelOrderAPI, confirmOrderAPI, loadTodosAPI, packCancelAPI, packDoneAPI, taskDoneAPI } from '../../apis/order';
+import { cancelOrderAPI, confirmOrderAPI, loadTodosAPI, orderItemAPI, packCancelAPI, packDoneAPI, taskDoneAPI } from '../../apis/order';
 import AppLayout from '../../components/AppLayout';
 
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
-import locale_kr from 'antd/lib/locale/ko_KR';
 import User from '../../interfaces/user';
-import Order from '../../interfaces/order';
 import styled from 'styled-components';
 import moment from 'moment';
 import { CheckCircleOutlined, CheckCircleTwoTone, CheckSquareTwoTone, CloseCircleFilled, DoubleRightOutlined, MinusCircleOutlined, PlaySquareFilled, PlaySquareOutlined, PlusOutlined, PrinterTwoTone, SettingOutlined } from '@ant-design/icons';
@@ -22,18 +20,14 @@ import Modal from 'antd/lib/modal/Modal';
 import { loadOrderAPI } from '../../apis/order';
 import OrderView from '../../components/OrderView';
 import useInput from '../../hooks/useInput';
+import MyTable from '../../components/MyTable';
+import { useMediaQuery } from 'react-responsive';
+import { Container800, ContainerMax, ContainerWide, HGap } from '../../components/Styled';
 
-
-const Container1280 = styled.div`
-  max-width: 1280px;
-  padding: 6px;
-  margin: 0 auto;
-  @media screen and (max-width: 600px) {
-    padding: 3px;
-  }
-`
 const TopBar = styled.div`
-margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
   .Title {
     margin-left: 10px;
     font-size: 14pt;
@@ -132,6 +126,9 @@ const TaBle = styled.table`
   .th6{
     text-align: center;
   }
+  .thWeight {
+    text-align: center;
+  }
   .th7 {
     text-align: center;
   }
@@ -161,10 +158,7 @@ const FilterBox = styled.div`
   border-radius: 20px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
   max-width: 1280px;
-  padding: 10px;
-  @media screen and (max-width: 600px) {
-    padding: 5px;
-  }
+  padding: 15px;
   div {
     margin: 5px;
   }
@@ -220,18 +214,21 @@ const orderList = () => {
   // 주문서 보기 모달
   const [ isVisible, setIsVisible ] = useState(false);
   const [ orderData, setOrderData ] = useState({});  // 모달 주문 상세 데이터
-  const [ selectedOrderId, setSelectedOrderId ] = useState();
+  const [ selectedOrderId, setSelectedOrderId ] = useState(null);
   const [ msg, onChangeMsg ] = useInput(''); // 주문취소 등 메시지입력
-
   // CSS 스타일 useMemo
   const doneStyle = useMemo(() => ({ backgroundColor: "#eef3ff" }), []); // 포장완료 스타일
+  const selectedStyle = useMemo(() => ({ backgroundColor: "#f8edf8" }), []); // 선택된 주문건 스타일
   const style1kg = useMemo(() => ({backgroundColor:'#5902EC', color: 'white', border:'none'}), []);
   const style500g = useMemo(() => ({backgroundColor:'#E04DB0', color: 'white', border:'none'}), []);
   const style200g = useMemo(() => ({backgroundColor:'#F2C9E1', color: 'white', border:'none'}), []);
   const styleSize5 = useMemo(() => ({backgroundColor:'#325288', color: 'white', border:'none'}), []);
   const styleSize8 = useMemo(() => ({backgroundColor:'#24A19C', color: 'white', border:'none'}), []);
   const styleSize10 = useMemo(() => ({backgroundColor:'#D96098', color: 'white', border:'none'}), []);
-
+  
+  const isMobile = useMediaQuery({
+    query: "(min-width:0px) and (max-width:740px)",
+  });
 
   // 스크롤에 따라 주문추가 버튼 보이기
   useEffect(() => {
@@ -311,7 +308,7 @@ const orderList = () => {
       setLoading(true);
     },
     onError: (error) => {
-      alert(error.response?.data);
+      message.error(error.response?.data);
     },
     onSuccess: (result) => {
       console.log('onSuc');
@@ -336,6 +333,13 @@ const orderList = () => {
     mutation.mutate({id:id});
   }
 
+  const onOrderRowClick = (id) => () => {
+    if (id === selectedOrderId) {
+      return setSelectedOrderId(null);
+    }
+    setSelectedOrderId(id);
+  }
+
   // 포장 완료 취소 버튼
   const onPackCancelClick = (id) => () => {
     setLoading(true);
@@ -345,7 +349,7 @@ const orderList = () => {
       queryClient.invalidateQueries('orders');
     })
     .catch((error) => {
-      alert(error.response.data);
+      message.error(error.response.data);
     })
     .finally(() => {
       setLoading(false);
@@ -362,7 +366,7 @@ const orderList = () => {
       console.log('출하',response);
     })
     .catch((error) => {
-      alert(error.response.data);
+      message.error(error.response.data);
     })
     .finally(() => {
       queryClient.refetchQueries('orders');
@@ -395,7 +399,7 @@ const orderList = () => {
       setSelectedOrderId(response.order.id);
     })
     .catch((error) => {
-      alert(error.response.data);
+      message.error(error.response.data);
     })
     .finally(() => {
       setIsVisible(true);
@@ -412,14 +416,14 @@ const orderList = () => {
     confirmOrderAPI({ orderId, msg })
     .then(() => {
       queryClient.refetchQueries('orders');
+      message.success('주문확인이 완료되었습니다.')
       handleCancel();
     })
     .catch((error) => {
-      alert(error.response.data);
+      message.error(error.response.data);
     })
     .finally(() => {
       setLoading(false);
-      openNotification('주문확인이 완료되었습니다.')
     })
   }
 
@@ -428,14 +432,14 @@ const orderList = () => {
     cancelOrderAPI({ orderId, message: msg })
     .then(() => {
       queryClient.refetchQueries('orders');
+      message.success('주문취소가 완료되었습니다.')
       handleCancel();
     })
     .catch((error) => {
-      alert(error.response.data);
+      message.error(error.response.data);
     })
     .finally(() => {
       setLoading(false);
-      openNotification('주문취소가 완료되었습니다.')
     })
   }
 
@@ -473,9 +477,219 @@ const orderList = () => {
     return <p>{qty}개</p>;
   }
 
+    // 주문 배열데이터 가공
+    const refineDatas = (data, codeName) => {
+      const array1 = data.map((order, index) => {
+        const details = order.OrderDetails.filter(function(item, index) {
+          if(item.itemCodeName === codeName){
+            return true;
+          }
+        })
+          return (
+            {
+              name: order.name,
+              id: order.id,
+              date: order.date,
+              Provider: order.Provider,
+              Customer: order.Customer,
+              factoryStatus: order.factoryStatus,
+              count: order?.OrderDetails.length,
+              details,
+            }
+          )
+      })
+      const array2 = array1.filter(function(item, index){
+        if (item.details?.length >= 1) {
+          return true;
+        }
+      })
+      const newArr = [];
+      array2.map((order, i) => {
+        order.details.map((detail) => {
+          newArr.push({
+            name: order.name,
+            id: order.id,
+            date: order.date,
+            count: order.count,
+            Provider: order.Provider,
+            Customer: order.Customer,
+            factoryStatus: order.factoryStatus,
+            dId: detail.id,
+            qty: detail.qty,
+            tag: detail.tag,
+            status: detail.status,
+            itemCodeName: detail.itemCodeName,
+            itemPackage: detail.itemPackage,
+            itemName: detail.itemName,
+            itemUnit:detail.itemUnit,
+          })
+        })
+      })
+      return newArr;
+    }
+
+  // 중량 계산
+  const getWeight = (unit, qty) => {
+    let weight = 0;
+    if (String(unit).toUpperCase().replace(' ','') === '1KG') {
+      weight = 1 * Number(qty);
+    } else if (String(unit).toUpperCase().replace(' ','') === '500G') {
+      weight = Number(qty) * 0.5
+    } else if (String(unit).toUpperCase().replace(' ','') === '400G') {
+      weight = Number(qty) * 0.4
+    } else if (String(unit).toUpperCase().replace(' ','') === '200G') {
+      weight = Number(qty) * 0.2
+    } else if (String(unit).toUpperCase().replace(' ','') === '100G') {
+      weight = Number(qty) * 0.1
+    } else {
+      weight = 0;
+    }
+    return weight.toFixed(1) + 'Kg';
+  }
+
+  // 코드별 중량 계산
+  const getCodeWeight = (codeName, datas) => {
+    let codeWeiht = 0;
+    const array1 = datas.map((order, index) => {
+      const details = order.OrderDetails.filter(function(item, index) {
+        if(item.itemCodeName === codeName){
+          return true;
+        }
+      })
+        return (
+          {
+            details,
+          }
+        )
+    })
+    const array2 = array1.filter(function(item, index){
+      if (item.details?.length >= 1) {
+        return true;
+      }
+    })
+    array2.map((order, i) => {
+      order.details.map((detail) => {
+        const weight = getWeight(detail.itemUnit, detail.qty,);
+        codeWeiht = codeWeiht + Number(weight.toUpperCase().replace(' ', '').replace('KG', ''));
+      })
+    })
+    return codeWeiht;
+  }
+
+  const columns = [
+    {
+      title: '주문번호',
+      dataIndex: 'id',
+      type: 'id',
+      key: 'id',
+      render: (text, record) => (
+        <span onClick={onOrderRowClick(record.id)}>{text}</span>
+      ),
+    }, {
+      title: '품명',
+      type: 'title',
+      key: 'itemName',
+      dataIndex: 'itemName',
+      render: (text, record) => (
+        <span onClick={onOrderRowClick(record.id)}>{text}</span>
+      ),
+    }, {
+      title: '포장',
+      key: 'itemPackage',
+      type: 'sub',
+      dataIndex: 'itemPackage',
+      render: (text, record) => (
+        <span onClick={onOrderRowClick(record.id)}>{text}</span>
+      ),
+    }, {
+      title: '단위',
+      key: 'itemUnit',
+      type: 'sub',
+      dataIndex: 'itemUnit',
+      render: (text, record) => (
+        <span onClick={onOrderRowClick(record.id)}>{text}</span>
+      ),
+    }, {
+      title: '수량',
+      key: 'qty',
+      type: 'sub',
+      dataIndex: 'qty',
+      render: (text, record) => (
+        <span onClick={onOrderRowClick(record.id)}>{text}개</span>
+      ),
+    }, {
+      title: '중량',
+      key: 'qty',
+      type: 'right',
+      dataIndex: 'qty',
+      render: (text, record) => (
+        <>{getWeight(record.itemUnit, record.qty)}</>
+      )
+    }, {
+      title: '옵션',
+      dataIndex: 'tag',
+      key: 'tag',
+    }, {
+      title: '공급사',
+      dataIndex: 'Provider',
+      key: 'Provider',
+      render: (text, record) => (
+        <>{text?.company}</>
+      ),
+    }, {
+      title: '주문사',
+      dataIndex: 'Customer',
+      key: 'Customer',
+      render: (text, record) => (
+        <>{text?.company}/{record?.name}</>
+      ),
+    }, {
+      title: '출고상태',
+      dataIndex: 'factoryStatus',
+      key: 'factoryStatus',
+    }, {
+      title: '주문일시',
+      dataIndex: 'date',
+      key: 'date',
+      render: (text, record) => (
+        <>{moment(text).format('MM.DD HH:mm')}</>
+      ),
+    }, {
+      title: '',
+      dataIndex: 'dId',
+      key: 'dId',
+      type: 'input',
+      render: (text, record) => (
+        <Button 
+          loading={loading} 
+          onClick={showOrderModal(record.id)}
+          >
+          합포 {record.count}개 주문보기
+        </Button>
+      )
+    }, {
+      title: '',
+      dataIndex: 'dId',
+      key: 'dId',
+      type: 'input',
+      render: (text, record) => {
+        if (record?.factoryStatus === '출하') {
+          return (<Button disabled>출고</Button>)
+        }
+        if (record?.status === '포장완료'){
+          return (
+            <Button loading={loading} onClick={onPackCancelClick(record.dId)} danger>취소</Button>
+          )
+        } else {
+          return (<Button loading={loading} type='primary' onClick={onConfirmClick(record.dId)}>완료</Button>)
+        }
+      }
+    },
+  ]
+
   return (
     <AppLayout>
-      <Container1280>
+      <ContainerWide>
         {isFloatingButtonVisibale? 
           <FloatingButton>
             <Link href={`/factory/add-order`}>
@@ -554,6 +768,7 @@ const orderList = () => {
             <Button loading={loading} onClick={onLoadTodos}>적용</Button>
           </FilterBox>
         : null}
+        {!isMobile?
         <TaBle>
           <tr>
             <th className='th1'>번호<br />합포</th>
@@ -563,7 +778,7 @@ const orderList = () => {
             <th className='th5'>표기<br />옵션</th>
             <th className='th6'>단위<br />수량</th>
             <th className='th7'>주문사<br />수령인</th>
-            <th className='th8'>상태</th>
+            <th className='th8'>상태<br />중량</th>
             <th className='th9'>완료</th>
           </tr>
           {itemCodes?.map((codeName) => {
@@ -582,20 +797,17 @@ const orderList = () => {
                 v.itemCodeName === codeName.name
               )
               if (item[0]) {
-                if (String(item[0]?.itemUnit).toUpperCase() === '1KG') {
-                  amount = amount + Number(item[0]?.qty);
-                } if (String(item[0]?.itemUnit).toUpperCase() === '500G') {
-                  amount = amount + 0.5 * Number(item[0]?.qty);
-                } if (String(item[0]?.itemUnit).toUpperCase() === '400G') {
-                  amount = amount + 0.4 * Number(item[0]?.qty);
-                }if (String(item[0]?.itemUnit).toUpperCase() === '200G') {
-                  amount = amount + 0.2 * Number(item[0]?.qty);
-                } if (String(item[0]?.itemUnit).toUpperCase() === '100G') {
-                  amount = amount + 0.1 * Number(item[0]?.qty);
-                }
                 return (
-                  item.map((i) => (
-                    <tr key={i.id} style={i?.status === '포장완료'? doneStyle : null}>
+                  item.map((i) => {
+                    const itemAmount = getWeight(i.itemUnit, i?.qty);
+                    amount = amount + Number(itemAmount.toUpperCase().replace(' ', '').replace('KG', ''));
+                    return (
+                    <tr
+                      key={i.id}
+                      style={Number(order.id) === selectedOrderId? selectedStyle
+                      : i?.status === '포장완료'? doneStyle
+                      : null}
+                    >
                     <td className='th1' onClick={showOrderModal(order.id)}>
                       <p className='number'>{String(i?.OrderId).slice(-3)}</p>
                       {order?.OrderDetails.length >= 2?
@@ -609,7 +821,11 @@ const orderList = () => {
                         :<p>{order.factoryStatus}</p>}
                     </td>
                     <td className='th3'>{order.Provider?.company}</td>
-                    <td className='th4'>{i?.itemName}<br />{i?.itemPackage}</td>
+                    <td 
+                      className='th4'
+                      onClick={onOrderRowClick(order.id)}
+                    >{i?.itemName}<br />{i?.itemPackage}
+                    </td>
                     <td className='th5'>{i?.tag}</td>
                     <td className='th6'>
                       {PaintUnit(i.itemUnit)}
@@ -623,34 +839,51 @@ const orderList = () => {
                       <Space>
                         <PaintStatus status={order.status} />
                         <PaintStatus status={i?.status} />
-                      </Space>
-                      {/* {i?.status === '포장완료'?
-                        <Tag color='#108ee9'>{i?.status}</Tag>
-                        :<Tag>{i?.status}</Tag>} */}
-                      {/* {order.status === '취소요청중' || order.status === '주문취소완료'?
-                        <Tag color='#ff2424'>{order.status}</Tag>
-                        :<Tag>{order.status}</Tag>}
-                      {i?.status === '포장완료'?
-                        <Tag color='#108ee9'>{i?.status}</Tag>
-                        :<Tag>{i?.status}</Tag>} */}
+                      </Space><br />
+                      {getWeight(i.itemUnit, i?.qty)}
                       </td>
                       <td  className='th9'>
-                        {i?.status === '포장완료'?
+                        {order.factoryStatus === '출하'?
+                        <Button disabled>출고</Button>
+                        : i?.status === '포장완료'?
                         <Button loading={loading} onClick={onPackCancelClick(i.id)} danger>취소</Button>
-                        :<Button loading={loading} type='primary' onClick={onConfirmClick(i.id)}>완료</Button> }
+                        : <Button loading={loading} type='primary' onClick={onConfirmClick(i.id)}>완료</Button>}
                       </td>
                     </tr>
-                  ))
+                  )})
                 )
               }
             }))}
             <tr>
-              <td colSpan={11}><DoubleRightOutlined /> 총 {amount}Kg</td>
+              <td colSpan={9}><DoubleRightOutlined /> 총 {amount.toFixed(1)}Kg</td>
             </tr>
             </tbody>
             </>
           )})}
-        </TaBle><br /><br />
+        </TaBle>
+        :
+        <>
+          {itemCodes?.map((codeName) => {
+              return (
+              <>
+                <h1 key={codeName.name} className='code'>
+                  <CodeName><span>&nbsp;</span>&nbsp;{codeName.name}</CodeName>
+                </h1>
+                <hr />
+                <MyTable
+                  columns={columns}
+                  dataSource={refineDatas(orders, codeName.name)}
+                  rowKey="dId"
+                  selectKey="id"
+                  selectedId = {selectedOrderId}
+                />
+                총 중량: {String(getCodeWeight(codeName.name, orders).toFixed(1))} kg
+                <HGap />
+              </>
+              )
+          })}
+        </>}
+        <HGap />
         <Space>
           <Link href={`/factory/add-order`}>
             <a><Button type='primary'>주문 추가</Button></a>
@@ -666,7 +899,8 @@ const orderList = () => {
             </Button>
           </Popconfirm>
         </Space>
-      </Container1280>
+      </ContainerWide>
+
     </AppLayout>
   );
 };
@@ -680,22 +914,22 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
   }
   const queryClient = new QueryClient();
   const response = await loadMyInfoAPI();
-  // if (!response) { // 로그인 안했으면 홈으로
-  //   return {
-  //     redirect: {
-  //       destination: '/unauth',
-  //       permanent: false,
-  //     },
-  //   };
-  // }
-  // if (response.role !== 'PROVIDER' && response.role !== 'ADMINISTRATOR') { // 로그인 안했으면 홈으로
-  //   return {
-  //     redirect: {
-  //       destination: '/unauth',
-  //       permanent: false,
-  //     },
-  //   };
-  // }
+  if (!response) { // 로그인 안했으면 홈으로
+    return {
+      redirect: {
+        destination: '/unauth',
+        permanent: false,
+      },
+    };
+  }
+  if (response.role !== 'ADMINISTRATOR') { // 로그인 안했으면 홈으로
+    return {
+      redirect: {
+        destination: '/unauth',
+        permanent: false,
+      },
+    };
+  }
   await queryClient.prefetchQuery(['user'], () => loadMyInfoAPI());
   return {
     props: {

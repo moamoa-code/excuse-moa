@@ -7,18 +7,19 @@ import { Form, Input, Button, Tag, Checkbox, Divider, Space, notification, Card,
 import { useRouter } from 'next/router';
 import Router from 'next/router';
 import { dehydrate, QueryClient, useQuery, useMutation, useQueryClient } from 'react-query';
-import { loadMyInfoAPI } from '../../../apis/user';
-import AppLayout from '../../../components/AppLayout';
-import User from '../../../interfaces/user';
+import { loadMyInfoAPI, loadProviderByIdAPI } from '../../../../apis/user';
+import AppLayout from '../../../../components/AppLayout';
+import User from '../../../../interfaces/user';
 
-import { addCustomerToPostAPI, deltePostAPI, editPostAPI, loadPostAPI, registerPostAPI } from '../../../apis/post';
-import Post from '../../../interfaces/post';
-import { backUrl } from '../../../config/config';
+import { addCustomerToPostAPI, deltePostAPI, editPostAPI, loadPostAPI, registerPostAPI } from '../../../../apis/post';
+import Post from '../../../../interfaces/post';
+import { backUrl } from '../../../../config/config';
 
-import PostView from '../../../components/PostView';
-import useInput from '../../../hooks/useInput';
-import { uploadImageAPI } from '../../../apis/item';
-import { Block, ContainerMid, LoadingModal, Red } from '../../../components/Styled';
+import PostView from '../../../../components/PostView';
+import useInput from '../../../../hooks/useInput';
+import { uploadImageAPI } from '../../../../apis/item';
+import { Block, ContainerMid, LoadingModal, Red } from '../../../../components/Styled';
+import UserInfoBox from '../../../../components/UserInfoBox';
 
 const EditPost = () => {
   const router = useRouter();
@@ -33,28 +34,39 @@ const EditPost = () => {
   const [scope, setScope] = useState(''); // 게시글 공개 범위
   const [showCustomers, setShowCustomers ] = useState(''); // 게시글 공개 범위
   const [imagePath, setImagePath] = useState(null); // 게시글 사진 업로드 경로
+  const [providerId, setProviderId] = useState(null);
+  const [provider, setProvider] = useState(null);
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
   const { isLoading, data: post } = useQuery<Post>(['post', id], () => loadPostAPI(Number(id)),{
     onSuccess(data) {
       setTitle(data.title);
       setContent(data.content);
       setScope(data.scope);
+      setProviderId(data.UserId);
       setShowCustomers(data.scope);
+      setLoading(true);
+      loadProviderByIdAPI(data.UserId)
+      .then((response) => {
+        setProvider(response);
+      })
+      .catch((error) => {
+        message.error(error);
+      })
+      .finally(() => {
+        setLoading(false);
+      })
       if(data.imgSrc){
         setImagePath(data.imgSrc);
       }
-
     }
   });
 
   useEffect(
     () => { 
       if (!isLoading){
-        if(myUserInfo.role!== 'ADMINISTRATOR'){
-          if(post.UserId !== myUserInfo.id){
-            message.success('권한이 없습니다.');
-            Router.replace(`/unauth`);
-          }
+        if(myUserInfo?.role!== 'ADMINISTRATOR'){
+          message.error('권한이 없습니다.');
+          Router.replace(`/unauth`);
         }
       }
   }, [myUserInfo])
@@ -90,7 +102,7 @@ const EditPost = () => {
 
   const onSubmit = (values) => {  // 열람가능 회원 추가
     console.log(values);
-    addCustomerToPostAPI({ id, values })
+    addCustomerToPostAPI({ id, values, providerId: providerId })
     .then(() => {
       message.success('게시글을 열람가능한 고객 추가를 완료했습니다.');
     })
@@ -158,6 +170,8 @@ const EditPost = () => {
       :null}
       <ContainerMid>
       <Divider orientation="left"><Title level={4}>공지사항 수정</Title></Divider>
+        <UserInfoBox userInfo={provider}></UserInfoBox>
+        <br/>
         공개범위:
         {showCustomers === 'PRIVATE'?
         <> 특정 고객 전용</>
@@ -247,7 +261,7 @@ const EditPost = () => {
             <Form.Item name="customerIds">
               <Checkbox.Group>
                 <Space size={8} wrap>
-                  {myUserInfo?.Customers.map((v) => (
+                  {provider?.Customers.map((v) => (
                     <>
                       <Tag color="blue"><Checkbox value={v.id}>({v.id}) {v.company}</Checkbox> </Tag>
                     </>
@@ -259,13 +273,11 @@ const EditPost = () => {
               <Button type="primary" htmlType="submit" loading={loading || isLoading}>
                 적용 완료
               </Button>
-              <Link href="/management/posts"><a>
-              </a></Link>
             </Space>
           </Form>
         :null}
 
-        <Link href='/management/posts'><a><Button>
+        <Link href='/factory/post/list'><a><Button>
           목록으로
         </Button></a></Link>
       </ContainerMid>

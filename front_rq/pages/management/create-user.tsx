@@ -16,6 +16,7 @@ import AppLayout from '../../components/AppLayout';
 import useInput from '../../hooks/useInput';
 import User from '../../interfaces/user';
 import DaumPostcode from 'react-daum-postcode';
+import { ContainerMid, FormBox } from '../../components/Styled';
 
 const ErrorMessage = styled.div`
   color: red;
@@ -129,7 +130,7 @@ const CreateUser = () => {
   const onChangeKey = useCallback( // 아이디 유효성검사
     (e) => {
       const regExpId = /^[A-Za-z0-9-@.]{4,25}$/;
-      setKey(e.target.value);
+      setKey(e.target.value.replace(/[ㄱ-힣\{\}\[\]\/?.,;:|\)*~`!^\+<>@\#$%&\\\=\(\'\")]/g, '').trim().toLowerCase());
       setKeyValidError(!regExpId.test(e.target.value));
     },
     [key],
@@ -226,161 +227,165 @@ const CreateUser = () => {
         setName('');
         setPhone('');
         setEmail('');
-        setPassword('123123');
-        setPasswordCheck('123123');
+        setPassword('');
+        setPasswordCheck('');
       })
       .catch((error) => {
-        alert(error.response.data);
+        message.error(error.response.data);
       })
       .finally(() => {
         setLoading(false);
-        queryClient.invalidateQueries('user'); // 카트 목록 다시 불러오기
-        queryClient.invalidateQueries('userList');
       });
   }, [key, password, company, name, phone, email, passwordCheck, term, hqNumber]);
 
   return (
   <AppLayout>
-    <Container500>
+    <ContainerMid>
       <Head>
         <title>고객생성</title>
       </Head>
-      <Title level={3}>고객 생성</Title>
-      <Text>{myUserInfo.company}사의 고객 생성</Text>
-      <Form onFinish={onSubmit} form={form}>
-        <Block>
-          <label><RedBold>* </RedBold>사업자등록번호 또는 ID</label>
-          <input
-            value={key}
-            onChange={onChangeKey}
-            placeholder=' - 포함하여 작성해주세요.'
-            required
-            autoComplete="off"
-          />
-        </Block>
-        {keyValidError && <ErrorMessage>숫자, -, 영문(필요시)으로 4~25자 이내</ErrorMessage>}
-        <Block>
-          <label>본사 사업자등록번호</label>
-          <input
-            value={hqNumber}
-            onChange={onChangeHq}
-            placeholder='필요시만 입력'
-            maxLength={25}
-            autoComplete="off"
-          />
-        </Block>
-        <Block>
-          <label><RedBold>* </RedBold>회사명 또는 성함</label>
-          <input
-            value={company}
-            onChange={onChangeCompany}
-            maxLength={12}
-            placeholder='12자 이내'
-            required
-            autoComplete="off"
-          />
-        </Block>
-        <Block>
-          <label><RedBold>* </RedBold>담당자 성함</label>
-          <input
-            value={name}
-            onChange={onChangeName}
-            maxLength={12}
-            required
-            autoComplete="off"
-          />
-        </Block>
-        <Block>
-          <label><RedBold>* </RedBold>담당자 연락처</label>
-          <input
-            value={phone}
-            onChange={onChangePhone}
-            placeholder=' - 없이 숫자만 입력'
-            maxLength={13}
-            required
-            autoComplete="off"
-          />
-        </Block>
-        <Block>
-          <label>담당자 이메일</label>
-          <input
-            type="email"
-            value={email}
-            onChange={onChangeEmail}
-            autoComplete="off"
-            autoCapitalize="no"
-          />
-        </Block>
-        <Block>
-          <label><RedBold>* </RedBold>비밀번호</label>
-          <input
-            name="user-password"
-            type="password"
-            value={password}
-            required
-            onChange={onChangePassword}
-            placeholder='6자 이상 15자 이하'
-            autoComplete="no"
-          />
-        </Block>
-        {passwordValidError && <ErrorMessage>6자 이상 15자 이하로 입력해 주세요.</ErrorMessage>}
-        <Block>
-          <label><RedBold>* </RedBold>비밀번호 확인</label>
-          <input
-            name="user-password-check"
-            type="password"
-            value={passwordCheck}
-            required
-            placeholder='6자 이상 15자 이하'
-            onChange={onChangePasswordCheck}
-            autoComplete="off"
-          />
-        </Block>
-        <Block>
-          <label>주소 입력 (필요시)</label>
-        </Block>
-        <Button type="primary" onClick={()=>setIsVisible(true)}>
-            우편번호 찾기
-          </Button>
-        <Block>
-          <label>우편번호</label>
-          <input
-            value={zip}
-            placeholder='우편번호 찾기를 통해 입력해주세요.'
-            readOnly
-          />
-        </Block>
-        <Block>
-          <label>주소</label>
-          <input
-            value={address}
-            placeholder='우편번호 찾기를 통해 입력해주세요.'
-            readOnly
-          />
-        </Block>
-        <Block>
-          <label>주소 상세</label>
-          <input
-            value={address2}
-            onChange={onChangeAddress2}
-            placeholder=''
-          />
-        </Block>
-          {passwordError && <ErrorMessage>비밀번호가 일치하지 않습니다.</ErrorMessage>}
-        <div>
-          <Checkbox name="user-term" checked={term} onChange={onChangeTerm}>
-            이용약관에 동의합니다.
-          </Checkbox> <Link href='/user/term'><a target={'_blank'}><Tag>이용약관</Tag></a></Link>
-          {termError && <ErrorMessage>약관에 동의하셔야 합니다.</ErrorMessage>}
-        </div>
-        <div style={{ marginTop: 10 }}>
-          <Button type="primary" htmlType="submit" loading={loading} disabled={disableBtn}>
-            고객생성
-          </Button>
-        </div>
-      </Form>
+      <Title level={3}>{myUserInfo.company}사의 고객 생성</Title>
+      <FormBox>
+        <Form onFinish={onSubmit} form={form}>
+          <Block>
+            <label><RedBold>* </RedBold>사업자등록번호 또는 ID</label>
+            <input
+              value={key}
+              onChange={onChangeKey}
+              placeholder=' - 포함하여 작성해주세요.'
+              required
+              autoComplete="off"
+            />
+          </Block>
+          {keyValidError && <ErrorMessage>숫자, -, 영문(필요시)으로 4~25자 이내</ErrorMessage>}
+          <Block>
+            <label>본사 사업자등록번호</label>
+            <input
+              value={hqNumber}
+              onChange={onChangeHq}
+              placeholder='필요시만 입력'
+              maxLength={25}
+              autoComplete="off"
+            />
+          </Block>
+          <Block>
+            <label><RedBold>* </RedBold>회사명 또는 성함</label>
+            <input
+              value={company}
+              onChange={onChangeCompany}
+              maxLength={12}
+              placeholder='12자 이내'
+              required
+              autoComplete="off"
+            />
+          </Block>
+          <Block>
+            <label><RedBold>* </RedBold>담당자 성함</label>
+            <input
+              value={name}
+              onChange={onChangeName}
+              maxLength={12}
+              required
+              autoComplete="off"
+            />
+          </Block>
+          <Block>
+            <label><RedBold>* </RedBold>담당자 연락처</label>
+            <input
+              value={phone}
+              onChange={onChangePhone}
+              placeholder=' - 없이 숫자만 입력'
+              maxLength={13}
+              required
+              autoComplete="off"
+            />
+          </Block>
+          <Block>
+            <label>담당자 이메일</label>
+            <input
+              type="email"
+              maxLength={20}
+              value={email}
+              onChange={onChangeEmail}
+              autoComplete="off"
+              autoCapitalize="no"
+            />
+          </Block>
+          <Block>
+            <label><RedBold>* </RedBold>비밀번호</label>
+            <input
+              name="user-password"
+              type="password"
+              value={password}
+              maxLength={15}
+              required
+              onChange={onChangePassword}
+              placeholder='6자 이상 15자 이하'
+              autoComplete="no"
+            />
+          </Block>
+          {passwordValidError && <ErrorMessage>6자 이상 15자 이하로 입력해 주세요.</ErrorMessage>}
+          <Block>
+            <label><RedBold>* </RedBold>비밀번호 확인</label>
+            <input
+              name="user-password-check"
+              type="password"
+              value={passwordCheck}
+              maxLength={15}
+              required
+              placeholder='6자 이상 15자 이하'
+              onChange={onChangePasswordCheck}
+              autoComplete="off"
+            />
+          </Block>
+          <Block>
+            <label>주소 입력 (필요시)</label>
+          </Block>
+          <Button type="primary" onClick={()=>setIsVisible(true)}>
+              우편번호 찾기
+            </Button>
+          <Block>
+            <label>우편번호</label>
+            <input
+              value={zip}
+              placeholder='우편번호 찾기를 통해 입력해주세요.'
+              readOnly
+            />
+          </Block>
+          <Block>
+            <label>주소</label>
+            <input
+              value={address}
+              placeholder='우편번호 찾기를 통해 입력해주세요.'
+              readOnly
+            />
+          </Block>
+          <Block>
+            <label>주소 상세</label>
+            <input
+              value={address2}
+              onChange={onChangeAddress2}
+              maxLength={50}
+              placeholder=''
+            />
+          </Block>
+            {passwordError && <ErrorMessage>비밀번호가 일치하지 않습니다.</ErrorMessage>}
+          <hr />
+          <div>
+            <Checkbox name="user-term" checked={term} onChange={onChangeTerm}>
+              이용약관에 동의합니다.
+            </Checkbox> <Link href='/user/term'><a target={'_blank'}><Tag>이용약관</Tag></a></Link>
+            {termError && <ErrorMessage>약관에 동의하셔야 합니다.</ErrorMessage>}
+          </div>
+          <div style={{ marginTop: 10 }}>
+            <Button type="primary" htmlType="submit" loading={loading} disabled={disableBtn}>
+              고객생성
+            </Button>
+          </div>
+        </Form>
+      </FormBox>
       <br/><br/>
-    </Container500>
+    </ContainerMid>
     {isVisible?
         <MoDal 
           ref={modalOutside}

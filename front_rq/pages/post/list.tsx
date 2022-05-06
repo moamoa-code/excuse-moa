@@ -1,4 +1,4 @@
-// 구매자가 구매가능 제품 목록
+// 구매자가 볼 수 있는 공지사항 목록
 import axios from 'axios';
 import { GetServerSidePropsContext } from 'next';
 import React, { useState } from 'react';
@@ -6,25 +6,70 @@ import { Typography } from 'antd';
 import { dehydrate, QueryClient, useQuery } from 'react-query';
 import { loadMyInfoAPI } from '../../apis/user';
 import AppLayout from '../../components/AppLayout';
-import User from '../../interfaces/user';
 import Item from '../../interfaces/item';
 import { loadPostListAPI } from '../../apis/post';
 import PostList from '../../components/PostList';
-
-
-
+import { Container800 } from '../../components/Styled';
+import MyTable from '../../components/MyTable';
+import dayjs from 'dayjs';
+import PostView from '../../components/PostView';
+import { useMediaQuery } from 'react-responsive';
+import styled from 'styled-components';
 
 const CustomerPostList = () => {
-  // const queryClient = useQueryClient();
+  const isMobile = useMediaQuery({
+    query: "(min-width:0px) and (max-width:768px)",
+  });
   const { data: posts } = useQuery<Item>(['posts'], loadPostListAPI);
   const { Title } = Typography;
 
+  const columns = [
+    {
+      title: 'ID',
+      dataIndex: 'id',
+      type: 'id',
+      key: 'id',
+    }, {
+      title: '제목',
+      dataIndex: 'title',
+      type: 'title',
+      key: 'title',
+    }, {
+      title: '작성자',
+      dataIndex: 'User',
+      key: 'User',
+      render: (text, record) => (
+        <>{text?.company}</>
+      ),
+    }, {
+      title: '작성일',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      width: 140,
+      render: (text, record) => (
+        <>{dayjs(text).format('YY.MM.DD HH:mm')}{}</>
+      ),
+    }, 
+  ]
   return (
     <AppLayout>
-      <div style={{maxWidth: '800px', padding: '10px', margin: '0 auto'}}>
-        <Title level={4}>판매자 공지사항</Title>
-        <PostList posts={posts} />
-      </div>
+      <Container800>
+        <Title level={4}>공지사항</Title>
+        {!isMobile?
+          <PostList posts={posts} />
+          :
+          <MyTable 
+            dataSource={posts}
+            columns={columns}
+            rowKey="id"
+            expandable={{
+              expandedRowRender: (record) => 
+              <PostView post={record}/>,
+            }}
+          />
+        }
+        <br/><br/>
+      </Container800>
     </AppLayout>
   );
 };

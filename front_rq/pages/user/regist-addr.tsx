@@ -10,6 +10,7 @@ import styled from 'styled-components';
 import { Divider, notification, Typography } from 'antd';
 import { SmileOutlined } from '@ant-design/icons';
 import Router from 'next/router';
+import { ContainerMid, FormBox } from '../../components/Styled';
 
 const Container500 = styled.div`
   max-width: 500px;
@@ -55,10 +56,12 @@ const RegistAddress = () => {
 
   return (
     <AppLayout>
-      <Container500>
-        <Divider><Title level={4}>새로운 주소 추가</Title></Divider><br />
-        <AddressForm submitDatas={submitDatas} loading={loading}/>
-      </Container500>
+      <ContainerMid>
+        <Divider><Title level={4}>새로운 주소 추가</Title></Divider>
+        <FormBox>
+          <AddressForm submitDatas={submitDatas} loading={loading}/>
+        </FormBox>
+      </ContainerMid>
     </AppLayout>
   );
 };

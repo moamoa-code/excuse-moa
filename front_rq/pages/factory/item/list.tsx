@@ -16,6 +16,9 @@ import styled from 'styled-components';
 import ItemView from '../../../components/ItemView';
 import { DownOutlined, RightOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import UserInfoBox from '../../../components/UserInfoBox';
+import { useMediaQuery } from 'react-responsive';
+import MyTable from '../../../components/MyTable';
+import { HGap } from '../../../components/Styled';
 
 const Container800 = styled.div`
 max-width: 800px;
@@ -61,7 +64,9 @@ const OptionContainer = styled.div`
 `
 
 const FactoryItemList = () => {
-  const router = useRouter();
+  const isMobile = useMediaQuery({
+    query: "(min-width:0px) and (max-width:768px)",
+  });
   // const queryClient = useQueryClient();
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
   const { data: items } = useQuery(['items'], loadItemsAPI);
@@ -82,6 +87,50 @@ const FactoryItemList = () => {
       setLoading(false);
     })
   }
+  const columns = [
+    {
+      title: '판매사',
+      dataIndex: 'User',
+      type: 'id',
+      key: 'User',
+      render: (text, record) => (
+        <>{text?.company}</>
+      ),
+    }, {
+      title: '제품명',
+      dataIndex: 'name',
+      type: 'title',
+      key: 'name',
+      render: (text, record) => (
+        <>{text}</>
+      ),
+    }, {
+      title: '포장종류',
+      dataIndex: 'packageName',
+      key: 'packageName',
+    }, {
+      title: '무게단위',
+      dataIndex: 'unit',
+      type: 'right',
+      key: 'unit',
+    },{
+      title: '공급가',
+      dataIndex: 'supplyPrice',
+      key: 'supplyPrice',
+    },
+  ];
+
+  const expandable = {
+    expandedRowRender: (record) => 
+    <ItemView item={record} myUserInfo={myUserInfo} />,
+    columnWidth: 20,
+    expandIcon: ({ expanded, onExpand, record }) =>
+    expanded ? (
+      <DownOutlined style={{color: '#64707a', fontSize: '8pt', margin: '0px'}} onClick={e => onExpand(record, e)} />
+    ) : (
+      <RightOutlined style={{color: '#64707a', fontSize: '8pt'}} onClick={e => onExpand(record, e)} />
+    )
+  };
 
   return (
     <AppLayout>
@@ -99,52 +148,21 @@ const FactoryItemList = () => {
         :null}
         <br /><br />
         <Title level={4}>{selectedProvider?.company} 제품목록</Title>
-        <Table
-        size="small"
-        rowKey="id"
-        columns={
-          [
-            {
-              title: '판매사',
-              dataIndex: 'User',
-              key: 'User',
-              render: (text, record) => (
-                <>{text?.company}</>
-              ),
-            }, {
-              title: '제품명',
-              dataIndex: 'name',
-              key: 'name',
-              render: (text, record) => (
-                <>{text}</>
-              ),
-            }, {
-              title: '포장종류',
-              dataIndex: 'packageName',
-              key: 'packageName',
-            }, {
-              title: '무게단위',
-              dataIndex: 'unit',
-              key: 'unit',
-            },{
-              title: '공급가',
-              dataIndex: 'supplyPrice',
-              key: 'supplyPrice',
-            },
-          ]}
-        expandable={{
-          expandedRowRender: (record) => 
-          <ItemView item={record} myUserInfo={myUserInfo} />,
-          columnWidth: 20,
-          expandIcon: ({ expanded, onExpand, record }) =>
-          expanded ? (
-            <DownOutlined style={{color: '#64707a', fontSize: '8pt', margin: '0px'}} onClick={e => onExpand(record, e)} />
-          ) : (
-            <RightOutlined style={{color: '#64707a', fontSize: '8pt'}} onClick={e => onExpand(record, e)} />
-          )
-        }}
-        dataSource={itemList}
+        {isMobile? 
+        <MyTable
+          rowKey="id"
+          columns={columns}
+          expandable={expandable}
+          dataSource={itemList}
         />
+        :
+        <Table
+          rowKey="id"
+          columns={columns}
+          expandable={expandable}
+          dataSource={itemList}
+        />
+        }<br />
         <Link href='/factory/item/regist'><a><Button type='primary'> + 새로운 제품 추가</Button></a></Link>
       </Container800>
     </AppLayout>

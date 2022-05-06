@@ -15,12 +15,15 @@ import styled from 'styled-components';
 import { loadMyOrdersAPI, loadOrderAPI, loadReceivedOrdersWithDatesAPI } from '../apis/order';
 import { LoadingOutlined, PrinterTwoTone } from '@ant-design/icons';
 import OrderView from './OrderView';
+import { useMediaQuery } from 'react-responsive';
+import MyTable from './MyTable';
+import { HGap } from './Styled';
 
 const ListTable = styled.table`
   width: 100%;
   border-collapse: collapse;
   margin: 10px 0;
-  min-width: 400px;
+  min-width: 300px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 
   .msg {
@@ -73,9 +76,13 @@ const OrderList = ({ userInfo, mode }) => {
   const [ startDate, setStartDate ] = useState(moment().subtract(1, 'months'));
   const [ endDate, setEndDate ] = useState(moment());
   const [ totalPrice, setTotalPrice ] = useState(0);
+  const [ totalWeight, setTotalWeight ] = useState('0Kg');
   const [ orderOrList, setOrderOrList ] = useState(LIST);
   const [ orderData, setOrderDate ] = useState(null);
   const queryClient = new QueryClient();
+  const isMobile = useMediaQuery({
+    query: "(min-width:0px) and (max-width:768px)",
+  });
   const { isLoading, data: orders } = useQuery(['orders', startDate, endDate], 
     () => {
       if (mode === 'CUSTOMER') {
@@ -87,9 +94,30 @@ const OrderList = ({ userInfo, mode }) => {
       onSuccess: (data) => {
         console.log('onSuccess');
         getTotalPrice(data);
+        getTotalWeight(data);
       }
     }
   );
+  const getTotalWeight = (orders) => { // 총 무게 계산
+    let totalWeight = 0;
+    if(orders) {
+      orders.map((v) => {
+        let weight = 0;
+        if (isNaN(v.totalWeight) || v.status.includes('주문취소')) {
+          weight = 0;
+        }
+        if (String(v.totalWeight).toUpperCase().slice(-2) === 'KG') {
+          weight = Number(String(v.totalWeight).toUpperCase().replace('KG', ''));
+        } else {
+          weight = 0;
+        }
+        totalWeight = totalWeight + weight;
+      })
+    }
+    totalWeight = totalWeight.toFixed(1) + 'Kg';
+    setTotalWeight(totalWeight);
+    return String(totalWeight);
+  };
   const getTotalPrice = (orders) => { // 총 금액 계산
     console.log('getTotalPrice')
     let total = 0
@@ -121,6 +149,96 @@ const OrderList = ({ userInfo, mode }) => {
     }
     queryClient.invalidateQueries();
   }
+
+  
+  const columns = [
+    {
+      title: '주문번호',
+      dataIndex: 'id',
+      type: 'id',
+      key: 'id',
+    }, {
+      title: '주문일시',
+      dataIndex: 'date',
+      type: 'title',
+      key: 'date',
+      render: (text, record) => (
+        <>{moment(text).format('YY.MM.DD HH:mm')}</>
+      ),
+    }, {
+      title: '총 공급가',
+      key: 'totalPrice',
+      dataIndex: 'totalPrice',
+    },{
+      title: '총 중량',
+      key: 'totalWeight',
+      type: 'right',
+      dataIndex: 'totalWeight',
+    }, {
+      title: '공급사',
+      dataIndex: 'Provider',
+      key: 'Provider',
+      render: (text, record) => (
+        <>{text.company}</>
+      ),
+    }, {
+      title: '주문상태',
+      dataIndex: 'status',
+      key: 'status',
+    },{
+      title: '',
+      type: 'right',
+      key: 'action',
+      render: (text, record) => (
+        <span class='link' onClick={showOrder(record?.id)}>보기</span>
+      ),
+    }
+  ]
+
+  
+  const providerColumns = [
+    {
+      title: '주문번호',
+      dataIndex: 'id',
+      type: 'id',
+      key: 'id',
+    }, {
+      title: '주문일시',
+      dataIndex: 'date',
+      type: 'title',
+      key: 'date',
+      render: (text, record) => (
+        <>{moment(text).format('YY.MM.DD HH:mm')}</>
+      ),
+    }, {
+      title: '총 공급가',
+      key: 'totalPrice',
+      dataIndex: 'totalPrice',
+    },{
+      title: '총 중량',
+      key: 'totalWeight',
+      type: 'right',
+      dataIndex: 'totalWeight',
+    }, {
+      title: '고객사',
+      dataIndex: 'Customer',
+      key: 'Customer',
+      render: (text, record) => (
+        <>{text?.company}</>
+      ),
+    }, {
+      title: '주문상태',
+      dataIndex: 'status',
+      key: 'status',
+    },{
+      title: '',
+      type: 'right',
+      key: 'action',
+      render: (text, record) => (
+        <span class='link' onClick={showOrder(record?.id)}>보기</span>
+      ),
+    }
+  ]
 
   // 주문서보기
   const showOrder = (id) => () => {
@@ -156,75 +274,110 @@ const OrderList = ({ userInfo, mode }) => {
     if (mode === 'CUSTOMER') {
       return (
         <>
+          {isMobile?
+          <>
+            <MyTable
+              rowKey="id"
+              columns={columns}
+              dataSource={orders}
+            />
+            <HGap />
+            <div>
+              총 주문 중량: {totalWeight}<br />
+              총 주문가격: {String(totalPrice).toString()
+            .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원
+            </div>
+            <HGap />
+          </>
+          :
+        <>
           <Space wrap>
-            <Space>
-              <span>시작:</span>
+              <Space>
+                <span>시작:</span>
+                <DatePicker
+                  onChange={onChangeStartDate}
+                  locale={pickerLocale}
+                  defaultValue={startDate}
+                  autocomplete="off"
+                />
+              </Space>
+              <Space>
+                <span>까지:</span>
               <DatePicker
-                onChange={onChangeStartDate}
+                onChange={onChangeEndtDate} 
                 locale={pickerLocale}
-                defaultValue={startDate}
+                defaultValue={endDate}
                 autocomplete="off"
               />
-            </Space>
-            <Space>
-              <span>까지:</span>
-            <DatePicker
-              onChange={onChangeEndtDate} 
-              locale={pickerLocale}
-              defaultValue={endDate}
-              autocomplete="off"
-            />
-            </Space>
-            <br />
-            <Button onClick={onLoadOrdersWithDates}>적용</Button>
-          </Space><br /><br />
-          <ListTable>
-            <thead>
-              <tr>
-                <th>번호</th>
-                <th>주문일시</th>
-                <th>공급사</th>
-                <th>공급가</th>
-                <th>주문상태</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders?.map((v) => {
-                return (
-                <tr onClick={showOrder(v?.id)}>
-                  <td>{v?.id}</td>
-                  <td>{moment(v?.date).format('YY.MM.DD HH:mm')}</td>
-                  <td>{v?.Provider?.company}</td>
-                  <td>{v?.totalPrice}</td>
-                  <td>{v?.status}</td>
+              </Space>
+              <br />
+              <Button onClick={onLoadOrdersWithDates}>적용</Button>
+            </Space><br /><br />
+            <ListTable>
+              <thead>
+                <tr>
+                  <th>번호</th>
+                  <th>주문일시</th>
+                  <th>공급사</th>
+                  <th>공급가</th>
+                  <th>주문상태</th>
                 </tr>
-                )
-              })}
-              {isLoading?
+              </thead>
+              <tbody>
+                {orders?.map((v) => {
+                  return (
+                  <tr onClick={showOrder(v?.id)}>
+                    <td>{v?.id}</td>
+                    <td>{moment(v?.date).format('YY.MM.DD HH:mm')}</td>
+                    <td>{v?.Provider?.company}</td>
+                    <td>{v?.totalPrice}</td>
+                    <td>{v?.status}</td>
+                  </tr>
+                  )
+                })}
+                {isLoading?
+                  <tr>
+                    <td colSpan={5} className='msg'>
+                      <LoadingOutlined style={{ fontSize: 24 }} spin />
+                    </td>
+                  </tr>
+                :null }
+                {orders?.length <= 0? 
                 <tr>
                   <td colSpan={5} className='msg'>
-                    <LoadingOutlined style={{ fontSize: 24 }} spin />
+                    데이터가 없습니다.
                   </td>
                 </tr>
-              :null }
-              {orders?.length <= 0? 
-              <tr>
-                <td colSpan={5} className='msg'>
-                  데이터가 없습니다.
-                </td>
-              </tr>
-              :null}
-            </tbody>
-          </ListTable>
-          {totalPrice === 0?
-          null
-          : <div>
-            총 주문가격: {totalPrice}  
-          </div>}
+                :null}
+              </tbody>
+            </ListTable>
+            <div>
+              총 주문 중량: {totalWeight}<br />
+              총 주문가격: {String(totalPrice).toString()
+              .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원
+            </div>
+          </>}
         </> 
       );
     } if (mode === 'PROVIDER') {
       return (
+        <>
+        {isMobile?
+          <>
+            <MyTable
+              rowKey="id"
+              columns={providerColumns}
+              dataSource={orders}
+            />
+            <HGap />
+            <div>
+              총 주문 중량: {totalWeight}<br />
+              총 주문가격: {String(totalPrice).toString()
+            .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원
+            </div>
+            <HGap />
+          </>
+          :
         <>
           <Space wrap>
             <Space>
@@ -286,16 +439,19 @@ const OrderList = ({ userInfo, mode }) => {
               :null}
             </tbody>
           </ListTable>
-          {totalPrice === 0?
-          null
-          : <div>
-            총 주문가격: {totalPrice}  
-          </div>}
-        </> 
+          <div>
+            총 주문 중량: {totalWeight}<br />
+            총 주문가격: {String(totalPrice).toString()
+            .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원
+          </div>
+        </>}
+      </>
       );
     }
   }
-  return (<>데이터가 없습니다.</>);
+  return (<>
+  {mode} {JSON.stringify(isMobile)}
+  데이터가 없습니다. {isMobile && mode ==='CUSTOMER'? <>메롱</> : <>아닌뒈</>}</>);
 };
 
 export default OrderList;

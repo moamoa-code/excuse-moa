@@ -8,6 +8,7 @@ export default interface User {
   phone: string|null;
   email: string|null;
   role: string;
+  ProviderId: number;
   Providers: User[];
   Customers: User[];
 }

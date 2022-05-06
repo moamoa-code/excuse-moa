@@ -15,16 +15,9 @@ import Item from '../../interfaces/item';
 import styled from 'styled-components';
 import ItemView from '../../components/ItemView';
 import { DownOutlined, RightOutlined, ShoppingCartOutlined } from '@ant-design/icons';
-
-const Container800 = styled.div`
-max-width: 800px;
-padding: 20px;
-margin: 0 auto;
-@media screen and (max-width: 600px) {
-  padding: 10px;
-}
-`
-
+import { useMediaQuery } from 'react-responsive';
+import MyTable from '../../components/MyTable';
+import { ContainerBig } from '../../components/Styled';
 
 const ProvidersItemList = () => {
   const router = useRouter();
@@ -32,90 +25,110 @@ const ProvidersItemList = () => {
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
   const { data: items } = useQuery(['items'], loadMyItemsAPI);
   const { Title } = Typography;
+  const isMobile = useMediaQuery({
+    query: "(min-width:0px) and (max-width:768px)",
+  });
+
+  const columns = [
+    {
+      title: '번호',
+      dataIndex: 'id',
+      type: 'id',
+      key: 'id',
+      render: (text, record) => (
+        <>{text}</>
+      ),
+    }, {
+      title: '제품명',
+      dataIndex: 'name',
+      type: 'title',
+      key: 'name',
+      render: (text, record) => (
+        <>{text}</>
+      ),
+    }, {
+      title: '포장종류',
+      dataIndex: 'packageName',
+      key: 'packageName',
+    }, {
+      title: '공급가',
+      key: 'supplyPrice',
+      type: 'right',
+      dataIndex: 'supplyPrice',
+      render: (text, record) => (
+        <>{text.toString()
+          .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")}원</>
+      ),
+    }, {
+      title: '무게단위',
+      dataIndex: 'unit',
+      type: 'right',
+      key: 'unit',
+    }, {
+      title: '열람',
+      key: 'scope',
+      dataIndex: 'scope',
+      render: (text, record) => (
+        <>
+          {text === 'PRIVATE'?
+            <span>전용</span>
+          : text === 'GROUP'?
+            <span>공개</span>
+          : null}
+        </>
+      ),
+      filters: [
+        {
+          text: '전용',
+          value: 'PRIVATE'
+        }, {
+          text: '공개',
+          value: 'GROUP'
+        }
+      ],
+      onFilter: (value, record) => record.role?.indexOf(value) === 0,
+    },
+  ];
+
+  const expandable = {
+    expandRowByClick: true,
+    expandedRowRender: (record) => 
+    <div style={{margin: '15px'}}>
+      <ItemView item={record} myUserInfo={myUserInfo} />
+    </div>,
+    columnWidth: 20,
+    expandIcon: ({ expanded, onExpand, record }) =>
+    expanded ? (
+      <DownOutlined style={{color: '#64707a', fontSize: '8pt', margin: '0px'}} onClick={e => onExpand(record, e)} />
+    ) : (
+      <RightOutlined style={{color: '#64707a', fontSize: '8pt'}} onClick={e => onExpand(record, e)} />
+    )
+  };
 
   return (
     <AppLayout>
-      <Container800>
+      <ContainerBig>
         <Title level={4}>제품목록</Title>
         {/* <p>{JSON.stringify(items)}</p> */}
-        <Table
-        size="small"
-        rowKey="id"
-        columns={
-          [
-            {
-              title: '번호',
-              dataIndex: 'id',
-              key: 'id',
-              render: (text, record) => (
-                <>{text}</>
-              ),
-            }, {
-              title: '제품명',
-              dataIndex: 'name',
-              key: 'name',
-              render: (text, record) => (
-                <>{text}</>
-              ),
-            }, {
-              title: '포장종류',
-              dataIndex: 'packageName',
-              key: 'packageName',
-            }, {
-              title: '무게단위',
-              dataIndex: 'unit',
-              key: 'unit',
-            }, {
-              title: '공급가',
-              key: 'supplyPrice',
-              dataIndex: 'supplyPrice',
-              render: (text, record) => (
-                <>{text.toString()
-                  .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")}</>
-              ),
-            }, {
-              title: '열람',
-              key: 'scope',
-              dataIndex: 'scope',
-              render: (text, record) => (
-                <>
-                  {text === 'PRIVATE'?
-                    <span>전용</span>
-                  : text === 'GROUP'?
-                    <span>공개</span>
-                  : null}
-                </>
-              ),
-              filters: [
-                {
-                  text: '전용',
-                  value: 'PRIVATE'
-                }, {
-                  text: '공개',
-                  value: 'GROUP'
-                }
-              ],
-              onFilter: (value, record) => record.role?.indexOf(value) === 0,
-            },
-          ]}
-        expandable={{
-          expandRowByClick: true,
-          expandedRowRender: (record) => 
-          <div style={{margin: '15px'}}>
-            <ItemView item={record} myUserInfo={myUserInfo} />
-          </div>,
-          columnWidth: 20,
-          expandIcon: ({ expanded, onExpand, record }) =>
-          expanded ? (
-            <DownOutlined style={{color: '#64707a', fontSize: '8pt', margin: '0px'}} onClick={e => onExpand(record, e)} />
-          ) : (
-            <RightOutlined style={{color: '#64707a', fontSize: '8pt'}} onClick={e => onExpand(record, e)} />
-          )
-        }}
-        dataSource={items}
+        {isMobile?
+        <MyTable
+          size="small"
+          rowKey="id"
+          columns={columns}
+          expandable={expandable}
+          dataSource={items}
         />
+        :
+        <Table
+          rowKey="id"
+          columns={columns}
+          expandable={expandable}
+          dataSource={items}
+        />
+        }
+
         <Link href='/item/regist'><a><Button type='primary'> + 새로운 제품 추가</Button></a></Link>
-      </Container800>
+      </ContainerBig>
     </AppLayout>
   );
 };

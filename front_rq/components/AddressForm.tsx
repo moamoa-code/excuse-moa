@@ -5,18 +5,7 @@ import { Form, Input, Button } from 'antd';
 import useInput from '../hooks/useInput';
 import Modal from 'antd/lib/modal/Modal';
 import styled from 'styled-components';
-
-const Block = styled.div`
-  margin: 18px 0 18px 0;
-  label {
-    display: block;
-    margin: 0 0 7px 0;
-  }
-  input {
-    width: 100%;
-    height: 38px;
-  }
-`
+import { Block } from './Styled';
 
 const AddressForm = (props) => {
   const [ isVisible, setIsVisible ] = useState(false);
@@ -87,6 +76,7 @@ const AddressForm = (props) => {
             value={addrName}
             onChange={onChangeAddrName}
             placeholder='예) 모아카페 ㅇㅇ점'
+            maxLength={20}
             required
           />
         </Block>
@@ -116,6 +106,7 @@ const AddressForm = (props) => {
           <input
             value={address2}
             onChange={onChangeAddress2}
+            maxLength={30}
             placeholder=''
             required
           />
@@ -125,6 +116,7 @@ const AddressForm = (props) => {
           <input
             value={name}
             onChange={onChangeName}
+            maxLength={18}
             placeholder=''
             required
           />
@@ -134,15 +126,15 @@ const AddressForm = (props) => {
           <input
             value={phone}
             onChange={onChangePhone}
+            maxLength={15}
             placeholder=' - 없이 입력'
             required
           />
         </Block>
-        <div style={{ marginTop: 10 }}>
-          <Button type="primary" htmlType="submit" loading={props.loading}>
-            저장
-          </Button>
-        </div>
+        <hr />
+        <Button type="primary" htmlType="submit" loading={props.loading}>
+          저장
+        </Button>
       </Form>
   </>
   );

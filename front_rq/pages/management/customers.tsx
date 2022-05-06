@@ -5,14 +5,19 @@ import { GetServerSidePropsContext } from 'next';
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { dehydrate, QueryClient, useQuery, useQueryClient } from 'react-query';
 import Head from 'next/head';
-import { Form, Input, Checkbox, Button, notification, Space, Tag, Descriptions, Table } from 'antd';
+import { Form, Input, Checkbox, Button, notification, Space, Tag, Descriptions, Table, Modal, message } from 'antd';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { Typography } from 'antd';
 
 import { loadMyInfoAPI, loadUserAPI, addCustomerAPI, deleteCustomerAPI, addItemToCustomerAPI, removeItemToCustomerAPI } from '../../apis/user';
 import { loadMyItemsAPI } from '../../apis/item';
+import { Container800, DataShow, HGap, MoDal } from '../../components/Styled'; 
 import AppLayout from '../../components/AppLayout';
 import User from '../../interfaces/user';
+import { useMediaQuery } from 'react-responsive';
+import MyTable from '../../components/MyTable';
+import OrderList from '../../components/OrderList';
+// import DataShow from '../../components/DataShow';
 
 const Customers = () => {
   const { Title } = Typography;
@@ -21,8 +26,11 @@ const Customers = () => {
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
   const { data: myItems } = useQuery('myItems', loadMyItemsAPI);
   const [form] = Form.useForm();
+  const [ isCustomerOrdersModal, setIsCustomerOrdersModal ] = useState(false);
+  const modalOutside = useRef(); // 모달 바깥부분 클릭시 닫기 위한 ref
 
   const { Search } = Input;
+  const [ userInfo, setUserInfo] = useState({});
   const [ uKey, setUKey ] = useState('');
   const [ uCompany, setUcompany ] = useState('');
   const [ uName, setUname ] = useState('');
@@ -32,6 +40,9 @@ const Customers = () => {
   const [ uItems, setUitems ] = useState([]);
   const [ isMine, setIsmine ] = useState(false);
   const [ isVisible, setIsvisible ] = useState(false);
+  const isMobile = useMediaQuery({
+    query: "(min-width:0px) and (max-width:768px)",
+  });
 
   const divRef = useRef<HTMLDivElement>(null);
 
@@ -50,6 +61,7 @@ const Customers = () => {
     setLoading(true);
     loadUserAPI(String(value))
       .then((response) => {
+        setUserInfo(response);
         if (myUserInfo.Customers.find((v) => (v.key === response.key))){
           setIsmine(true);
         } else {
@@ -70,7 +82,7 @@ const Customers = () => {
         setIsvisible(true)
       })
       .catch((error) => {
-        alert(error.response.data);
+        message.error(error.response.data);
         setLoading(false);
         setIsvisible(false)
       })
@@ -119,7 +131,7 @@ const Customers = () => {
     setLoading(true);
     loadUserAPI(String(key))
       .then((response) => {
-        console.log(response);
+        setUserInfo(response);
         if (myUserInfo.Customers.find((v) => (v.key === response.key))){
           setIsmine(true);
         } else {
@@ -194,13 +206,18 @@ const Customers = () => {
       title: '아이디',
       dataIndex: 'key',
       key: 'key',
+      type: 'id',
       render: (text, record) => (
-        <b><p onClick={onViewUserInfo(text)}>{text}</p></b>
+        <span onClick={onViewUserInfo(text)}>{text}</span>
       ),
     }, {
       title: '회사명',
+      type: 'title',
       dataIndex: 'company',
-      key: 'company'
+      key: 'company',
+      render: (text, record) => (
+        <span onClick={onViewUserInfo(record.key)}>{text}</span>
+      ),
     }, {
       title: '담당자',
       dataIndex: 'name',
@@ -209,35 +226,103 @@ const Customers = () => {
       title: '연락처',
       dataIndex: 'phone',
       key: 'phone',
+    }, {
+      title: '',
+      key: 'action',
+      type: 'right',
+      render: (text, record) => (
+        <span onClick={onViewUserInfo(record.key)} style={{color: '#4aa9ff'}}>보기</span>
+      ),
     },
   ]
 
   return (
   <AppLayout>
-    <div style={{maxWidth: '800px', padding: '10px', margin: '0 auto'}}>
+    <Container800>
+    {/* <Modal title="Basic Modal" visible={isCustomerOrdersModal} >
+          <OrderList userInfo={userInfo} mode="CUSTOMER"/>
+          <div className='close'>
+            <Button onClick={() => { setIsCustomerOrdersModal(false) }}>닫기</Button>
+          </div>
+    </Modal> */}
+    {isCustomerOrdersModal?
+      <MoDal 
+        ref={modalOutside}
+        onClick={(e)=>{
+          if(modalOutside.current === e.target) {
+            setIsCustomerOrdersModal(false)}
+        }}
+      >
+        <div className='contents'>
+          <OrderList userInfo={userInfo} mode="CUSTOMER"/>
+          <div className='close'>
+            <Button onClick={() => { setIsCustomerOrdersModal(false) }}>닫기</Button>
+          </div>
+        </div>
+      </MoDal>
+    :null}
       <Head>
         <title>고객 등록</title>
       </Head>
       <Title level={4} >{myUserInfo.company}사의 고객 목록</Title>
-      <Table
+      {isMobile?
+        <MyTable 
         loading={loading}
-        size="small"
         rowKey="id"
         columns={userTableColumns}
         dataSource={myUserInfo?.Customers}
-      />
+        />
+      :      
+        <Table
+          loading={loading}
+          rowKey="id"
+          columns={userTableColumns}
+          dataSource={myUserInfo?.Customers}
+        />
+      }
+      
+
       <Title level={4} style={{ marginTop: '30px' }} >회원 검색</Title>
       <Search placeholder="사업자 등록번호(아이디)" onSearch={onSearch} enterButton />
       {isVisible ? 
-        <div ref={divRef}>
-          <Descriptions title="검색결과" style={{ marginTop: '30px' }} bordered>
-            <Descriptions.Item label="사업자등록번호">{uKey}</Descriptions.Item>
-            <Descriptions.Item label="회사명">{uCompany}</Descriptions.Item>
-            <Descriptions.Item label="담당자 성함">{uName}</Descriptions.Item>
-            <Descriptions.Item label="담당자 전화번호">{uPhone}</Descriptions.Item>
-            <Descriptions.Item label="담당자 이메일">{uEmail}</Descriptions.Item>
-            <Descriptions.Item label="등급">{uRole}</Descriptions.Item>
-            <Descriptions.Item label="열람가능 제품 등록" span={3}>
+      <>
+        <HGap />
+        <DataShow ref={divRef}>
+          <h1>검색결과</h1>
+          <div className='container'>
+            <span className='title'>사업자등록번호</span>
+            <span className='data'>{uKey}</span>
+          </div>
+          <div className='container'>
+            <span className='title'>회사명</span>
+            <span className='data'>{uKey}</span>
+          </div>
+          <div className='container'>
+            <span className='title'>담당자 성함</span>
+            <span className='data'>{uName}</span>
+          </div>
+          <div className='container'>
+            <span className='title'>담당자 전화번호</span>
+            <span className='data'>{uPhone}</span>
+          </div>
+          <div className='container'>
+            <span className='title'>담당자 이매일</span>
+            <span className='data'>{uEmail}</span>
+          </div>
+          <div className='container'>
+            <span className='title'>담당자 등급</span>
+            <span className='data'>{uRole}</span>
+          </div>
+          <div className='container'>
+            <span className='title'>주문목록</span>
+            <span className='data'>
+              <Button onClick={()=>setIsCustomerOrdersModal(true)}>구매주문</Button>
+            </span>
+
+          </div>
+
+            <span className='bigTitle'>열람가능 제품 등록</span>
+            <span className='bigData'>
             {isMine ? 
               <Form 
                 initialValues={{ // 제품 볼 수 있는 유저 체크
@@ -250,10 +335,10 @@ const Customers = () => {
                     <Space size={8} wrap>
                       {myItems? 
                         <>
-                          {myItems.map((v) => {
+                          {myItems.map((v, i) => {
                             if (v.scope === 'PRIVATE'){
                               return (
-                                <Tag>
+                                <Tag key={i}>
                                   <Checkbox value={v.id} disabled={loading} onClick={onToggleItem}>({v.id}) {v.name}</Checkbox>
                                 </Tag>)
                             }
@@ -266,14 +351,14 @@ const Customers = () => {
                 </Form.Item>
               </Form>
             : <p>아직 귀사의 고객이 아닙니다.</p> }
-            </Descriptions.Item>
-          </Descriptions>
+            </span>
+        </DataShow>
           {isMine ?
             <Button onClick={onDeleteCustomer} style={{ marginTop: '10px' }} loading={loading}>고객등록 해제</Button>
           : <Button onClick={onAddCustomer} style={{ marginTop: '10px' }} loading={loading}>내 고객으로 등록</Button>}
-        </div>
+        </>
       : null}
-    </div>
+    </Container800>
   </AppLayout>
   );
 };

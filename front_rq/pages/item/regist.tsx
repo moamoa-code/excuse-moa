@@ -86,7 +86,7 @@ const RegistItem = () => {
   const [description, onChangeDesc] = useInput(''); // 권장소비가
   const [imagePath, setImagePath] = useState<string>(); // 제품사진 업로드 경로
   // 옵션선택
-  const codeNames = ['HOUSE', 'DECAFFEIN'];
+  const codeNames = ['HOUSE', 'C7', 'DECAFFEIN'];
   const units = ['200g', '500g', '1Kg'];
   const packages = ['M 무지', 'M 브랜드스티커', 'M 브랜드인쇄', '지퍼 무지', '지퍼 브랜드인쇄', '지퍼 브랜드스티커'];
   const { Option } = Select;
@@ -189,15 +189,11 @@ const RegistItem = () => {
       <Head>
         <title>제품등록</title>
       </Head>
-      {/* <div>{JSON.stringify(myUserInfo)}</div><br /> */}
-      {/* <p>{myUserInfo.Customers.map((v) => (
-        <p>{v.id}</p>
-      ))}</p> */}
       <Title level={3}>제품 등록</Title>
       <p>{myUserInfo?.company}사의 제품 등록</p>
       <Form style={{ margin: '10px 0 20px' }} encType="multipart/form-data" onFinish={onSubmit}>
         <Block>
-          <label htmlFor="item-code"><RedBold>* </RedBold>제품 코드명 (구매자 비공개)</label>
+          <label htmlFor="item-code"><RedBold>* </RedBold>제품 코드명 (사전협의된 원두코드명을 입력하세요.)</label> 
           <Input name="item-code" value={codeName} required onChange={onChangeCodeName} maxLength={10}/>
           <OptionContainer>
             {codeNames.map((v)=>{

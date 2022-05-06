@@ -151,7 +151,7 @@ router.patch('/update-password', async (req, res, next) => { // post /user
 
 
 // 특정 판매자 정보 불러오기
-router.get('/provider-id/:userId', isProvider, async (req, res, next) => { // 
+router.get('/provider-id/:userId', isLoggedIn, async (req, res, next) => { // 
   try {
     const userDataWithItems = await User.findOne({
       where: { id: req.params.userId },

@@ -6,7 +6,6 @@ import dayjs from 'dayjs';
 
 
 const PostList = ({ posts }) => {
-
   const columns = [
     {
       title: '제목',
@@ -15,7 +14,14 @@ const PostList = ({ posts }) => {
       render: (text, record) => (
         <>{text}</>
       ),
-    },{
+    }, {
+      title: '작성자',
+      dataIndex: 'User',
+      key: 'User',
+      render: (text, record) => (
+        <>{text?.company}</>
+      ),
+    }, {
       title: '작성일',
       dataIndex: 'createdAt',
       key: 'createdAt',
@@ -29,9 +35,9 @@ const PostList = ({ posts }) => {
   return (
     <>
       <Table 
-        size="small"
         rowKey="id"
         columns={columns}
+        pagination={{ hideOnSinglePage: true }}
         expandable={{
           expandedRowRender: (record) => 
           <PostView post={record}/>,

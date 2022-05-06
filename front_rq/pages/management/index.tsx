@@ -20,12 +20,7 @@ import User from '../../interfaces/user';
 import Item from '../../interfaces/item';
 import styled from 'styled-components';
 import { ShopOutlined, UnorderedListOutlined, UserOutlined } from '@ant-design/icons';
-
-const Container800 = styled.div`
-max-width: 800px;
-padding: 20px;
-margin: 0 auto;
-`
+import { Container800 } from '../../components/Styled';
 
 
 const Management = () => {
@@ -49,8 +44,6 @@ const Management = () => {
         <Link href="/item/regist"><a>제품등록</a></Link>
         <br/>
         <Link href="/management/items"><a>제품목록</a></Link>
-        <br />
-        <Link href="/management/check-order/list"><a>주문목록</a></Link>
         <br /><br />
         <Title level={4}><UnorderedListOutlined /> 공지사항 관리</Title>
         <Link href="/post/regist"><a>공지사항 등록</a></Link>

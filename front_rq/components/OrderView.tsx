@@ -1,5 +1,5 @@
 // 주문확인서 컴포넌트
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Descriptions, Divider, Table, Typography, Space, Button } from 'antd';
 import { PhoneOutlined, PrinterTwoTone } from '@ant-design/icons';
 
@@ -92,13 +92,16 @@ const OrderView = ({ orderData, mode }) => {
       <Descriptions.Item label="주문번호">
         {orderData.order.id}
       </Descriptions.Item>
-      <Descriptions.Item label="상태">
-        {orderData.order.factoryStatus === '출하'?
-          <span>출하완료</span>
-        : <span>{orderData.order.status}</span>}
+      <Descriptions.Item label="주문상태">
+        {orderData.order.status}
         {orderData.order.message? 
           <> / {orderData.order.message}</>
         : null}
+      </Descriptions.Item>
+      <Descriptions.Item label="배송상태">
+        {orderData.order?.factoryStatus === '출하'?
+        <span>출하완료</span>
+        :orderData.order?.factoryStatus}
       </Descriptions.Item>
     </Descriptions>
     <br />
@@ -163,11 +166,13 @@ const OrderView = ({ orderData, mode }) => {
         pagination={false}
     />}
     {mode.price?
-      <Divider orientation="right">총액 : {
+      <Divider orientation="right">총 {orderData.order?.totalWeight}, {
         String(orderData.order.totalPrice).toString()
       .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ?? ''
       } 원</Divider>
-    : null}
+    :
+      <Divider orientation="right">총 {orderData.order?.totalWeight}</Divider>
+    }
   </>
   );
 };

@@ -18,6 +18,9 @@ import moment from 'moment';
 import 'moment/locale/ko';
 import locale from 'antd/lib/locale/ko_KR';
 import styled from 'styled-components';
+import { ContainerBig, HGap, RightText } from '../../../../components/Styled';
+import MyTable from '../../../../components/MyTable';
+import { useMediaQuery } from 'react-responsive';
 
 const PageSizer = styled.div`
   font-size: 11pt;
@@ -68,7 +71,11 @@ const OrderList = () => {
   const [ startDate, setStartDate ] = useState(moment().subtract(2, 'months'));
   const [ endDate, setEndDate ] = useState(moment());
   const [ totalPrice, setTotalPrice ] = useState(0);
+  const [ totalWeight, setTotalWeight ] = useState('0Kg');
   const [ pageSize, setPageSize ] = useState(10);
+  const isMobile = useMediaQuery({
+    query: "(min-width:0px) and (max-width:768px)",
+  });
   const getTotalPrice = (orders) => { // 총 금액 계산
     console.log('getTotalPrice')
     let total = 0
@@ -91,10 +98,30 @@ const OrderList = () => {
       onSuccess: (data) => {
         console.log('onSuccess');
         getTotalPrice(data);
+        getTotalWeight(data);
       }
     }
   ); // 데이터 불러오기, 총 금액 계산
-
+  const getTotalWeight = (orders) => { // 총 무게 계산
+    let totalWeight = 0;
+    if(orders) {
+      orders.map((v) => {
+        let weight = 0;
+        if (isNaN(v.totalWeight) || v.status.includes('주문취소')) {
+          weight = 0;
+        }
+        if (String(v.totalWeight).toUpperCase().slice(-2) === 'KG') {
+          weight = Number(String(v.totalWeight).toUpperCase().replace('KG', ''));
+        } else {
+          weight = 0;
+        }
+        totalWeight = totalWeight + weight;
+      })
+    }
+    totalWeight = totalWeight.toFixed(1) + 'Kg';
+    setTotalWeight(totalWeight);
+    return String(totalWeight);
+  };
   const onChangePageSize = (e) => {
     if (e.target.value >= 100) {
       return setPageSize(100);
@@ -107,37 +134,47 @@ const OrderList = () => {
       message.error('날짜를 선택해 주세요.', 0.5);
       return;
     }
-    // if(!endDate.isAfter(startDate)){
-    //   message.error('시작날짜와 끝나는 날짜를 확인해 주세요.', 0.5);
-    //   return;
-    // }
     const newDates = [moment(startDate).format('YYYY-MM-DD'), moment(endDate).format('YYYY-MM-DD')];
     console.log(newDates);
     setDatesVal(newDates);
-    // queryClient.fetchQuery(['orders', datesVal], () => loadMyOrdersAPI(orderId, datesVal));
     queryClient.invalidateQueries('orders');
   }
 
   const columns = [
     {
-      title: '주문일시',
-      dataIndex: 'date',
-      key: 'date',
-      render: (text, record) => (
-        <>{moment(text).format('YYYY.MM.DD HH:mm')}</>
-      ),
-    }, {
       title: '주문번호',
       dataIndex: 'id',
+      type: 'id',
       key: 'id',
+    }, {
+      title: '주문일시',
+      dataIndex: 'date',
+      type: 'title',
+      key: 'date',
+      render: (text, record) => (
+        <>{moment(text).format('YY.MM.DD HH:mm')}</>
+      ),
+    }, {
+      title: '배송상태',
+      dataIndex: 'factoryStatus',
+      type: 'sub',
+      key: 'factoryStatus',
+      render: (text, record) => {
+        if (text === '출하') {return <>출하완료</>} else {return <>{text}</>}
+      },
     }, {
       title: '총 공급가',
       key: 'totalPrice',
       dataIndex: 'totalPrice',
+    },{
+      title: '총 중량',
+      key: 'totalWeight',
+      type: 'right',
+      dataIndex: 'totalWeight',
     }, {
       title: '공급사',
       dataIndex: 'Provider',
-      key: 'date',
+      key: 'Provider',
       render: (text, record) => (
         <>{text.company}</>
       ),
@@ -147,9 +184,10 @@ const OrderList = () => {
       key: 'status',
     },{
       title: '',
+      type: 'right',
       key: 'action',
       render: (text, record) => (
-        <Link href={`/item/order/${record.id}`}><a>자세히 보기</a></Link>
+        <Link href={`/item/order/${record.id}`}><a>조회</a></Link>
       ),
     }
   ]
@@ -166,7 +204,7 @@ const OrderList = () => {
   return (
     <AppLayout>
       {/* {JSON.stringify(orders)} */}
-      <Container800>
+      <ContainerBig>
         <Title level={4}>주문 목록</Title>
         <Space wrap>
           <Space>
@@ -189,30 +227,42 @@ const OrderList = () => {
           <span>기간 검색</span>
           <Button onClick={onLoadOrdersWithDates}>적용</Button>
         </Space>
-        <p></p>
-        <Table 
-          size="small"
+        <HGap />
+        {isMobile?
+        <MyTable 
           rowKey="id"
           columns={columns}
           dataSource={orders}
           loading={isLoading}
-          pagination={{pageSize:pageSize}}
-          />
-        <PageSizer>
-          <span>페이지크기</span>
-          <input 
-            type='number'
-            max={100}
-            maxLength={3}
-            value={pageSize}
-            onChange={onChangePageSize}
-          />
-        </PageSizer>
-        {totalPrice?
-        <Divider orientation="right">완료된 주문 총 금액: {String(totalPrice).toString()
+        />
+        :
+        <>      
+          <Table 
+            rowKey="id"
+            columns={columns}
+            dataSource={orders}
+            loading={isLoading}
+            pagination={{pageSize:pageSize}}
+          /><HGap />
+          <PageSizer>
+            <span>페이지크기</span>
+            <input 
+              type='number'
+              max={100}
+              maxLength={3}
+              value={pageSize}
+              onChange={onChangePageSize}
+            />
+          </PageSizer>
+        </>}
+        <HGap />
+        {totalPrice?<>
+        <Divider orientation="right">총 중량 {totalWeight} , 총 금액: {String(totalPrice).toString()
           .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원</Divider>
+        <RightText>*주문취소 제외 기간내 검색결과 모든페이지 합산. </RightText></>
         : null}
-      </Container800>
+        
+      </ContainerBig>
     </AppLayout>
   );
 };
@@ -231,6 +281,14 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
     return {
       redirect: {
         destination: '/',
+        permanent: false,
+      },
+    };
+  }
+  else if ( String(response.id) !== id ) { // 본인만 접근가능
+    return {
+      redirect: {
+        destination: '/unauth',
         permanent: false,
       },
     };

@@ -19,6 +19,9 @@ import User from '../../../interfaces/user';
 import Order from '../../../interfaces/order';
 import styled from 'styled-components';
 import moment from 'moment';
+import { useMediaQuery } from 'react-responsive';
+import MyTable from '../../../components/MyTable';
+import { ContainerBig, HGap, RightText } from '../../../components/Styled';
 
 const PageSizer = styled.div`
   font-size: 11pt;
@@ -104,11 +107,15 @@ const Orders = () => {
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
   const [ id, setId ] = useState(myUserInfo.id);
   const [ totalPrice, setTotalPrice ] = useState(0);
+  const [ totalWeight, setTotalWeight ] = useState('0Kg');
+
   const [ datesVal, setDatesVal ] = useState([moment().subtract(1, 'months').format('YYYY-MM-DD'), moment().format('YYYY-MM-DD')]);
   const [ startDate, setStartDate ] = useState(moment().subtract(1, 'months'));
   const [ endDate, setEndDate ] = useState(moment());
   const [ pageSize, setPageSize ] = useState(10);
-  // const { data: orders } = useQuery<Order[]>(['orders', id, datesVal], () => loadReceivedOrdersAPI(String(id), null, datesVal));
+  const isMobile = useMediaQuery({
+    query: "(min-width:0px) and (max-width:768px)",
+  });  
   const getTotalPrice = (orders) => { // 총 금액 계산
     console.log('getTotalPrice')
     let total = 0;
@@ -125,6 +132,26 @@ const Orders = () => {
     console.log(total);
     return String(total);
   };
+  const getTotalWeight = (orders) => { // 총 금액 계산
+    let totalWeight = 0;
+    if(orders) {
+      orders.map((v) => {
+        let weight = 0;
+        if (isNaN(v.totalWeight) || v.status.includes('주문취소')) {
+          weight = 0;
+        }
+        if (String(v.totalWeight).toUpperCase().slice(-2) === 'KG') {
+          weight = Number(String(v.totalWeight).toUpperCase().replace('KG', ''));
+        } else {
+          weight = 0;
+        }
+        totalWeight = totalWeight + weight;
+      })
+    }
+    totalWeight = totalWeight.toFixed(1) + 'Kg';
+    setTotalWeight(totalWeight);
+    return String(totalWeight);
+  };
   const { isLoading, data: orders } = useQuery<Order[]>(['orders', datesVal], 
     () => {
       return loadReceivedOrdersWithDatesAPI(String(id), datesVal)
@@ -132,6 +159,7 @@ const Orders = () => {
       onSuccess: (data) => {
         console.log('onSuccess');
         getTotalPrice(data);
+        getTotalWeight(data);
       }
     }
   ); // 데이터 불러오기, 총 금액 계산
@@ -170,26 +198,42 @@ const Orders = () => {
 
   const columns = [
     {
-      title: '주문일시',
-      dataIndex: 'date',
-      key: 'date',
-      render: (text, record) => (
-        <>{dayjs(text).format('YYYY.MM.DD HH:mm')}</>
-      ),
-    }, {
       title: '주문번호',
       dataIndex: 'id',
+      type: 'id',
       key: 'id',
     }, {
       title: '총 공급가',
       key: 'totalPrice',
       dataIndex: 'totalPrice',
     }, {
+      title: '총 중량',
+      key: 'totalWeight',
+      type: 'right',
+      dataIndex: 'totalWeight',
+    }, {
       title: '고객사',
       dataIndex: 'Customer',
+      type: 'title',
       key: 'Customer',
       render: (text, record) => {
         return <>{text?.company ?? record.name}</>
+      },
+    }, {
+      title: '주문일시',
+      dataIndex: 'date',
+      key: 'date',
+      type: 'sub',
+      render: (text, record) => (
+        <>{dayjs(text).format('YY.MM.DD HH:mm')}</>
+      ),
+    }, {
+      title: '배송상태',
+      dataIndex: 'factoryStatus',
+      type: 'sub',
+      key: 'factoryStatus',
+      render: (text, record) => {
+        if (text === '출하') {return <>출하완료</>} else {return <>{text}</>}
       },
     }, {
       title: '주문상태',
@@ -198,15 +242,16 @@ const Orders = () => {
     }, {
       title: '',
       key: 'action',
+      type: 'right',
       render: (text, record) => (
-        <Link href={`/management/check-order/${record.id}`}><a>주문상세</a></Link>
+        <Link href={`/management/check-order/${record.id}`}><a>보기</a></Link>
       ),
     }
   ]
 
   return (
     <AppLayout>
-      <Container800>
+      <ContainerBig>
         <Title level={4}>주문 목록</Title>
         <Space wrap>
           <Space>
@@ -230,29 +275,44 @@ const Orders = () => {
           <Button onClick={onLoadOrdersWithDates}>적용</Button>
         </Space>
         <p></p>
-        <Table 
-          size="middle"
+        {isMobile?
+        <MyTable 
           rowKey="id"
           columns={columns}
           dataSource={orders}
-          pagination={{pageSize:pageSize}}
-          />
-        <PageSizer>
-          <span>페이지크기</span>
-          <input 
-            type='number'
-            max={100}
-            maxLength={3}
-            value={pageSize}
-            onChange={onChangePageSize}
-          />
-        </PageSizer>
+          loading={isLoading}
+        />
+        :
+        <>
+          <Table 
+            size="middle"
+            rowKey="id"
+            columns={columns}
+            dataSource={orders}
+            pagination={{pageSize:pageSize}}
+            />
+          <PageSizer>
+            <span>페이지크기</span>
+            <input 
+              type='number'
+              max={100}
+              maxLength={3}
+              value={pageSize}
+              onChange={onChangePageSize}
+            />
+          </PageSizer>
+        </>
+        }
+        <HGap />
         {totalPrice?
-        <Divider orientation="right">취소되지 않은 주문 총 금액: {String(totalPrice).toString()
-          .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원</Divider>
-        : null}
+        <>
+          <Divider orientation="right">주문 총계: {totalWeight} , {String(totalPrice).toString()
+            .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원</Divider>
+          <RightText>*주문취소 제외 기간내 검색결과 모든페이지 합산. </RightText>
+        </>
+        : null}<br />
         <Button type='primary'><Link href={'/management/add-order'}><a>+ 새로운 주문 추가</a></Link></Button>
-      </Container800>
+      </ContainerBig>
     </AppLayout>
   );
 };

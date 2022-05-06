@@ -9,7 +9,7 @@ import { loadOrderAPI } from '../../../apis/order';
 import AppLayout from '../../../components/AppLayout';
 import OrderView from '../../../components/OrderView';
 import User from '../../../interfaces/user';
-import { Button, Input, notification, Popconfirm, Space } from 'antd';
+import { Button, Input, notification, Popconfirm, Space, message as meSsage } from 'antd';
 import { CheckCircleOutlined, PrinterTwoTone } from '@ant-design/icons';
 import { requestCancelOrderAPI } from '../../../apis/order';
 import useInput from '../../../hooks/useInput';
@@ -38,6 +38,11 @@ const OrderConfirm = () => {
   };
 
   const onRequestCancelOrder = () => {
+    if (orderData.order?.factoryStatus === '출하') {
+      setLoading(false);
+      return meSsage.error('이미 출하 완료된 주문입니다. 판매자에 문의하세요')
+    }
+    setLoading(true);
     requestCancelOrderAPI({ orderId, message })
     .then(() => {
       queryClient.invalidateQueries('orderData');

@@ -1,36 +1,122 @@
-import React, { useCallback, useState } from 'react';
-import { Descriptions, Tag, Button, Divider, Image, Card } from 'antd';
-import Router from 'next/router';
+import React, { useEffect, useState } from 'react';
+import { Image, Card, message, Empty } from 'antd';
 import dayjs from 'dayjs';
+import { loadPostAPI } from '../apis/post';
+import styled from 'styled-components';
+import { FileExcelOutlined } from '@ant-design/icons';
+import { CenteredDiv, HGap } from './Styled';
+
+const Content = styled.div`
+  background-color: white;
+  padding: 14px;
+  border: 1px solid #e4e4e4;
+  border-radius: 12px;
+  .title {
+    font-size: 11pt;
+  }
+  .date {
+    float: right;
+    font-size: 10pt;
+  }
+  hr {
+    width: 100%;
+    border: 0;
+    border: 1px solid #cccccc;
+  }
+  .desc {
+    margin-top: 12px;
+    white-space:pre-wrap; // \r\n 줄바꿈 처리
+  }
+  .foot {
+    margin-top: 12px;
+    font-style: italic;
+    text-align:right;
+  }
+  .empty {
+    span {
+      font-size: 16pt;
+      color: #898989;
+    }
+    margin: 0 auto;
+    text-align: center;
+  }
+`
 
 
-const PostView = ({ post }) => {
-  if (!post.title) {
+const PostView = (props) => {
+  const { post, postId } = props;
+  const [ postData, setPostData ] = useState(null);
+  const [ isLoading, setIsLoading ] = useState(false);
+
+  useEffect(() => {
+    if (postId) {
+      getPost(postId);
+    } else {
+      setPostData(post);
+    }
+  }, [post, postId]);
+
+  const getPost = (id) =>  {
+    setIsLoading(true);
+    loadPostAPI(id)
+    .then((data) => {
+      setPostData(data);
+    })
+    .catch((error) => {
+      message.error(error.response.data);
+    })
+    .finally(() => {
+      setIsLoading(false);
+    });
+  }
+
+  if (isLoading || !postData) {
     return (
       <>
-      <Card
-        title=""
-      >아직 판매자 메시지가 없습니다.</Card>
+        <Content>
+        <div className='empty'>
+          <FileExcelOutlined /><br />
+          데이터가 없거나 로드중입니다.
+        </div>
+        </Content>
       </>
     );
   };
   return (
     <>
-      <Card
-        title={post.title}
-        extra={dayjs(post.createdAt).format('YYYY.MM.DD HH:mm')}
+      <Content>
+        <div className='title'>
+          {postData?.title}
+          <span className='date'>{dayjs(postData?.createdAt).format('YYYY.MM.DD HH:mm')}</span>
+        </div>
+        <hr />
+        <div className='desc'>
+          {postData?.imgSrc ?
+            <div style={{ textAlign: 'center' }}>
+              <Image src={`${postData?.imgSrc}`} style={{ maxHeight: '300px'}}/>
+            </div>
+            : null
+          }
+          {postData?.content}
+        </div>
+        <div className='foot'>
+          {postData?.User?.company}
+        </div>
+      </Content>
+      {/* <Card
+        title={postData?.title}
+        extra={dayjs(postData?.createdAt).format('YYYY.MM.DD HH:mm')}
         size='small'
       >
-        {post.imgSrc ?
+        {postData?.imgSrc ?
         <div style={{ textAlign: 'center' }}>
-          {/* <Image src={`${backUrl}/${post.imgSrc}`} style={{ maxHeight: '300px'}}/> */}
-          <Image src={`${post.imgSrc}`} style={{ maxHeight: '300px'}}/>
+          <Image src={`${postData?.imgSrc}`} style={{ maxHeight: '300px'}}/>
         </div>
         : null
         }
-        <pre>{post.content}</pre>
-        <span>{post.User?.company}</span>
-      </Card>
+        <pre>{postData?.content}</pre>
+        <span>{postData?.User?.company}</span>
+      </Card> */}
     </>
   )
 }

@@ -15,6 +15,8 @@ import { loadMyInfoAPI, loadUserAPI, addCustomerAPI,
 import { loadItemListAPI, loadMyItemsAPI } from '../../../apis/item';
 import AppLayout from '../../../components/AppLayout';
 import User from '../../../interfaces/user';
+import { useMediaQuery } from 'react-responsive';
+import MyTable from '../../../components/MyTable';
 
 
 const ProviderList = () => {
@@ -33,6 +35,11 @@ const ProviderList = () => {
   const [ isVisible, setIsvisible ] = useState(false);
   const [ isCustomerSelected, setIsCustomerSelected ] = useState(false);
   const [ isMember, setIsMember ] = useState(false);
+
+  const isMobile = useMediaQuery({
+    query: "(min-width:0px) and (max-width:768px)",
+  });
+
 
   const divRef = useRef<HTMLDivElement>(null);
 
@@ -229,12 +236,14 @@ const ProviderList = () => {
       title: '아이디',
       dataIndex: 'key',
       key: 'key',
+      type: 'id',
       render: (text, record) => (
-        <b><p onClick={onViewUserInfo(text)}>{text}</p></b>
+        <b><span onClick={onViewUserInfo(text)}>{text}</span></b>
       ),
     },
     {
       title: '회사명',
+      type: 'title',
       dataIndex: 'company',
       key: 'company'
     },{
@@ -262,6 +271,13 @@ const ProviderList = () => {
       title: '담당자',
       dataIndex: 'name',
       key: 'name',
+    }, {
+      title: '',
+      key: 'action',
+      type: 'right',
+      render: (text, record) => (
+        <span style={{color: '#4aa9ff'}} onClick={onViewUserInfo(record.key)} >보기</span>
+      ),
     },
   ]
 
@@ -272,12 +288,21 @@ const ProviderList = () => {
         <title>판매회원 관리</title>
       </Head>
       <Title level={4} >판매회원 관리</Title>
+      {isMobile? 
+        <MyTable
+          size="small"
+          rowKey="id"
+          columns={userTableColumns}
+          dataSource={userList}
+        />
+      :
       <Table
-        size="small"
         rowKey="id"
         columns={userTableColumns}
         dataSource={userList}
       />
+      }
+
       <Title level={4} style={{ marginTop: '30px' }} >판매자 검색</Title>
       <Search placeholder="ID / 사업자 등록번호" onSearch={onSearchProvider} enterButton />
       {isVisible ? 

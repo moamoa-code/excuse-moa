@@ -62,14 +62,80 @@ const upload = multer({
 //   limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
 // });
 // 게시글 등록
-router.post('/regist', isLoggedIn, upload.none(), async (req, res, next) => {
+router.post('/regist', isProvider, upload.none(), async (req, res, next) => {
   try {
     console.log('게시글등록 req.body',req.body);
-    let post
+    let done = false;
+    let post;
+    let scope = req.body.scope;
+    if (req.body.content?.length > 999) {
+      return res.status(401).send('1000자(줄바꿈 포함)를 초과했습니다.');
+    }
+    const me = await User.findOne({
+      where: { id: req.user.id },
+    });
+    if (req.body.scope !== 'PRIVATE' && req.body.scope !== 'GROUP' && req.body.scope !== 'PUBLIC') {
+      scope = 'PRIVATE';
+    }
+    let provider;
+    if (me.role === 'ADMINISTRATOR'){
+      if (req.body.providerId !== null && req.body.providerId !== undefined){
+        provider = await User.findOne({
+          where: { id: req.body.providerId },
+        });
+      }
+    }
+    if (me.role === 'ADMINISTRATOR' && scope !== 'PUBLIC' && !provider) {
+      return res.status(403).send('판매자가 존재하지 않습니다.');
+    }
+    if (me.role === 'ADMINISTRATOR'){
+      if (scope === 'PUBLIC'){
+        if (req.body.imgSrc !== undefined) {
+          post = await Post.create({
+            title: req.body.title,
+            content: req.body.content,
+            scope: scope,
+            UserId: req.user.id,
+            imgSrc: req.body.imgSrc,
+          })
+        } else {
+          post = await Post.create({
+            title: req.body.title,
+            content: req.body.content,
+            scope: scope,
+            UserId: req.user.id,
+          })
+        }
+        done = true;
+      }
+      else if (!done && (scope === 'PRIVATE' || scope === 'GROUP')){
+        if (req.body.imgSrc !== undefined) {
+          post = await Post.create({
+            title: req.body.title,
+            content: req.body.content,
+            scope: scope,
+            UserId: provider.id,
+            imgSrc: req.body.imgSrc,
+          })
+        } else {
+          post = await Post.create({
+            title: req.body.title,
+            content: req.body.content,
+            scope: scope,
+            UserId: provider.id,
+          })
+        }
+        done = true;
+      }
+    }
+    if (done) {
+      return res.status(200).json(post.id);
+    }
     if (req.body.imgSrc !== undefined) {
       post = await Post.create({
         title: req.body.title,
         content: req.body.content,
+        scope: scope,
         UserId: req.user.id,
         imgSrc: req.body.imgSrc,
       })
@@ -77,12 +143,11 @@ router.post('/regist', isLoggedIn, upload.none(), async (req, res, next) => {
       post = await Post.create({
         title: req.body.title,
         content: req.body.content,
+        scope: scope,
         UserId: req.user.id,
       })
     }
-
-    console.log('생성함', post);
-    res.status(200).json(post.id);
+    return res.status(200).json(post.id);
   } catch (error) {
     console.error(error);
     next(error); // status 500
@@ -106,10 +171,15 @@ router.post('/edit', isLoggedIn, upload.none(), async (req, res, next) => {
     if (!post) {
       res.status(403).send('해당 게시글이 존재하지 않습니다.');
     }
+    let scope = req.body.scope;
+    if (req.body.scope !== 'PRIVATE' && req.body.scope !== 'GROUP' && req.body.scope !== 'PUBLIC'){
+      scope = 'PRIVATE';
+    }
     if (req.body.imgSrc !== undefined) {
       await Post.update({
         content: req.body.content,
         title: req.body.title,
+        scope,
         imgSrc: req.body.imgSrc
       },{
         where: { id: post.id },
@@ -118,6 +188,7 @@ router.post('/edit', isLoggedIn, upload.none(), async (req, res, next) => {
       await Post.update({
         content: req.body.content,
         title: req.body.title,
+        scope,
         imgSrc: null,
       },{
         where: { id: post.id },
@@ -154,7 +225,7 @@ router.patch('/delete', isProvider, upload.none(), async (req, res, next) => {
 });
 
 
-// 구매자가 볼 수 있는 게시글 목록 불러오기
+// 회원이 볼 수 있는 게시글 목록 불러오기
 router.get('/list', isLoggedIn, async (req, res, next) => { 
   try {
     const user = await User.findOne({
@@ -163,19 +234,50 @@ router.get('/list', isLoggedIn, async (req, res, next) => {
     if (!user) {
       return res.status(404).send('유저가 존재하지 않습니다.');
     }
-    const mypost = await user.getUserViewPosts({
+    const provider = await User.findOne({
+      where: { id: user.ProviderId}
+    })
+    let myProviderPosts = [];
+    if (provider) { // 판매자의 모든고객공개 공지
+      myProviderPosts = await Post.findAll({
+        order: [['createdAt', 'DESC']],
+        where: {
+          scope: 'GROUP',
+          UserId: provider.id
+        },
+        include: [{
+          model: User,
+          attributes: ["id", "company"],
+        }]
+      });
+    }
+    const adminPosts = await Post.findAll({ // 관리자 공지
       order: [['createdAt', 'DESC']],
+      where: {
+        scope: 'PUBLIC'
+      },
+      include: [{
+        model: User,
+        attributes: ["id", "company"],
+      }]
+    });
+
+    const myPrivatePosts = await user.getUserViewPosts({
+      order: [['createdAt', 'DESC']],
+      where: {
+        scope: 'PRIVATE'
+      },
       include: [{
         model: User,
         attributes: ["id", "company"],
       }]
     })
 
-    if (mypost) {
-      return res.status(200).json(mypost);
-    } else {
-      return res.status(404).send('게시글이 존재하지 않습니다.');
-    }
+    let myPosts = [...myProviderPosts, ...adminPosts, ...myPrivatePosts];
+    console.log('myPosts#@!#!@#@!', myPosts);
+    myPosts.sort((a, b) => b.id - a.id);
+
+    return res.status(200).json(myPosts);
     
   } catch (error) {
     console.error(error);
@@ -183,7 +285,7 @@ router.get('/list', isLoggedIn, async (req, res, next) => {
   }
 });
 
-// 구매자가 볼 수 있는 최근 게시글 한개 불러오기
+// 회원이 볼 수 있는 최근 게시글 3개 불러오기
 router.get('/recent', isLoggedIn, async (req, res, next) => { 
   try {
     const user = await User.findOne({
@@ -192,21 +294,102 @@ router.get('/recent', isLoggedIn, async (req, res, next) => {
     if (!user) {
       return res.status(404).send('유저가 존재하지 않습니다.');
     }
-    const mypost = await user.getUserViewPosts({
-      limit: 1,
+    const provider = await User.findOne({
+      where: { id: user.ProviderId}
+    })
+    let myProviderPosts;
+    if (provider) { // 판매자의 모든고객공개 공지
+      myProviderPosts = await Post.findAll({
+        order: [['createdAt', 'DESC']],
+        where: {
+          scope: 'GROUP',
+          UserId: provider.id
+        },
+        limit: 3,
+        include: [{
+          model: User,
+          attributes: ["id", "company"],
+        }]
+      });
+    }
+    const adminPosts = await Post.findAll({ // 관리자 공지
       order: [['createdAt', 'DESC']],
+      where: {
+        scope: 'PUBLIC'
+      },
+      limit: 3,
+      include: [{
+        model: User,
+        attributes: ["id", "company"],
+      }]
+    });
+
+    const myPrivatePosts = await user.getUserViewPosts({
+      order: [['createdAt', 'DESC']],
+      where: {
+        scope: 'PRIVATE'
+      },
+      limit: 3,
       include: [{
         model: User,
         attributes: ["id", "company"],
       }]
     })
-
-    if (mypost) {
-      return res.status(200).json(mypost[0]);
-    } else {
-      return res.status(404).send('게시글이 존재하지 않습니다.');
-    }
+    let myPosts = [...myProviderPosts, ...adminPosts, ...myPrivatePosts];
+    myPosts.sort((a, b) => b.id - a.id);
+    myPosts = myPosts.slice(0, 3);
+    return res.status(200).json(myPosts);
     
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+
+// 관리자 공지사항 3개 불러오기
+router.get('/admin-recent', isLoggedIn, async (req, res, next) => { 
+  try {
+    const user = await User.findOne({
+      where: { id: req.user.id }
+    })
+    if (!user) {
+      return res.status(404).send('유저가 존재하지 않습니다.');
+    }
+    const adminPosts = await Post.findAll({ // 관리자 공지
+      order: [['createdAt', 'DESC']],
+      where: {
+        scope: 'PUBLIC'
+      },
+      limit: 3,
+      include: [{
+        model: User,
+        attributes: ["id", "company"],
+      }]
+    });
+    return res.status(200).json(adminPosts);
+    
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+
+// 작성한 게시글 목록 불러오기
+router.get('/all', isProvider, async (req, res, next) => { 
+  try {
+    const posts = await Post.findAll({
+      order: [['createdAt', 'DESC']],
+      attributes: {
+        exclude: ["imgSrc", "status", "content"],
+      },
+      include: [{
+        model: User,
+        attributes: ["id", "company", "key"],
+      }]
+    });
+    return res.status(200).json(posts);
   } catch (error) {
     console.error(error);
     next(error);
@@ -241,17 +424,25 @@ router.get('/my', isLoggedIn, async (req, res, next) => {
 router.post('/add-customer', isLoggedIn, async (req, res, next) => {
   try {
     console.log('고객등록 req.body',req.body);
-    console.log(req.user.id)
+    let provider;
+    if (req.body.providerId !== null && req.body.providerId !== undefined){
+      provider = await User.findOne({
+        where: { id: req.body.providerId }
+      });
+    } else {
+      provider = await User.findOne({
+        where: { id: req.user.id }
+      });
+    }
     const post = await Post.findOne({
       where: { id: req.body.id }
     });
     if (!post) {
       return res.status(404).send('해당 게시글이 존재하지 않습니다.');
     }
-    if (post.UserId !== req.user.id) {
+    if (post.UserId !== provider.id) {
       return res.status(404).send('권한이 없습니다.');
     }
-
     // 유저 아이디 있는지 검사
     if(req.body.values.customerIds){
       await Promise.all(
@@ -299,10 +490,10 @@ router.get('/:postId', async (req, res, next) => { // GET /post/1
       include: [{
         model: User,
         as: 'PostViewUsers',
-        attributes: ["id", "company", "name"],
+        attributes: ["id", "company", "name", "key"],
       }, {
         model: User,
-        attributes: ["id", "company"],
+        attributes: ["id", "company", "key"],
       }]
     })
     res.status(200).json(fullPost);

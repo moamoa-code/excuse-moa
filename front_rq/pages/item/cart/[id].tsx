@@ -4,7 +4,7 @@
 import axios, { AxiosError } from 'axios';
 import { GetServerSidePropsContext } from 'next';
 import React, { useCallback, useState, useEffect, NewLifecycle } from 'react';
-import { Button, Table, notification, InputNumber, Form, Typography, Input } from 'antd';
+import { Button, Table, notification, InputNumber, Form, Typography, Input, message } from 'antd';
 import { useRouter } from 'next/router';
 import { dehydrate, QueryClient, useQuery, useMutation, useQueryClient } from 'react-query';
 import { loadAddrsAPI, loadMyInfoAPI } from '../../../apis/user';
@@ -16,16 +16,10 @@ import Item from '../../../interfaces/item';
 import { DeleteOutlined } from '@ant-design/icons';
 import useInput from '../../../hooks/useInput';
 import AddressList from '../../../components/AddressList';
-import styled from 'styled-components';
+import { Container800 } from '../../../components/Styled';
+import { useMediaQuery } from 'react-responsive';
+import MyTable from '../../../components/MyTable';
 
-const Container800 = styled.div`
-max-width: 800px;
-padding: 20px;
-margin: 0 auto;
-@media screen and (max-width: 600px) {
-  padding: 10px;
-}
-`
 
 const ViewCartItems = () => {
   const router = useRouter();
@@ -34,7 +28,7 @@ const ViewCartItems = () => {
   // const queryClient = useQueryClient();
   const { id } = router.query; // 유저 id
   // const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
-  const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI, {
+  const { data: myUserInfo } = useQuery<User>('me', loadMyInfoAPI, {
     onSuccess: (data) => {
       console.log(data.id);
       loadAddrsAPI(data.id)
@@ -56,29 +50,18 @@ const ViewCartItems = () => {
   const [ phone, setPhone ] = useState('');
   const [ address, setAddress ] = useState('');
   const [ zip, setZip ] = useState('');
-  // const { data } = useQuery('addrs', loadAddrsAPI, {
-  //   onSuccess: (data) => {
-  //     console.log('onSuccess');
-  //     setAddrs(data);
-  //   }
-  // });
-
-  const openNotification = () => {
-    notification['success']({
-      message: '장바구니에서 상품을 제거했습니다.',
-      placement: 'topLeft',
-      duration: 1,
-    });
-  };
+  const [ qty, setQty ] = useState(10);
+  const isMobile = useMediaQuery({
+    query: "(min-width:0px) and (max-width:768px)",
+  });
 
   const onChangeQty = (target) => (value) => { // 수량 변경
+    console.log(value, target);
     let tag = '';
     if (theMap.has(target)) {
       tag = theMap.get(target).tag;
-      console.log('theMap.get(target).tag',theMap.get(target).tag)
     }
     setTheMap((prev) => new Map(prev).set(target, { qty: value, tag }));
-    console.log(theMap);
   }
 
   const onChangeTag = (target) => (value) => { // 표기사항 변경
@@ -124,13 +107,13 @@ const ViewCartItems = () => {
       alert(error.response?.data);
     },
     onSuccess: (result) => {
-      openNotification();
       queryClient.invalidateQueries('cartItems'); // 카트 목록 다시 불러오기
       setTheMap((prev) => { // 해시맵에서 제거한 제품 키 제거
         const newMap = new Map(prev);
         newMap.delete(Number(result));
         return newMap;
       });
+      message.success('장바구니에서 상품을 제거했습니다.')
     },
     onSettled: () => {
       setLoading(false);
@@ -146,6 +129,7 @@ const ViewCartItems = () => {
   const columns = [
     {
       title: '제품명',
+      type: 'title',
       dataIndex: 'name',
       key: 'name',
       render: (text, record) => (
@@ -170,10 +154,11 @@ const ViewCartItems = () => {
     }, {
       title: '표기사항',
       key: 'action',
+      type: 'input',
       render: (text, record) => (
         <Input
           style={{ maxWidth:'120px'}}
-          size='large'
+          size='medium'
           onChange={onChangeTag(record.id)}
         />
       ),
@@ -181,18 +166,26 @@ const ViewCartItems = () => {
     {
       title: '수량',
       key: 'action',
+      type: 'input',
       render: (text, record) => (
-        <InputNumber 
-          style={{ maxWidth:'50px'}}
-          size='large'
-          min={1}
-          defaultValue={1}
-          onChange={onChangeQty(record.id)} />
+        <>
+          {JSON.stringify(record.id)}
+          <InputNumber
+            key={record.id}
+            type='number'
+            style={{ maxWidth:'50px'}}
+            size='medium'
+            onChange={onChangeQty(record.id)}
+            min={1}
+            defaultValue={1}
+            />
+          </>
       ),
     },
     {
       title: '',
       key: 'action',
+      type: 'right',
       width: 40,
       render: (text, record) => (
         <Button
@@ -209,12 +202,22 @@ const ViewCartItems = () => {
       <Container800>
         <Title level={4}>장바구니</Title>
         <Form onFinish={onSubmit}>
+        {isMobile?
+          <MyTable
+            rowKey="id"
+            columns={columns}
+            dataSource={cartItems}
+          />
+        :
           <Table 
             size="small"
             rowKey="id"
             columns={columns}
             dataSource={cartItems}
           />
+        }
+
+
           <br />
           <Title level={4}>배송지 입력</Title>
           <AddressList setId={setId} addrs={addrs} setName={setName} setPhone={setPhone} setAddress={setAddress} setZip={setZip}/>
@@ -231,7 +234,6 @@ const ViewCartItems = () => {
     </AppLayout>
   );
 };
-
 
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
   const cookie = context.req ? context.req.headers.cookie : ''; // 쿠키 넣어주기

@@ -11,32 +11,8 @@ import { loadMyInfoAPI, signUpAPI } from '../../apis/user';
 import AppLayout from '../../components/AppLayout';
 import useInput from '../../hooks/useInput';
 import User from '../../interfaces/user';
+import { Block, ContainerSmall, FormBox, Red } from '../../components/Styled';
 
-const ErrorMessage = styled.div`
-  color: red;
-`;
-
-const Block = styled.div`
-  margin: 18px 0 18px 0;
-  label {
-    display: block;
-    margin: 0 0 7px 0;
-  }
-  input {
-    width: 100%;
-    height: 38px;
-  }
-`
-
-const Container500 = styled.div`
-  max-width: 500px;
-  margin 0 auto;
-  padding: 10px;
-`
-
-const RedBold = styled.span`
-  color:red;
-`
 
 // 회원가입 페이지 
 const Signup = () => {
@@ -81,7 +57,7 @@ const Signup = () => {
   const onChangeKey = useCallback( // 아이디 유효성검사
     (e) => {
       const regExpId = /^[A-Za-z0-9-@.]{4,25}$/;
-      setKey(e.target.value);
+      setKey(e.target.value.replace(/[ㄱ-힣\{\}\[\]\/?.,;:|\)*~`!^\+<>@\#$%&\\\=\(\'\")]/g, '').trim().toLowerCase());
       setIdValidError(!regExpId.test(e.target.value));
     },
     [key],
@@ -150,117 +126,110 @@ const Signup = () => {
 
   return (
   <AppLayout>
-    <Container500>
+    <ContainerSmall>
       <Head>
         <title>회원가입</title>
       </Head>
-      <Divider><Title level={4}>회원가입</Title></Divider><br />
-      <Form onFinish={onSubmit}>
-        {/* <Block>
-          <label><RedBold>* </RedBold>회원구분</label>
-        </Block>  
-          <input
-            type='radio'
-          />
-          <span> 구매자 </span>
-          <input
-            type='radio'
-          />
-          <span> 판매자 </span> */}
-          
-        <Block>
-          <label><RedBold>* </RedBold>사업자등록번호 (ID)</label>
-          <input
-            value={key}
-            onChange={onChangeKey}
-            placeholder=' - 포함하여 작성해주세요.'
-            required
-          />
-        </Block>
-        {idValidError && <ErrorMessage>숫자, -, 영문(필요시)으로 4~25자 이내</ErrorMessage>}
-        <Block>
-          <label>본사 사업자등록번호</label>
-          <input
-            value={hqNumber}
-            onChange={onChangeHq}
-            placeholder='필요시만 입력'
-            maxLength={25}
-          />
-        </Block>
-        <Block>
-          <label><RedBold>* </RedBold>회사명</label>
-          <input
-            value={company}
-            onChange={onChangeCompany}
-            maxLength={12}
-            placeholder='12자 이내'
-            required
-          />
-        </Block>
-        <Block>
-          <label><RedBold>* </RedBold>담당자 성함</label>
-          <input
-            value={name}
-            onChange={onChangeName}
-            maxLength={12}
-            required
-          />
-        </Block>
-        <Block>
-          <label><RedBold>* </RedBold>담당자 연락처</label>
-          <input
-            value={phone}
-            onChange={onChangePhone}
-            placeholder=' - 없이 숫자만 입력'
-            maxLength={13}
-            required
-          />
-        </Block>
-        <Block>
-          <label>담당자 이메일</label>
-          <input
-            type="email"
-            value={email}
-            onChange={onChangeEmail}
-          />
-        </Block>
-        <Block>
-          <label><RedBold>* </RedBold>비밀번호</label>
-          <input
-            name="user-password"
-            type="password"
-            value={password}
-            required
-            onChange={onChangePassword}
-            placeholder='6자 이상 15자 이하'
-          />
-        </Block>
-        {passwordValidError && <ErrorMessage>6자 이상 15자 이하로 입력해 주세요.</ErrorMessage>}
-        <Block>
-          <label><RedBold>* </RedBold>비밀번호 확인</label>
-          <input
-            name="user-password-check"
-            type="password"
-            value={passwordCheck}
-            required
-            placeholder='6자 이상 15자 이하'
-            onChange={onChangePasswordCheck}
-          />
-        </Block>
-          {passwordError && <ErrorMessage>비밀번호가 일치하지 않습니다.</ErrorMessage>}
-        <div>
-          <Checkbox name="user-term" checked={term} onChange={onChangeTerm}>
-            이용약관에 동의합니다.
-          </Checkbox> <Link href='/user/term'><a target={'_blank'}><Tag>이용약관</Tag></a></Link>
-          {termError && <ErrorMessage>약관에 동의하셔야 합니다.</ErrorMessage>}
-        </div>
-        <div style={{ marginTop: 10 }}>
-          <Button type="primary" htmlType="submit" loading={loading} disabled={disableBtn}>
-            가입하기
-          </Button>
-        </div>
-      </Form>
-    </Container500>
+      <Divider><Title level={4}>회원가입</Title></Divider>
+      <FormBox>
+        <Form onFinish={onSubmit}>
+          <Block>
+            <label><Red>* </Red>사업자등록번호 (ID)</label>
+            <input
+              value={key}
+              onChange={onChangeKey}
+              placeholder=' - 포함하여 작성해주세요.'
+              required
+            />
+          </Block>
+          {idValidError && <Red>숫자, -, 영문(필요시)으로 4~25자 이내</Red>}
+          <Block>
+            <label>본사 사업자등록번호</label>
+            <input
+              value={hqNumber}
+              onChange={onChangeHq}
+              placeholder='필요시만 입력'
+              maxLength={25}
+            />
+          </Block>
+          <Block>
+            <label><Red>* </Red>회사명</label>
+            <input
+              value={company}
+              onChange={onChangeCompany}
+              maxLength={12}
+              placeholder='12자 이내'
+              required
+            />
+          </Block>
+          <Block>
+            <label><Red>* </Red>담당자 성함</label>
+            <input
+              value={name}
+              onChange={onChangeName}
+              maxLength={12}
+              required
+            />
+          </Block>
+          <Block>
+            <label><Red>* </Red>담당자 연락처</label>
+            <input
+              value={phone}
+              onChange={onChangePhone}
+              placeholder=' - 없이 숫자만 입력'
+              maxLength={13}
+              required
+            />
+          </Block>
+          <Block>
+            <label>담당자 이메일</label>
+            <input
+              type="email"
+              value={email}
+              maxLength={30}
+              onChange={onChangeEmail}
+            />
+          </Block>
+          <Block>
+            <label><Red>* </Red>비밀번호</label>
+            <input
+              name="user-password"
+              type="password"
+              value={password}
+              required
+              maxLength={15}
+              onChange={onChangePassword}
+              placeholder='6자 이상 15자 이하'
+            />
+          </Block>
+          {passwordValidError && <Red>6자 이상 15자 이하로 입력해 주세요.</Red>}
+          <Block>
+            <label><Red>* </Red>비밀번호 확인</label>
+            <input
+              name="user-password-check"
+              type="password"
+              value={passwordCheck}
+              required
+              placeholder='6자 이상 15자 이하'
+              onChange={onChangePasswordCheck}
+            />
+          </Block>
+            {passwordError && <Red>비밀번호가 일치하지 않습니다.</Red>}
+          <hr />
+          <div>
+            <Checkbox name="user-term" checked={term} onChange={onChangeTerm}>
+              이용약관에 동의합니다.
+            </Checkbox> <Link href='/user/term'><a target={'_blank'}><Tag>이용약관</Tag></a></Link>
+            {termError && <Red>약관에 동의하셔야 합니다.</Red>}
+          </div>
+          <div style={{ marginTop: 10 }}>
+            <Button type="primary" htmlType="submit" loading={loading} disabled={disableBtn}>
+              가입하기
+            </Button>
+          </div>
+        </Form>
+      </FormBox>
+    </ContainerSmall>
   </AppLayout>
   );
 };

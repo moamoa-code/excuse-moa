@@ -3,40 +3,51 @@ import axios, { AxiosError } from 'axios';
 import { GetServerSidePropsContext } from 'next';
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Button, Divider, Space, message, notification, Descriptions, Tag } from 'antd';
+import { Button, Divider, Space, message, notification, Descriptions, Tag, Spin, Result } from 'antd';
 import { useRouter } from 'next/router';
 import { dehydrate, QueryClient, useQuery, useQueryClient  } from 'react-query';
 import { loadAddrsAPI, loadMyInfoAPI, loadProviderAPI, loadProviderByIdAPI, loadProvidersAPI, loadUserAPI, loadUserByIdAPI } from '../../apis/user';
 import { orderPosItemAPI } from '../../apis/order';
 import AppLayout from '../../components/AppLayout';
-
 import 'dayjs/locale/ko';
 import User from '../../interfaces/user';
-import { CheckCircleOutlined, DeleteOutlined, MinusOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, DeleteOutlined, InfoCircleTwoTone, MinusOutlined, PlusOutlined, SearchOutlined, WarningTwoTone } from '@ant-design/icons';
 import Modal from 'antd/lib/modal/Modal';
 import { loadCustomerItemListAPI, loadItemListAPI } from '../../apis/item';
 import Item from '../../interfaces/item';
 import Text from 'antd/lib/typography/Text';
 import ItemView from '../../components/ItemView';
-
 import shortId from 'shortid';
 import UserInfoBox from '../../components/UserInfoBox';
 import useInput from '../../hooks/useInput';
-import { CartItems, CenteredDiv, CommentInput, Container800, ContentsBox, CustomerForm, ItemForm, ItemsContainer, ItemSelector, ListBox, OrderTypeSelects, Red, SearchAndTitle, TiTle } from '../../components/Styled';
+import { CartItems, CenteredDiv, CommentInput, Container800, ContentsBox, CustomerForm, HGap, ItemForm, ItemsContainer, ItemSelector, ListBox, LoadingModal, OrderTypeSelects, Red, TiTle } from '../../components/Styled';
 
-const addNewOrder = () => {
+const OrderItems = () => {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const [ loading, setLoading ] = useState(false);
-  const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
-  const { data: providers } = useQuery('providers', loadProvidersAPI);
+  const [ isValidUser, setIsValidUser ] = useState(false)
+  const { isLoading, data: myUserInfo } = useQuery<User>('me', loadMyInfoAPI, {
+    onSuccess(data) {
+      console.log(data);
+      if(!data.ProviderId) {
+        message.error('아직 판매자가 등록되지 않았습니다.');
+        setIsValidUser(false);
+        return;
+      }
+      getProviderData(data.ProviderId);
+      setSelectedCustomer(data.id);
+      setSelectedCustomerData(data);
+      getAddrData(data.id);
+      getCustomersItemList(data.id);
+      setIsValidUser(true);
+    }
+  });
   // 판매자
-  const [selectedProvider, setSelectedProvider] = useState();
+  const [selectedProvider, setSelectedProvider] = useState(null);
   const [selectedProviderData, setSelectedProviderData] = useState<any>({});
   // 고객
-  const [customers, setCustomers] = useState([]);
-  const [selectedCustomer, setSelectedCustomer] = useState('');
-  const [selectedCustomerData, setSelectedCustomerData] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [selectedCustomerData, setSelectedCustomerData] = useState(null);
   // 제품
   const [items, setItems] = useState<Item[]>([]); // 목록에 나타나는 제품
   const [selectedItems, setSelectedItems] = useState([]); // 카트에 들어간 제품 목록
@@ -53,7 +64,7 @@ const addNewOrder = () => {
   const [totalWeight, setTotalWeight] = useState(0);
   // 제품 보기 모달
   const [ isVisible, setIsVisible ] = useState(false);
-  const [ selectedItem, setSelectedItem ] = useState();
+  const [ selectedItem, setSelectedItem ] = useState(null);
   // 입력 모드 상태
   const [ isNewCustomer, setIsNewCustomer ] = useState(false); // 구매자 새로입력
   const [ isNewProduct, setIsNewProduct ] = useState(false); // 제품 새로 입력
@@ -68,19 +79,9 @@ const addNewOrder = () => {
   const [productName, setProductName] = useState('');
   const [packageName, setPackageName] = useState('');
   // style useMemo
+  const opacityStyle = useMemo(() => ({opacity: '0.5'}), []);
   const minusButtonStyle = useMemo(() => ({fontSize:'14pt', color:'#ff4d4f'}), []);
   const plusButtonStyle = useMemo(() => ({fontSize:'14pt', color:'#1890ff'}), []);
-
-  // 알림창 띄우기
-  const openNotification = (text) => { 
-    notification.open({
-      message: `${text}`,
-      description:
-        ``,
-      icon: <CheckCircleOutlined style={{ color: '#108ee9' }} />,
-      duration: 2,
-    });
-  };
 
   // 총 수량 계산
   const getTotalQty = (array) => {
@@ -95,10 +96,12 @@ const addNewOrder = () => {
     let totalWeight = 0;
     array.map((v) => {
       let weight = 0;
-      if (v.weight.toUpperCase().slice(-2) === 'KG') {
-        weight = Number(v.weight.toUpperCase().replace('KG', ''));
+      if (v.weight.toUpperCase().replace(' ','').slice(-2) === 'KG') {
+        weight = Number(v.weight.toUpperCase().replace(' ','').replace('KG', ''));
+      } else if (v.weight.toUpperCase().replace(' ','').slice(-2) !== 'KG' && v.weight.toUpperCase().replace(' ','').slice(-1) === 'G') {
+        weight = Number(v.weight.toUpperCase().replace(' ','').replace('G', '')) * 0.001;
       } else {
-        weight = Number(v.weight.toUpperCase().replace('G', '')) * 0.001;
+        weight = 0;
       }
       totalWeight = totalWeight + weight;
     });
@@ -107,8 +110,7 @@ const addNewOrder = () => {
   // 주문완료 버튼
   const onOrderClick = () => {
     setLoading(true);
-    // message.error(selectedItems.length)
-    if (selectedProvider === '' || selectedCustomer === '' || selectedItems.length <= 0){
+    if (selectedProvider === '' || selectedCustomer === null || selectedItems.length <= 0){
       setLoading(false);
       return message.error('선택 안한 항목이 있습니다.');
     }
@@ -117,10 +119,7 @@ const addNewOrder = () => {
       return message.error('구매자 이름을 입력하세요.');
     }
     let customerId = selectedCustomer;
-    // if (isNewCustomer) {
-    //   customerId = 'anonymous'
-    // }
-    console.log('onOrderClick selectedItems', selectedItems);
+    const tWeight = totalWeight.toFixed(1)
     orderPosItemAPI(
       { items : selectedItems, 
         providerId: selectedProvider, 
@@ -129,50 +128,19 @@ const addNewOrder = () => {
         address,
         name,
         phone,
+        totalWeight: tWeight
       })
     .then((result) => {
       console.log(result);
-      openNotification('주문이 추가되었습니다.');
+      message.success('주문이 추가되었습니다.');
     })
     .catch((error) => {
       setLoading(false);
-      alert(error.response.data);
+      message.error(error.response.data);
     })
     .finally(() => {
-      router.replace(`/factory/order-list`);
+      router.replace(`/item/order/list/${selectedCustomer}`);
     });
-  }
-  // 판매자 선택
-  const onProviderSelectClick = (id) => () => {
-    setSelectedProvider(id);
-    getProviderData(id);
-    setSelectedCustomer('');
-    setSelectedCustomerData('');
-    setSelectedAddr('');
-    setSelectedItems([]);
-    setAllItemsOfProvider([]);
-    setItems([]);
-    setName('');
-    setPhone('');
-    setAddress('');
-    setTotalQty(0);
-    setTotalWeight(0);
-  }
-
-  // 기존 구매자 선택
-  const onCustomerSelectClick = (id) => () => {
-    setIsNewCustomer(false);
-    setSelectedCustomer(id);
-    getCustomerData(id);
-    setSelectedAddr('');
-    setSelectedItems([]);
-    setTotalQty(0);
-    setTotalWeight(0);
-    setAllItemsOfProvider([]);
-    setItems([]);
-    setName('');
-    setPhone('');
-    setAddress('');
   }
 
   // 주소 선택
@@ -180,6 +148,12 @@ const addNewOrder = () => {
     setSelectedAddr(addr.id);
     if (addr.id === '공수') {
       setName('공장수령');
+      setPhone('');
+      setAddress('');
+      return;
+    }
+    if (addr.id === '키페') {
+      setName('카페수령');
       setPhone('');
       setAddress('');
       return;
@@ -201,20 +175,22 @@ const addNewOrder = () => {
   }
 
   // 제품 선택
-  const onItemSelectClick = (item) => () => {
+  const onItemSelectClick = (item) => (e) => {
+    // 클릭 이벤트 자식요소에 전달 중지
+    // if (e.target !== e.currentTarget) return;
     console.log('item',item);
     item.qty = 1;
     item.tag = '';
     item.weight = '';
-    if (String(item.unit).toUpperCase() === '1KG') {
+    if (String(item.unit).toUpperCase().replace(' ','') === '1KG') {
       item.weight = '1kg'
-    } if (String(item.unit).toUpperCase() === '500G') {
+    } if (String(item.unit).toUpperCase().replace(' ','') === '500G') {
       item.weight = '500g'
-    } if (String(item.unit).toUpperCase() === '400G') {
+    } if (String(item.unit).toUpperCase().replace(' ','') === '400G') {
       item.weight = '400g'
-    }if (String(item.unit).toUpperCase() === '200G') {
+    }if (String(item.unit).toUpperCase().replace(' ','') === '200G') {
       item.weight = '200g'
-    } if (String(item.unit).toUpperCase() === '100G') {
+    } if (String(item.unit).toUpperCase().replace(' ','') === '100G') {
       item.weight = '100g'
     }
     if (selectedItems.findIndex((v) => v.id === item.id) !== -1) {
@@ -257,52 +233,40 @@ const addNewOrder = () => {
     return setSelectedItems(array);
   }
 
-  // 추가 제품 목록 불러오기
-  const onGetItemListClick = (userId) => () => {
-    setIsNewProduct(false);
-    if (userId === '') {
-      return message.error('판매자를 선택해주세요.');
-    }
-    loadItemListAPI(selectedProviderData?.key)
+  // 판매자 정보 가져오기
+  const getProviderData = (userId) => {
+    setLoading(true);
+    loadProviderByIdAPI(userId)
     .then((response) => {
-      setAllItemsOfProvider(response);
+      setSelectedProviderData(response);
+      setSelectedProvider(userId);
     })
     .catch((error) => {
       message.error(error.response.data);
     })
     .finally(() => {
-
-    })
-  }
-
-  // 판매자 정보 가져오기
-  const getProviderData = (userId) => {
-    loadProviderByIdAPI(userId)
-    .then((response) => {
-      setSelectedProviderData(response);
-      setCustomers(response.Customers)
-    })
-    .catch((error) => {
-      alert(error.response.data);
-    })
-    .finally(() => {
-
+      setLoading(false);
     })
   }
 
   // 구매자 주소 가져오기
   const getAddrData = (userId) => {
+    setLoading(true);
     loadAddrsAPI(userId)
     .then((response) => {
       setAddrs(response);
     })
     .catch((error) => {
-      alert(error.response.data);
+      message.error(error.response.data);
+    })
+    .finally(() => {
+      setLoading(false);
     })
   }
 
   // 구매자의 제품목록 불러오기
   const getCustomersItemList = (userId) => {
+    setLoading(true);
     loadCustomerItemListAPI(userId)
     .then((response) => {
       if(response){
@@ -311,20 +275,10 @@ const addNewOrder = () => {
         setItems([]);
       }
     }).catch((error) => {
-      alert(error.response.data);
+      message.error(error.response.data);
     })
-  }
-
-  // 구매자 정보 가져오기
-  const getCustomerData = (userId) => {
-    loadUserByIdAPI(userId)
-    .then((response) => {
-      setSelectedCustomerData(response);
-      getCustomersItemList(userId);
-      getAddrData(userId);
-    })
-    .catch((error) => {
-      alert(error.response.data);
+    .finally(() => {
+      setLoading(false);
     })
   }
 
@@ -333,10 +287,39 @@ const addNewOrder = () => {
     setIsVisible(false);
   };
 
+  if (!isValidUser) {
+    return(
+    <AppLayout>
+      <Container800>
+      <OrderTypeSelects>
+          <div className='selected'><p>새로운 주문 추가하기</p></div>
+      </OrderTypeSelects>
+      <Result
+        status="warning"
+        title="아직 판매자가 등록되지 않았거나 데이터 로딩중입니다."
+        extra={
+          <>
+            <h1>담당 판매자 혹은 관리자에 문의하세요.</h1>
+            <HGap />
+            <Link href={'/'}><a><Button type="primary" key="console">
+              홈으로 이동
+            </Button></a></Link>
+          </>
+        }
+      />
+      </Container800>
+    </AppLayout>
+    )
+  }
 
   return (
     <AppLayout>
       <Container800>
+      {loading || isLoading?
+        <LoadingModal>
+          <Spin /> 로딩중
+        </LoadingModal>
+      :null}
       <Modal
           visible={isVisible}
           onCancel={handleModalClose}
@@ -349,257 +332,156 @@ const addNewOrder = () => {
         >
         <ItemView item={selectedItem} myUserInfo={myUserInfo} />
       </Modal>
-      
         <OrderTypeSelects>
-          <div><Link href='/factory/add-order'><a><p>기존 회원 주문</p></a></Link></div>
-          <div  className='selected'><p>신규 주문</p></div>
+          <div className='selected'><p>새로운 주문 추가하기</p></div>
         </OrderTypeSelects>
-        {/* <SearchAndTitle>
-          <div className='textBox'>
-            <hr className='left'/>1. 판매사/브랜드 선택<hr />
-          </div>
-          <div className='search'>
-            <input
-            />
-            <button type='button' >
-              <SearchOutlined />
-            </button>
-          </div>
-          <button className='listBtn'
-            type='button' 
-          >목록보기
-          </button>
-        </SearchAndTitle> */}
         <Divider orientation="left">
           <TiTle>
-          1. 판매자/브랜드 선택
+          1. 판매자/브랜드 정보
           </TiTle>
         </Divider>
-        <ContentsBox>
-          <ListBox>
-            <Space wrap>
-              {providers?.map((v) => {
-                if (v.id === selectedProvider) {
-                  return <Button size='large' type="primary">{v.company}</Button>
-                }
-                return <Button size='large' type="dashed" onClick={onProviderSelectClick(v.id)}>{v.company}</Button>
-              })}
-            </Space>
-          </ListBox>
-        </ContentsBox><br />
-        {selectedProvider? 
-          <UserInfoBox userInfo={selectedProviderData} />
-        : null}
-        <br />
+        <UserInfoBox userInfo={selectedProviderData} />
+        <HGap /><HGap />
         <Divider orientation="left">
           <TiTle>
-          2. 구매자 선택
+          2. 구매자 정보
           </TiTle>
         </Divider>
-        {!selectedProvider? null :
+        <UserInfoBox userInfo={selectedCustomerData} />
+        <HGap /><HGap />
+        <Divider orientation="left">
+          <TiTle>
+          2-2. 수령지 선택
+          </TiTle>
+        </Divider>
           <ContentsBox>
+            <Space wrap>
+              {selectedAddr === "공수"?
+              <Button size='large' danger>공장수령</Button>
+              :<Button size='large' type="dashed" onClick={onAddrSelectClick({id:'공수'})} danger>공장수령</Button>
+              }
+              {selectedAddr === "카페"?
+              <Button size='large' danger>카페수령</Button>
+              :<Button size='large' type="dashed" onClick={onAddrSelectClick({id:'카페'})} danger>카페수령</Button>
+              }
+              {selectedAddr === "없음"?
+              <Button size='large' danger>정보없음</Button>
+              :<Button size='large' type="dashed" onClick={onAddrSelectClick({id:'없음'})} danger>정보없음</Button>
+              }
+              {selectedAddr === "추가"?
+              <Button size='large' danger>새로입력</Button>
+              :<Button size='large' type="dashed" onClick={onAddrSelectClick({id:'추가'})} danger><PlusOutlined /> 새로입력</Button>
+              }
+            </Space><br /><br />
             <ListBox>
               <Space wrap>
-                {customers?.map((v) => {
-                  if (v.id === selectedCustomer) {
-                    return <Button size='large' type="primary">{v.company}</Button>
+                {addrs?.map((v) => {
+                  if (v.id === selectedAddr) {
+                    return <Button size='large' type="primary">{v.addrName}</Button>
                   }
-                  return <Button size='large' type="dashed" onClick={onCustomerSelectClick(v.id)}>{v.company}</Button>
-                })}
+                  return <Button size='large' type="dashed" onClick={onAddrSelectClick(v)}>{v.addrName}</Button>
+                })}  
               </Space>
-            </ListBox><br />
-              <Button 
-                size='large'
-                type="dashed"
-                onClick={
-                  () => {
-                    setSelectedCustomer(null);
-                    setIsNewCustomer(true);
-                }} 
-                danger
-              >
-                <PlusOutlined /> 새로입력
-              </Button>
-            {isNewCustomer? 
-              <CustomerForm>
-                <tr>
-                  <td>받는분 <Red>*</Red></td>
-                  <td>
-                    <input
-                      placeholder='필수항목'
-                      maxLength={18}
-                      value={name}
-                      onChange={
-                        (e) => (setName(e.target.value))
-                      }
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <td>전화번호</td>
-                  <td>
-                    <input
-                      placeholder='필요시 입력'
-                      value={phone}
-                      maxLength={12}
-                      onChange={
-                        (e) => {
-                          let value = e.target.value;
-                          value = e.target.value.replace(/[^0-9]/g, '');
-                          setPhone(value);
-                        }
-                      }
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <td>주소</td>
-                  <td>
-                    <input
-                      placeholder='필요시 입력'
-                      value={address}
-                      maxLength={100}
-                      onChange={
-                        (e) => (setAddress(e.target.value))
-                      }
-                    />
-                  </td>
-                </tr>
-              </CustomerForm>
-            : null
-            }
+            </ListBox>
           </ContentsBox>
-        }
-        <br />
-        {selectedCustomer? 
-          <UserInfoBox userInfo={selectedCustomerData} />
-        : null}
-        <br />
-        {isNewCustomer ? null :
-        <>
-          <Divider orientation="left">
-            <TiTle>
-            2-2. 수령지 선택
-            </TiTle>
-          </Divider>
-          {!selectedProvider? null :
-            <ContentsBox>
-              <Space wrap>
-                {selectedAddr === "공수"?
-                <Button size='large' danger>공장수령</Button>
-                :<Button size='large' type="dashed" onClick={onAddrSelectClick({id:'공수'})} danger>공장수령</Button>
-                }
-                {selectedAddr === "카페"?
-                <Button size='large' danger>카페수령</Button>
-                :<Button size='large' type="dashed" onClick={onAddrSelectClick({id:'카페'})} danger>카페수령</Button>
-                }
-                {selectedAddr === "없음"?
-                <Button size='large' danger>정보없음</Button>
-                :<Button size='large' type="dashed" onClick={onAddrSelectClick({id:'없음'})} danger>정보없음</Button>
-                }
-                {selectedAddr === "추가"?
-                <Button size='large' danger>새로입력</Button>
-                :<Button size='large' type="dashed" onClick={onAddrSelectClick({id:'추가'})} danger><PlusOutlined /> 새로입력</Button>
-                }
-              </Space><br /><br />
-              <ListBox>
-                <Space wrap>
-                  {addrs?.map((v) => {
-                    if (v.id === selectedAddr) {
-                      return <Button size='large' type="primary">{v.addrName}</Button>
-                    }
-                    return <Button size='large' type="dashed" onClick={onAddrSelectClick(v)}>{v.addrName}</Button>
-                  })}  
-                </Space>
-              </ListBox>
-            </ContentsBox>
-          }
-          {selectedAddr !== '공수' && selectedAddr !== '카페' && selectedAddr !== '없음' && selectedAddr !== ''?
-          <Descriptions
-            bordered
-            size="small"
-            style={{ marginTop: '10px' }}
-          >
-            <Descriptions.Item span={3} label="주소">
+        {selectedAddr !== '공수' && selectedAddr !== '카페' && selectedAddr !== '없음' && selectedAddr !== ''?
+        <Descriptions
+          bordered
+          size="small"
+          style={{ marginTop: '10px' }}
+        >
+          <Descriptions.Item span={3} label="주소">
+          <Text editable={{ onChange: (value) => {
+                setAddress(value);
+              }}}>{address}</Text>
+          </Descriptions.Item>
+          <Descriptions.Item label="받는분">
             <Text editable={{ onChange: (value) => {
-                  setAddress(value);
-                }}}>{address}</Text>
-            </Descriptions.Item>
-            <Descriptions.Item label="받는분">
-              <Text editable={{ onChange: (value) => {
-                setName(value);
-              }}}>{name}</Text>
-            </Descriptions.Item>
-            <Descriptions.Item label="받는분 전화번호">
-              <Text editable={{ onChange: (value) => {
-                  setPhone(value);
-                }}}>{phone}</Text>
-            </Descriptions.Item>
-          </Descriptions>
-          :
-          null}
-          <br /><br />
-        </>
-        }
+              setName(value);
+            }}}>{name}</Text>
+          </Descriptions.Item>
+          <Descriptions.Item label="받는분 전화번호">
+            <Text editable={{ onChange: (value) => {
+                setPhone(value);
+              }}}>{phone}</Text>
+          </Descriptions.Item>
+        </Descriptions>
+        :
+        null}
+        <HGap /><HGap />
+
         <Divider orientation="left">
           <TiTle>
           3. 제품 선택
           </TiTle>
         </Divider>
-        {selectedProvider?
-        <>
-          {!isNewCustomer?
-            <ContentsBox>
-              <ItemsContainer>
-                {items?.map((v) => {
-                  let className = '';
-                  if (selectedItems.find((i)=>(i.id === v.id))) { // 제품 선택됐을 경우 스타일
-                    className = 'selected';
-                  }
-                  return (
-                    <ItemSelector onClick={onItemSelectClick(v)} className={className}>
-                      <div>
-                        <span className='underline'>
-                          <span className='codeName'>{v.codeName}</span>
-                          <div className='space' />
-                          <span>({v.id}) </span>
-                          <span className='name'>{v.name}</span>
-                        </span>
-                      </div>
-                      <div className='second'>
-                        <span className='unit'>{v.unit}</span>
-                        <div className='space' />
-                        <span className='packageName'>{v.packageName}</span>
-                        <span> ({v.supplyPrice})</span>
-                      </div>
-                    </ItemSelector>
-                    )
-                })}
-              </ItemsContainer>
-            </ContentsBox>
-          :null}
+        <ContentsBox>
+          <ItemsContainer>
+            {items?.map((v) => {
+              let className = '';
+              if (selectedItems.find((i)=>(i.id === v.id))) { // 제품 선택됐을 경우 스타일
+                className = 'selected';
+              }
+              return (
+                <ItemSelector onClick={onItemSelectClick(v)} className={className}>
+                  <span 
+                    className='showModalClick'
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedItem(v);
+                      setIsVisible(true);
+                    }}
+                  >
+                    <InfoCircleTwoTone style={opacityStyle}/>
+                  </span>
+                  <div>
+                    <span className='underline'>
+                      <span className='codeName'>{v.codeName}</span>
+                      <div className='space' />
+                      <span className='id'>({v.id}) </span>
+                      <span className='name'>{v.name}</span>
+                    </span>
+                  </div>
+                  <div className='second'>
+                    <span className='unit'>{v.unit}</span>
+                    <div className='space' />
+                    <span className='packageName'>{v.packageName}</span>
+                    <span> ({v.supplyPrice})</span>
+                  </div>
+                </ItemSelector>
+                )
+            })}
+            {items?.length <= 0? 
+              <Result
+                status="warning"
+                title="판매자가 아직 제품을 등록하지 않았습니다."
+                extra={<h1>판매자 혹은 관리자에 문의하세요.</h1>}
+              />
+            :null}
+          </ItemsContainer>
+        </ContentsBox>
           <br />
           <CenteredDiv>
             <Space wrap>
-              <Button size='large' type="dashed" onClick={onGetItemListClick(selectedProvider)}><PlusOutlined /> 판매자의 모든 제품 보기</Button>
               <Button 
                 size='large'
                 type="dashed" 
                 onClick={() => {
                   setAllItemsOfProvider([]);
-                  setIsNewProduct(true);
+                  setIsNewProduct(!isNewProduct);
                 }}
                 danger>
                 <PlusOutlined /> 새로운 제품 입력
               </Button>
             </Space>
           </CenteredDiv><br />
-        </>
-        : null}
         {isNewProduct?
           <ContentsBox>
             <ItemForm>
               <div>
+                <div style={{textAlign:'center'}}>
+                  <WarningTwoTone /> 판매자와 사전협의되지 않은 제품 입력시 주문이 취소될 수 있습니다.
+                </div>
                 <div className='optionName'>A. 원두 코드 <Red>*</Red></div>
                 <input 
                   value={codeName} 
@@ -622,9 +504,7 @@ const addNewOrder = () => {
               <div>
                 <div className='optionName'>B. 무게 단위 <Red>*</Red></div>
                 {/* <input value={unit} placeholder='아래에서 선택하세요.' readOnly/> */}
-                <input value={unit} placeholder='아래에서 선택하세요.'   onChange={(e) => {
-                  setUnit(e.target.value)
-                  }}/>
+                <input value={unit} placeholder='아래에서 선택하세요.'/>
                 <div className='optionContainer'>
                   {units.map((v)=>{
                     return (
@@ -648,7 +528,7 @@ const addNewOrder = () => {
                 </div>
               </div>
               <div>
-                <div className='optionName'>D. 표기사항 (라벨 등)</div>
+                <div className='optionName'>D. 표기사항 / 옵션 (라벨 등)</div>
                 <input 
                   maxLength={12}
                   value={productTag}
@@ -686,36 +566,6 @@ const addNewOrder = () => {
             </ItemForm>
         </ContentsBox>
         :null }
-        {allItemsOfProvider?.length >= 1? 
-          <ContentsBox>
-            <ItemsContainer>
-              {allItemsOfProvider?.map((v) => {
-                let className = '';
-                if (selectedItems.find((i)=>(i.id === v.id))) { // 제품 선택됐을 경우 스타일
-                  className = 'selected';
-                }
-                return (
-                  <ItemSelector onClick={onItemSelectClick(v)} className={className}>
-                  <div>
-                    <span className='underline'>
-                      <span className='codeName'>{v.codeName}</span>
-                      <div className='space' />
-                      <span>({v.id}) </span>
-                      <span className='name'>{v.name}</span>
-                    </span>
-                  </div>
-                  <div className='second'>
-                    <span className='unit'>{v.unit}</span>
-                    <div className='space' />
-                    <span className='packageName'>{v.packageName}</span>
-                    <span> ({v.supplyPrice})</span>
-                  </div>
-                </ItemSelector>
-                  )
-              })}
-            </ItemsContainer>
-          </ContentsBox>
-        :null}
         
         <br />
         <Divider orientation="left">
@@ -732,16 +582,7 @@ const addNewOrder = () => {
                   >
                   <span className='codeName'>{item.codeName}</span>
                   <div className='space' />
-                  <span 
-                    className='name'
-                    onClick={() => {
-                        setSelectedItem(item);
-                        if(String(item.id).includes('F_')) {
-                          return;
-                        }
-                        setIsVisible(true);
-                    }}
-                  >
+                  <span className='name'>
                     {item.name}
                   </span>
                 </div>
@@ -755,13 +596,14 @@ const addNewOrder = () => {
                   }}
                 >X 
                 </button>
-                <div className='weight'>
-                  총 {item?.weight}
-                </div>
+
                 <div className='second'>
                   <span className='unit'>{item.unit}</span>
                   <div className='space' />
                   <span className='packageName'>{item.packageName}</span>
+                  <div className='weight'>
+                    총 {item?.weight}
+                  </div>
                 </div>
                 <div className='bottom'>
                   <div className='tagInputBox'>
@@ -789,16 +631,18 @@ const addNewOrder = () => {
                             return;
                           }
                           const newQty = Number(array[idx].qty) - 1;
-                          if (String(item.unit).toUpperCase() === '1KG') {
+                          if (String(item.unit).toUpperCase().replace(' ','') === '1KG') {
                             array[idx].weight = newQty * 1 + 'Kg'
-                          } if (String(item.unit).toUpperCase() === '500G') {
+                          } else if (String(item.unit).toUpperCase().replace(' ','') === '500G') {
                             array[idx].weight = (newQty * 0.5).toFixed(1)+ 'Kg'
-                          } if (String(item.unit).toUpperCase() === '400G') {
+                          } else if (String(item.unit).toUpperCase().replace(' ','') === '400G') {
                             array[idx].weight = (newQty * 0.4).toFixed(1)+ 'Kg'
-                          }if (String(item.unit).toUpperCase() === '200G') {
+                          } else if (String(item.unit).toUpperCase().replace(' ','') === '200G') {
                             array[idx].weight = (newQty * 0.2).toFixed(1) + 'Kg'
-                          } if (String(item.unit).toUpperCase() === '100G') {
+                          } else if (String(item.unit).toUpperCase().replace(' ','') === '100G') {
                             array[idx].weight = (newQty * 0.1).toFixed(1)+ 'Kg'
+                          } else {
+                            array[idx].weight = '0';
                           }
                           array[idx].qty = newQty;
                           getTotalQty(array);
@@ -839,16 +683,18 @@ const addNewOrder = () => {
                             return;
                           }
                           const newQty = Number(array[idx].qty) + 1;
-                          if (String(item.unit).toUpperCase() === '1KG') {
+                          if (String(item.unit).toUpperCase().replace(' ','') === '1KG') {
                             array[idx].weight = newQty * 1 + 'Kg'
-                          } if (String(item.unit).toUpperCase() === '500G') {
+                          } else if (String(item.unit).toUpperCase().replace(' ','') === '500G') {
                             array[idx].weight = (newQty * 0.5).toFixed(1)+ 'Kg'
-                          } if (String(item.unit).toUpperCase() === '400G') {
+                          } else if (String(item.unit).toUpperCase().replace(' ','') === '400G') {
                             array[idx].weight = (newQty * 0.4).toFixed(1)+ 'Kg'
-                          }if (String(item.unit).toUpperCase() === '200G') {
+                          } else if (String(item.unit).toUpperCase().replace(' ','') === '200G') {
                             array[idx].weight = (newQty * 0.2).toFixed(1) + 'Kg'
-                          } if (String(item.unit).toUpperCase() === '100G') {
+                          } else if (String(item.unit).toUpperCase().replace(' ','') === '100G') {
                             array[idx].weight = (newQty * 0.1).toFixed(1)+ 'Kg'
+                          } else {
+                            array[idx].weight = '0';
                           }
                           array[idx].qty = newQty;
                           getTotalQty(array);
@@ -875,7 +721,7 @@ const addNewOrder = () => {
           />
         </CommentInput>
         <br />
-        <Space>
+        <CenteredDiv>
           <Button 
             size='large'
             type='primary'
@@ -884,8 +730,7 @@ const addNewOrder = () => {
           >
             {totalQty}개 ({totalWeight.toFixed(1)}Kg) 주문 추가 완료
           </Button>
-          <Link href={`/factory/order-list`}><a><Button size='large' danger>취소</Button></a></Link>
-        </Space>
+        </CenteredDiv>
       </Container800>
     </AppLayout>
   );
@@ -908,15 +753,7 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
       },
     };
   }
-  if (response.role !== 'ADMINISTRATOR') { // 로그인 안했으면 홈으로
-    return {
-      redirect: {
-        destination: '/unauth',
-        permanent: false,
-      },
-    };
-  }
-  await queryClient.prefetchQuery(['user'], () => loadMyInfoAPI());
+  await queryClient.prefetchQuery('user', loadMyInfoAPI);
   return {
     props: {
       dehydratedState: JSON.parse(JSON.stringify(dehydrate(queryClient))),
@@ -924,4 +761,4 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
   };
 };
 
-export default addNewOrder;
+export default OrderItems;
