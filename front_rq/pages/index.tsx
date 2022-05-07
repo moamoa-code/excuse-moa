@@ -29,28 +29,57 @@ const Home = () => {
   });
   const { data: myUserInfo } = useQuery<User>(['user'], loadMyInfoAPI, {
     onSuccess(data) {
-      if(data?.role === 'CUSTOMER'){
-        loadRecentPostAPI()
-        .then((data) => {
-          setPosts(data);
-        })
-      } if (data?.role === 'PROVIDER' || data?.role === 'ADMINISTRATOR') {
-        loadRecentReceivedOrdersAPI(data.key)
-        .then((data) => {
-          setOderdata(data);
-          console.log('setOderdata',data);
-        })
-      } if (data?.role === 'PROVIDER') {
-        loadAdnminPostAPI()
-        .then((data) => {
-          setPosts(data);
-          console.log('setOderdata',data);
-        })
-      }
+      // -> SSR 안되는 문제로 주석처리
+      // if(data?.role === 'CUSTOMER') {
+      //   loadRecentPostAPI()
+      //   .then((response) => {
+      //     setPosts(response);
+      //   })
+      // } if (data?.role === 'PROVIDER' || data?.role === 'ADMINISTRATOR') {
+      //   loadRecentReceivedOrdersAPI(data.key)
+      //   .then((response) => {
+      //     setOderdata(response);
+      //     console.log('setOderdata', response);
+      //   })
+      // } if (data?.role === 'PROVIDER') {
+      //   loadAdnminPostAPI()
+      //   .then((response) => {
+      //     setPosts(response);
+      //     console.log('setOderdata', response);
+      //   })
+      // }
     }
   });
   const [ isLoggedin, setIsloggedin ] = useState(false)
   const { Title } = Typography;
+
+  const getPostsOrOrdersData = (user) => {
+    if(user?.role === 'CUSTOMER') {
+      loadRecentPostAPI()
+      .then((data) => {
+        setPosts(data);
+      })
+    } if (user?.role === 'PROVIDER' || user?.role === 'ADMINISTRATOR') {
+      loadRecentReceivedOrdersAPI(user.key)
+      .then((data) => {
+        setOderdata(data);
+        console.log('setOderdata', data);
+      })
+    } if (user?.role === 'PROVIDER') {
+      loadAdnminPostAPI()
+      .then((data) => {
+        setPosts(data);
+        console.log('setOderdata', data);
+      })
+    }
+  }
+
+  useEffect(() => { // 로그인시 데이터 가져오기.
+    console.log('useEffect 실행됨');
+    if (myUserInfo) {
+      getPostsOrOrdersData(myUserInfo);
+    } 
+  }, [myUserInfo]);
 
   const postColumns = [
     {
@@ -263,7 +292,7 @@ const Home = () => {
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
   const cookie = context.req ? context.req.headers.cookie : ''; // 쿠키 넣어주기
   axios.defaults.headers.Cookie = '';
-  const orderId = context.params?.id as string;
+  // const orderId = context.params?.id as string;
   if (context.req && cookie) {
     axios.defaults.headers.Cookie = cookie;
   }

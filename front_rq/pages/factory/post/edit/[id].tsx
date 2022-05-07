@@ -44,33 +44,47 @@ const EditPost = () => {
       setScope(data.scope);
       setProviderId(data.UserId);
       setShowCustomers(data.scope);
-      setLoading(true);
-      loadProviderByIdAPI(data.UserId)
-      .then((response) => {
-        setProvider(response);
-      })
-      .catch((error) => {
-        message.error(error);
-      })
-      .finally(() => {
-        setLoading(false);
-      })
+      // loadProviderByIdAPI(data.UserId)
+      // .then((response) => {
+      //   setProvider(response);
+      // })
+      // .catch((error) => {
+      //   message.error(error);
+      // })
+      // .finally(() => {
+      //   setLoading(false);
+      // })
       if(data.imgSrc){
         setImagePath(data.imgSrc);
       }
     }
   });
+  const { Option } = Select;
 
-  useEffect(
-    () => { 
-      if (!isLoading){
+  const getDatas = (userId) => {
+    loadProviderByIdAPI(userId)
+    .then((response) => {
+      setProvider(response);
+    })
+    .catch((error) => {
+      message.error(error);
+    })
+    .finally(() => {
+      setLoading(false);
+    })
+  }
+
+  useEffect(() => { 
+      if (!isLoading) {
         if(myUserInfo?.role!== 'ADMINISTRATOR'){
           message.error('권한이 없습니다.');
           Router.replace(`/unauth`);
         }
       }
-  }, [myUserInfo])
-  const { Option } = Select;
+      if (post) {
+        getDatas(post.UserId);
+      }
+  }, [myUserInfo, post])
 
   // 사진 업로드
   const imageInput = useRef<HTMLInputElement>(null);

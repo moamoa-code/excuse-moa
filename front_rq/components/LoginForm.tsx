@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Form, Input, Button } from 'antd';
+import { Form, Input, Button, message } from 'antd';
 import Link from 'next/link';
 import styled from 'styled-components';
 
@@ -30,7 +30,7 @@ const LoginForm = () => {
       setLoading(true);
     },
     onError: (error) => {
-      alert(error.response?.data);
+      message.error(error.response?.data);
     },
     onSuccess: (user) => {
       queryClient.setQueryData('user', user);
