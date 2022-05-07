@@ -20,7 +20,6 @@ import { Container800, ContainerMid, HGap } from '../components/Styled';
 import MyTable from '../components/MyTable';
 import { useMediaQuery } from 'react-responsive';
 
-
 // 메인 페이지
 const Home = () => {
   const [ posts, setPosts ] = useState([]);
@@ -28,7 +27,7 @@ const Home = () => {
   const isMobile = useMediaQuery({
     query: "(min-width:0px) and (max-width:768px)",
   });
-  const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI, {
+  const { data: myUserInfo } = useQuery<User>(['user'], loadMyInfoAPI, {
     onSuccess(data) {
       if(data?.role === 'CUSTOMER'){
         loadRecentPostAPI()
@@ -255,7 +254,6 @@ const Home = () => {
 
           </>
           : null }
-
         </Container800>
         
     </AppLayout>
@@ -270,7 +268,7 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
     axios.defaults.headers.Cookie = cookie;
   }
   const queryClient = new QueryClient();
-  await queryClient.prefetchQuery(['user'], () => loadMyInfoAPI());
+  await queryClient.prefetchQuery(['user'], loadMyInfoAPI);
   return {
     props: {
       dehydratedState: JSON.parse(JSON.stringify(dehydrate(queryClient))),

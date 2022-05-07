@@ -33,7 +33,7 @@ const EditPost = () => {
   const [scope, setScope] = useState(''); // 게시글 공개 범위
   const [showCustomers, setShowCustomers ] = useState(''); // 게시글 공개 범위
   const [imagePath, setImagePath] = useState(null); // 게시글 사진 업로드 경로
-  const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
+  const { data: myUserInfo } = useQuery<User>('me', loadMyInfoAPI);
   const { isLoading, data: post } = useQuery<Post>(['post', id], () => loadPostAPI(Number(id)),{
     onSuccess(data) {
       setTitle(data.title);
@@ -43,7 +43,6 @@ const EditPost = () => {
       if(data.imgSrc){
         setImagePath(data.imgSrc);
       }
-
     }
   });
 
@@ -299,7 +298,7 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
   }
   const id = context.params?.id as string;
   await queryClient.prefetchQuery(['user'], () => loadMyInfoAPI());
-  await queryClient.prefetchQuery(['post', id], () => loadPostAPI(Number(id)));
+  // await queryClient.prefetchQuery(['post', id], () => loadPostAPI(Number(id)));
   return {
     props: {
       dehydratedState: JSON.parse(JSON.stringify(dehydrate(queryClient))),
