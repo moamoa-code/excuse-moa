@@ -38,6 +38,8 @@ const Management = () => {
         <Title level={4}><UserOutlined /> 고객관리</Title>
         <Link href="/management/create-user"><a>고객생성</a></Link>
         <br />
+        <Link href="/management/user-multi-create"><a>여러고객생성</a></Link>
+        <br />
         <Link href="/management/customers"><a>고객관리 및 등록</a></Link>
         <br /><br />
         <Title level={4}><ShopOutlined /> 제품관리</Title>

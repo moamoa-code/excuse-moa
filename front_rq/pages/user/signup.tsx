@@ -91,8 +91,6 @@ const Signup = () => {
     [passwordCheck],
   );
 
-
-
   const onSubmit = useCallback(() => {
     setLoading(true);
     if (password !== passwordCheck) {
@@ -139,6 +137,7 @@ const Signup = () => {
               value={key}
               onChange={onChangeKey}
               placeholder=' - 포함하여 작성해주세요.'
+              maxLength={25}
               required
             />
           </Block>
@@ -191,7 +190,7 @@ const Signup = () => {
             />
           </Block>
           <Block>
-            <label><Red>* </Red>비밀번호</label>
+            <label><Red>* </Red>비밀번호 (다른 서비스에서 사용하지 않는 유일한 비밀번호 권장)</label>
             <input
               name="user-password"
               type="password"
@@ -222,11 +221,11 @@ const Signup = () => {
             </Checkbox> <Link href='/user/term'><a target={'_blank'}><Tag>이용약관</Tag></a></Link>
             {termError && <Red>약관에 동의하셔야 합니다.</Red>}
           </div>
-          <div style={{ marginTop: 10 }}>
+          <Block>
             <Button type="primary" htmlType="submit" loading={loading} disabled={disableBtn}>
               가입하기
             </Button>
-          </div>
+          </Block>
         </Form>
       </FormBox>
     </ContainerSmall>

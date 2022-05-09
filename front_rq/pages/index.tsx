@@ -97,13 +97,11 @@ const Home = () => {
       loadRecentReceivedOrdersAPI(user.key)
       .then((data) => {
         setOderdata(data);
-        console.log('setOderdata', data);
       })
     } if (user?.role === 'PROVIDER') {
       loadAdnminPostAPI()
       .then((data) => {
         setPosts(data);
-        console.log('setOderdata', data);
       })
     }
   }

@@ -3,13 +3,11 @@
 // 주소 등록 폼, 다음 주소 API 활용
 import React, { useCallback, useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import Link from 'next/link';
-import DaumPostcode from 'react-daum-postcode';
 import { Select, Descriptions, Typography, Space, Tag, Button } from 'antd';
 import { LinkOutlined, PlusOutlined } from '@ant-design/icons';
-import useInput from '../hooks/useInput';
-import Modal from 'antd/lib/modal/Modal';
 
 const AddressList = forwardRef((props, ref) => {
+  const { editable } = props;
   const { Option } = Select;
   const { Text } = Typography;
   const [ name, setName ] = useState('');
@@ -61,7 +59,7 @@ const AddressList = forwardRef((props, ref) => {
             ))
           }
         </Select>
-        <Link href="/user/regist-addr"><a><Button type="dashed"><PlusOutlined />주소추가페이지</Button></a></Link>
+        <Link href="/user/regist-addr"><a><Button type="primary"><PlusOutlined />주소추가</Button></a></Link>
       </Space>
       <Descriptions 
         bordered
@@ -72,21 +70,28 @@ const AddressList = forwardRef((props, ref) => {
           {address}
         </Descriptions.Item>
         <Descriptions.Item label="받는분">
-          <Text editable={{ onChange: (value) => {
-            setName(value);
-            props.setName(value);
-          }}}>{name}</Text>
+          {!props?.editable?
+            <Text>{name}</Text>
+            :
+            <Text editable={{ onChange: (value) => {
+              setName(value);
+              props.setName(value);
+            }}}>{name}</Text>
+          }
         </Descriptions.Item>
         <Descriptions.Item label="받는분 전화번호">
-          <Text editable={{ onChange: (value) => {
+          {!props?.editable?
+              <Text>{phone}</Text>  
+            :
+            <Text editable={{ onChange: (value) => {
               setPhone(value);
               props.setPhone(value);
-            }}}>{phone}</Text>
+            }}}>{phone}</Text>  
+          }
         </Descriptions.Item>
       </Descriptions>
     </>
   );
 });
-
 
 export default AddressList;

@@ -57,9 +57,10 @@ const Customers = () => {
   };
 
   const onSearch = (value) => {
-    console.log(value);
+    let key = String(value).replace(' ','');
+    console.log(key);
     setLoading(true);
-    loadUserAPI(String(value))
+    loadUserAPI(key)
       .then((response) => {
         setUserInfo(response);
         if (myUserInfo.Customers.find((v) => (v.key === response.key))){

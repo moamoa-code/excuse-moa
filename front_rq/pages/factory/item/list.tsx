@@ -18,7 +18,7 @@ import { DownOutlined, RightOutlined, ShoppingCartOutlined } from '@ant-design/i
 import UserInfoBox from '../../../components/UserInfoBox';
 import { useMediaQuery } from 'react-responsive';
 import MyTable from '../../../components/MyTable';
-import { HGap } from '../../../components/Styled';
+import { ContainerWide, HGap } from '../../../components/Styled';
 
 const Container800 = styled.div`
 max-width: 800px;
@@ -134,7 +134,7 @@ const FactoryItemList = () => {
 
   return (
     <AppLayout>
-      <Container800>
+      <ContainerWide>
       <Title level={4}>판매사 선택</Title>
         <OptionContainer>
           {providerList?.map((v)=>{
@@ -164,7 +164,7 @@ const FactoryItemList = () => {
         />
         }<br />
         <Link href='/factory/item/regist'><a><Button type='primary'> + 새로운 제품 추가</Button></a></Link>
-      </Container800>
+      </ContainerWide>
     </AppLayout>
   );
 };

@@ -194,6 +194,7 @@ const OrderItems = () => {
       item.weight = '100g'
     }
     if (selectedItems.findIndex((v) => v.id === item.id) !== -1) {
+      message.warning(`${item.name} 제품을 뺐습니다.`);
       const array = selectedItems.filter((v) => { if (v.id !== item.id) return v});
       getTotalQty(array);
       getTotalWeight(array);
@@ -203,6 +204,7 @@ const OrderItems = () => {
     const array = [...selectedItems, item];
     getTotalQty(array);
     getTotalWeight(array);
+    message.success(`${item.name} 제품을 담았습니다.`);
     return setSelectedItems(array);
   }
 

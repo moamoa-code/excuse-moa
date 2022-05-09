@@ -1,38 +1,32 @@
-// @ts-nocheck
+//@ts-nocheck
 // -> UseRef 문제 해결 못함
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import AppLayout from '../../components/AppLayout';
 import { GetServerSidePropsContext } from 'next';
 import axios from 'axios';
 import { dehydrate, QueryClient, useQuery, useQueryClient } from 'react-query';
-import { loadAddrsAPI, loadMyInfoAPI, registAddrAPI, removeAddrAPI } from '../../apis/user';
+import { loadAddrsAPI, loadMyInfoAPI, removeAddrAPI } from '../../apis/user';
 import User from '../../interfaces/user';
 import AddressList from '../../components/AddressList';
-import { Button, Descriptions, Divider, notification, Typography } from 'antd';
-import styled from 'styled-components';
+import { Button, Divider, message, Popconfirm, Typography } from 'antd';
 import { SmileOutlined } from '@ant-design/icons';
-
-const Container500 = styled.div`
-  max-width: 500px;
-  margin 0 auto;
-  padding: 10px;
-`
-
+import { ContainerMid } from '../../components/Styled';
 
 const AddrList = () => {
   const childRef = useRef();
   const queryClient = useQueryClient();
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI, {
-    onSuccess: (data) => {
-      console.log(data.id);
-      loadAddrsAPI(data.id)
-      .then((response) => {
-        setAddrs(response);
-      })
-      .catch((error) => {
-        alert(error.response.data);
-      })
-    }
+    // // 첫실행시 로드 안되는 문제
+    // onSuccess: (data) => {
+    //   console.log(data.id);
+    //   loadAddrsAPI(data.id)
+    //   .then((response) => {
+    //     setAddrs(response);
+    //   })
+    //   .catch((error) => {
+    //     alert(error.response.data);
+    //   })
+    // }
   });
   const [ loading, setLoading ] = useState(false);
   const [ id, setId ] = useState();
@@ -42,30 +36,34 @@ const AddrList = () => {
   const [ address, setAddress ] = useState('');
   const [ zip, setZip ] = useState('');
   const { Title } = Typography;
-  // const { data } = useQuery('addrs', loadAddrsAPI, {
-  //   onSuccess: (data) => {
-  //     console.log(data);
-  //     setAddrs(data);
-  //   }
-  // });
 
-  const openNotification = () => {
-    notification.open({
-      message: `주소 삭제가 완료되었습니다.`,
-      description:
-        ``,
-      icon: <SmileOutlined style={{ color: '#108ee9' }} />,
-      duration: 4,
-    });
-  };
+  const gerAddrDatas = (user) => {
+    loadAddrsAPI(user.id)
+    .then((response) => {
+      setAddrs(response);
+    })
+    .catch((error) => {
+      message.error(error.response.data);
+    })
+  }
+  useEffect(() => { // 로그인시 데이터 가져오기.
+    console.log('useEffect 실행됨');
+    if (myUserInfo.id) {
+      gerAddrDatas(myUserInfo);
+    } 
+  }, [myUserInfo]);
 
   const onRemoveAddr = () => {
     setLoading(true);
     removeAddrAPI({id})
     .then(() => {
       queryClient.invalidateQueries('user');
-      openNotification();
+      message.success('주소를 삭제했습니다.');
       childRef.current.setInit();
+      gerAddrDatas(myUserInfo);
+    })
+    .catch((error) => {
+      message.error(error.response.data);
     })
     .finally(() => {
       setLoading(false);
@@ -74,14 +72,22 @@ const AddrList = () => {
 
   return (
     <AppLayout>
-      <Container500>
+      <ContainerMid>
         <Divider><Title level={4}>내 주소 목록</Title></Divider><br />
-        <AddressList ref={childRef} addrs={addrs} setId={setId} setName={setName} setPhone={setPhone} setAddress={setAddress} setZip={setZip}/>
+        <AddressList ref={childRef} addrs={addrs} setId={setId} setName={setName} setPhone={setPhone} setAddress={setAddress} setZip={setZip} editable={false}/>
         <br />
-        {id? <Button loading={loading} onClick={onRemoveAddr} type='dashed' danger>주소 삭제</Button>
+        {id? 
+          <Popconfirm
+            title="주소를 삭제하시겠습니까?"
+            onConfirm={onRemoveAddr}
+            okText="삭제"
+            cancelText="아니오"
+          >
+            <Button loading={loading} type='dashed' danger>주소 삭제</Button>
+          </Popconfirm>
         : null}
         
-      </Container500>
+      </ContainerMid>
     </AppLayout>
   );
 };

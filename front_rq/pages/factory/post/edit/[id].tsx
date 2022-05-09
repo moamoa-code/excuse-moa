@@ -38,26 +38,16 @@ const EditPost = () => {
   const [provider, setProvider] = useState(null);
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
   const { isLoading, data: post } = useQuery<Post>(['post', id], () => loadPostAPI(Number(id)),{
-    onSuccess(data) {
-      setTitle(data.title);
-      setContent(data.content);
-      setScope(data.scope);
-      setProviderId(data.UserId);
-      setShowCustomers(data.scope);
-      // loadProviderByIdAPI(data.UserId)
-      // .then((response) => {
-      //   setProvider(response);
-      // })
-      // .catch((error) => {
-      //   message.error(error);
-      // })
-      // .finally(() => {
-      //   setLoading(false);
-      // })
-      if(data.imgSrc){
-        setImagePath(data.imgSrc);
-      }
-    }
+    // onSuccess(data) {
+    //   setTitle(data.title);
+    //   setContent(data.content);
+    //   setScope(data.scope);
+    //   setProviderId(data.UserId);
+    //   setShowCustomers(data.scope);
+    //   if(data.imgSrc){
+    //     setImagePath(data.imgSrc);
+    //   }
+    // }
   });
   const { Option } = Select;
 
@@ -74,6 +64,17 @@ const EditPost = () => {
     })
   }
 
+  const setPostDatas = (data) => {
+    setTitle(data.title);
+    setContent(data.content);
+    setScope(data.scope);
+    setProviderId(data.UserId);
+    setShowCustomers(data.scope);
+    if(data.imgSrc){
+      setImagePath(data.imgSrc);
+    }
+  }
+
   useEffect(() => { 
       if (!isLoading) {
         if(myUserInfo?.role!== 'ADMINISTRATOR'){
@@ -83,6 +84,7 @@ const EditPost = () => {
       }
       if (post) {
         getDatas(post.UserId);
+        setPostDatas(post);
       }
   }, [myUserInfo, post])
 
@@ -130,7 +132,6 @@ const EditPost = () => {
   const onEditSubmit = () => {  // 수정 완료
     setLoading(true);
     const formData = new FormData();
-    // data: { codeName: string, package: string, imgSrc: string|null, name: string, unit: string, msrp: string|null, supplyPrice: string|null }
     formData.append('postId', String(post.id));
     formData.append('title', title);
     formData.append('scope', scope);

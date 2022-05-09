@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Form, Input, Button, message } from 'antd';
 import Link from 'next/link';
-import styled from 'styled-components';
 
 import useInput from '../hooks/useInput';
 
@@ -11,13 +10,6 @@ import { logInAPI } from '../apis/user';
 
 import User from '../interfaces/user';
 import { ContainerSmall, Block, FormBox } from './Styled';
-
-
-// 로그인 폼.
-
-const ButtonWrapper = styled.div`
-  margin-top:10px;
-`;
 
 // setIsLoggendIn -> components/AppLayout에서 옴
 const LoginForm = () => {
@@ -30,7 +22,8 @@ const LoginForm = () => {
       setLoading(true);
     },
     onError: (error) => {
-      message.error(error.response?.data);
+      alert(error.response?.data);
+      // message.error(error.response?.data);
     },
     onSuccess: (user) => {
       queryClient.setQueryData('user', user);
@@ -64,10 +57,10 @@ const LoginForm = () => {
               required
             />
           </Block>
-          <ButtonWrapper>
+          <Block>
             <Button type="primary" htmlType="submit" loading={loading}>로그인</Button>
             <Link href="/user/signup"><a><Button>회원가입</Button></a></Link>
-          </ButtonWrapper>
+          </Block>
         </Form>
       </FormBox>
     </ContainerSmall>

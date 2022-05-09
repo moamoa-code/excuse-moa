@@ -35,7 +35,18 @@ const EditPost = () => {
   const [imagePath, setImagePath] = useState(null); // 게시글 사진 업로드 경로
   const { data: myUserInfo } = useQuery<User>('me', loadMyInfoAPI);
   const { isLoading, data: post } = useQuery<Post>(['post', id], () => loadPostAPI(Number(id)),{
-    onSuccess(data) {
+    // onSuccess(data) {
+    //   setTitle(data.title);
+    //   setContent(data.content);
+    //   setScope(data.scope);
+    //   setShowCustomers(data.scope);
+    //   if(data.imgSrc){
+    //     setImagePath(data.imgSrc);
+    //   }
+    // }
+  });
+
+  const setPostDatas = (data) => {
       setTitle(data.title);
       setContent(data.content);
       setScope(data.scope);
@@ -43,8 +54,7 @@ const EditPost = () => {
       if(data.imgSrc){
         setImagePath(data.imgSrc);
       }
-    }
-  });
+  }
 
   useEffect(
     () => { 
@@ -55,8 +65,13 @@ const EditPost = () => {
             Router.replace(`/unauth`);
           }
         }
+        if(post.id){
+          setPostDatas(post)
+        }
       }
-  }, [myUserInfo])
+
+  }, [myUserInfo, post])
+
   const { Option } = Select;
 
   // 사진 업로드

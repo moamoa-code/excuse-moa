@@ -496,12 +496,12 @@ export const FormBox = styled.div`
 
 // 입력 폼 한줄
 export const Block = styled.div`
-  margin: 10px 0 22px 0;
+  margin: 20px 0 20px 0;
   label {
     font-weight: bold;
     color: #626262;
     display: block;
-    margin: 0 0 7px 0;
+    margin: 0 0 5px 0;
     @media screen and (max-width: 600px) {
       margin: 0;
       padding: 0;

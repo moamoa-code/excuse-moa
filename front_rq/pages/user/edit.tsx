@@ -23,15 +23,14 @@ const EditUser = () => {
   const [loading, setLoading] = useState(false);
   const queryClient = useQueryClient();
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI,{
-    onSuccess(data) {
-      setKey(data.key);
-      setCompany(data.company);
-      setName(data.name);
-      setPhone(data.phone);
-      setEmail(data.email);
-      setHqNum(data.hqNumber);
-      console.log(myUserInfo);
-    }
+    // onSuccess(data) {
+    //   setKey(data.key);
+    //   setCompany(data.company);
+    //   setName(data.name);
+    //   setPhone(data.phone);
+    //   setEmail(data.email);
+    //   setHqNum(data.hqNumber);
+    // }
   });
 
   const [key, setKey] = useState<string>('');
@@ -46,6 +45,22 @@ const EditUser = () => {
   const [passwordValidError, setPasswordValidError] = useState(false);
   const [keyValidError, setKeyValidError] = useState(false);
   const [disableBtn, setDisableBtn] = useState(true);
+
+  const setUserData = (user) => {
+    setKey(user.key);
+    setCompany(user.company);
+    setName(user.name);
+    setPhone(user.phone);
+    setEmail(user.email);
+    setHqNum(user.hqNumber);
+  }
+
+  useEffect(() => {
+    if(myUserInfo.id) {
+      setUserData(myUserInfo);
+    }
+  }, [myUserInfo])
+
 
   useEffect(() => { // 유효성 검사완료시 가입버튼 활성화
     if (keyValidError || passwordValidError || passwordError || passwordCheck === '' || company === '' || name === ''){
@@ -205,8 +220,7 @@ const EditUser = () => {
           <div>
           </div>
           <hr />
-          <div style={{ marginTop: 10 }}>
-            <Space>
+            <Block>
               <Button type="primary" htmlType="submit" loading={loading} disabled={disableBtn}>
                 수정완료
               </Button>
@@ -215,9 +229,7 @@ const EditUser = () => {
                 회원 탈퇴
                 </Button></a>
               </Link>
-            </Space>
-          </div>
-
+            </Block>
         </Form>
       </FormBox>
     </ContainerMid>

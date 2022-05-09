@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { createGlobalStyle } from 'styled-components';
 import { Layout, Button, Menu } from 'antd';
@@ -95,13 +95,19 @@ const A = styled.a`
 `;
 
 const AppLayout: FC = ({ children }) => {
-  const [ myInfo, setMyInfo ] = useState({});
+  // const [ myInfo, setMyInfo ] = useState({});
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI, {
-    onSuccess: (data) => {
-      setMyInfo(myUserInfo);
-    }
+    // onSuccess: (data) => {
+    //   setMyInfo(myUserInfo);
+    // }
   });
   const [showMenuModal, setShowMenuModal] = useState(false);
+
+  // useEffect(() => {
+  //   if(myUserInfo.id) {
+  //     setMyInfo(myUserInfo);
+  //   }
+  // }, [myUserInfo])
 
 
   const onShowMenuModal = () => {
