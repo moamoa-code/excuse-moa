@@ -17,6 +17,7 @@ const userRouter = require('./routes/user');
 const itemRouter = require('./routes/item');
 const orderRouter = require('./routes/order');
 const postRouter = require('./routes/post');
+const inventoryRouter = require('./routes/inventory');
 
 dotenv.config();
 const app = express();
@@ -75,6 +76,7 @@ app.use('/user', userRouter);
 app.use('/item', itemRouter);
 app.use('/order', orderRouter);
 app.use('/post', postRouter);
+app.use('/inventory', inventoryRouter);
 
 app.listen(3070, () => {
     console.log('서버 실행 중');

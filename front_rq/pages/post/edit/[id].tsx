@@ -69,7 +69,6 @@ const EditPost = () => {
           setPostDatas(post)
         }
       }
-
   }, [myUserInfo, post])
 
   const { Option } = Select;

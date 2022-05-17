@@ -475,16 +475,7 @@ export const FormBox = styled.div`
   padding: 10px 20px 10px 20px;
   @media screen and (max-width: 600px) {
     padding: 8px 18px 8px 18px;
-    margin: 8px;
   }
-
-  @media (max-width: 350px) {
-    border: none;
-    padding: 0px;
-    margin: 0px;
-    box-shadow: none;
-  }
-
   hr {
     width: 100%;
     border: 0;
@@ -614,6 +605,25 @@ export const OptionContainer = styled.div`
 // 여러 회원생성
 // 입력 폼 테이블
 export const InputFormTable = styled.table`
+  .selectWrap {
+    display: flex;
+    input {
+      width: 40px;
+      flex: 1;
+    }
+    select {
+      flex: 1;
+      padding: 4px 0px 4px 0px;
+      border-radius: 4px;
+      border: 1px solid #398AB9;
+    }
+    button {
+      background: white;
+      padding: 0 3px 0 3px;
+      border-radius: 4px;
+      border: 1px solid #398AB9;
+    }
+  }
   width: 100%;
   border-collapse: collapse;
   border: 1px solid #444444;
@@ -794,9 +804,9 @@ export const HGap = styled.div`
 `
 
 export const MyTaBle = styled.div`
-display: flex;
-flex-direction: column;
-gap: 14px 0px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px 0px;
 .tag{
   background-color: #f0f0f0;
   box-sizing: border-box;
@@ -859,7 +869,7 @@ span {
   display: flex;
   flex-direction: row;
   flex;justify-content: flex-end;
-  gap: 0px 6px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 .inputName{
@@ -884,4 +894,293 @@ span {
 
 export const RightText = styled.div`
   text-align: right;
+`
+
+export const LeftAndRightDiv = styled.div`
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  .left{
+    flex: 1;
+  }
+  .right{
+    margin-left: auto;
+  }
+  
+`
+
+// 재고보고서
+export const InventoryTable = styled .table`
+  width: 100%;
+  min-width: 350px;
+  border-collapse: collapse;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  .name {
+    color:#1890ff;
+  }
+  .qty {
+    width: 80px;
+    text-align: center;
+    font-size: 12pt;
+  }
+  .unit {
+    width: 60px;
+  }
+  .selectWrap {
+    display: flex;
+    input {
+      width: 40px;
+      flex: 1;
+    }
+    select {
+      flex: 1;
+      flex-basis: 90px;
+      padding: 4px 0px 4px 0px;
+      border-radius: 4px;
+      border: 1px solid #398AB9;
+    }
+    button {
+      background: white;
+      padding: 0 3px 0 3px;
+      border-radius: 4px;
+      border: 1px solid #398AB9;
+    }
+  }
+  input {
+    width: 100%;
+    padding: 4px 0px 4px 0px;
+    border: none;
+  }
+  th, td{
+    padding: 10px 6px 10px 6px;
+  }
+  th {
+    position: sticky;
+    z-index: 2;
+    top: 0px;
+    background-color: #167c80;
+    border-left: 3px solid #ffffff;
+    color: #ffffff;
+    font-size: 12pt;
+  }
+  .status {
+    width: 100px;
+  }
+  th:first-child {
+    border-left: none;
+  }
+  .code {
+    background-color: #a6cfe2;
+  }
+  .code td {
+    padding: 10px;
+    font-size: 12pt;
+    font-weight: 600;
+  }
+  .numberInput {
+    font-size: 13pt;
+    font-weight: bold;
+    width: 60px;
+  }
+  tr {
+    border-bottom: 3px solid #dadada;
+  }
+  tbody tr:nth-of-type(even) {
+    background-color: #f8f8f8;
+  }
+  tbody tr:last-of-type {
+    border-bottom: 2px solid #398AB9;
+  }
+  td {
+    border-left: 1px solid #dadada;
+  }
+  td:first-child {
+    border-left: none;
+  }
+  .wraper{
+    display: flex;
+  }
+  .qtyInputBox {
+    align-items: center;
+    vertical-align: center;
+    display: inline-block;
+    justify-content: space-between;
+    margin: 0px;
+    button {
+      border: none;
+      background: none;
+    }
+    input {
+      margin:0px;
+      text-align:center;
+      font-size: 14pt;
+      width:45px;
+      border:none;
+    }
+    button:active {
+      position: relative; 
+      top:2px;
+    }
+  }
+`
+
+export const StockViewModal = styled.div`
+  display:flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  font-size: 13pt;
+
+  h1 {
+    flex-basis: 100%;
+  }
+  div {
+    
+  }
+  input {
+    text-align:center;
+    border-radius: 4px;
+    border: 1px solid #398AB9;
+  }
+  .numberInput {
+    input {
+      width: 45px;
+    }
+  }
+  .selectWrap {
+    display: flex;
+    input {
+      width: 40px;
+      flex: 1;
+    }
+    select {
+      flex: 1;
+      padding: 4px 0px 4px 0px;
+      border-radius: 4px;
+      border: 1px solid #398AB9;
+    }
+    button {
+      background: white;
+      padding: 0 3px 0 3px;
+      border-radius: 4px;
+      border: 1px solid #398AB9;
+    }
+  }
+  .qtyInputBox {
+    margin-left: 10px;
+    align-items: center;
+    vertical-align: center;
+    display: inline-block;
+    justify-content: space-between;
+    button {
+      border: none;
+      background: none;
+    }
+    input {
+      margin:0px;
+      text-align:center;
+      font-size: 14pt;
+      width:45px;
+      border:none;
+    }
+    button:active {
+      position: relative; 
+      top:2px;
+    }
+`
+
+// 재고보고서 갱신 모바일용
+export const StockBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  h1 {
+    margin-top: 12px;
+    font-size: 14pt;
+    padding: 5px;
+    font-weight: bold;
+    span {
+      background-color: #2db7f5;
+    }
+    border-bottom: 1px solid #e4e4e4;
+  }
+  .container{
+    padding: 14px;
+    border: 1px solid #e4e4e4;
+    border-radius: 12px;
+    box-shadow: 0px 9px 10px -4px rgba(0,0,0,0.07);
+  }
+  .top {
+    display: flex;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #e4e4e4;
+    .title {
+      font-size: 12pt;
+    }
+    .action {
+      margin-left:auto;
+      .qtyInputBox {
+        align-items: center;
+        vertical-align: center;
+        display: inline-block;
+        justify-content: space-between;
+        margin: 0px;
+        button {
+          border: none;
+          background: none;
+        }
+        input {
+          margin:0px;
+          text-align:center;
+          font-size: 14pt;
+          width:45px;
+          border:none;
+        }
+        button:active {
+          position: relative; 
+          top:2px;
+        }
+      }
+    }
+  }
+
+  .bottom {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+    font-size: 11pt;
+    flex-wrap: wrap;
+    .memo {
+      flex-basis: 100%;
+      input {
+        max-width: 100%;
+      }
+    }
+    .lable {
+      margin-right: 5px;
+    }
+    input, select {
+      flex: 1;
+      max-width: 90px;
+      padding: 4px 0px 4px 0px;
+      border-radius: 4px;
+      border: 1px solid #398AB9;
+    }
+    .selectWrap {
+      .number {
+        text-align: center;
+        width: 50px;
+        font-weight: bold;
+      }
+      align-items: center;
+      display: flex;
+      button {
+        align-self: stretch;
+        background: white;
+        padding: 0 3px 0 3px;
+        border-radius: 4px;
+        border: 1px solid #398AB9;
+      }
+    }
+  }
 `

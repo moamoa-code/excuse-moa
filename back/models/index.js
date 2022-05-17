@@ -15,6 +15,10 @@ db.Order = require('./order')(sequelize, Sequelize);
 db.OrderDetail = require('./orderDetail')(sequelize, Sequelize);
 db.User = require('./user')(sequelize, Sequelize);
 db.Post = require('./post')(sequelize, Sequelize);
+db.Inventory = require('./inventory')(sequelize, Sequelize);
+db.InventoryGroup = require('./inventoryGroup')(sequelize, Sequelize);
+db.InventoryDetail = require('./inventoryDetail')(sequelize, Sequelize);
+db.Stock = require('./stock')(sequelize, Sequelize);
 
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate){

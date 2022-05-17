@@ -64,6 +64,8 @@ module.exports = (sequelize, DataTypes) => {
     db.User.hasMany(db.Order, { as: 'Provider'}); // 공급자
     db.User.hasMany(db.Post); // 등록한 게시글
     db.User.hasMany(db.Item); // 등록한 제품.
+    db.User.hasMany(db.InventoryGroup); // 재고 보고서
+    db.User.hasMany(db.Stock); // 재고 보고서
     // db.User.belongsTo(db.User, {as: 'Manager'}); // == Provider 지정 판매자
     // db.User.hasMany(db.User, {as: 'Customers'});
     db.User.belongsToMany(db.User, { through: 'UsersRelation', as: 'Providers', foreignKey: 'CustomerId' }); // 판매자-구매자 관계

@@ -11,12 +11,12 @@ module.exports = (sequelize, DataTypes) => {
     },
     totalPrice: {
       type: DataTypes.STRING(20),
-      allowNull: false,
+      allowNull: true,
       defaultValue: '0'
     }, 
     totalWeight: {
       type: DataTypes.STRING(10),
-      allowNull: false,
+      allowNull: true,
       defaultValue: '0'
     },
     comment: { // 배송 요구사항

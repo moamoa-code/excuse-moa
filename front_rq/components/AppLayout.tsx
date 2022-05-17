@@ -125,6 +125,7 @@ const AppLayout: FC = ({ children }) => {
                 <>
                   <MenuLi underline={false}><Link href={`/post/list`}><A>공지사항</A></Link></MenuLi>
                   <MenuLi underline={false}><Link href={`/order/order-items`}><A>주문하기</A></Link></MenuLi>
+                  <MenuLi underline={false}><Link href={`/inventory`}><A>재고관리</A></Link></MenuLi>
                   <MenuLi underline={false}><Link href={`/item/order/list/${myUserInfo?.id}`}><A>주문목록</A></Link></MenuLi>
                 </>
               : null}
@@ -132,6 +133,7 @@ const AppLayout: FC = ({ children }) => {
               (<>
                 <MenuLi underline={false}><Link href={`/management/check-order/list`}><A>주문확인</A></Link></MenuLi>
                 <MenuLi underline={false}><Link href={`/management/add-order`}><A>주문추가</A></Link></MenuLi>
+                <MenuLi underline={false}><Link href={`/inventory`}><A>재고관리</A></Link></MenuLi>
                 <MenuLi underline={false}><Link href={`/management`}><A>판매자페이지</A></Link></MenuLi>
               </>)
               : null}
@@ -139,6 +141,7 @@ const AppLayout: FC = ({ children }) => {
               (<>
                 <MenuLi underline={true}><Link href={`/factory/order-list`}><A>주문현황</A></Link></MenuLi>
                 <MenuLi underline={true}><Link href={`/factory/add-order`}><A>주문추가</A></Link></MenuLi>
+                <MenuLi underline={false}><Link href={`/inventory`}><A>재고관리</A></Link></MenuLi>
                 <MenuLi underline={true}><Link href={`/factory`}><A>관리자페이지</A></Link></MenuLi>
                 <p></p><br />
               </>)
@@ -158,6 +161,7 @@ const AppLayout: FC = ({ children }) => {
               (<>
                 <MenuLi underline={true}><Link href={`/management/check-order/list`}><A>주문확인</A></Link></MenuLi>
                 <MenuLi underline={true}><Link href={`/management/add-order`}><A>주문추가</A></Link></MenuLi>
+                <MenuLi underline={true}><Link href={`/inventory`}><A>재고관리</A></Link></MenuLi>
                 <MenuLi underline={true}><Link href={`/management`}><A>판매자페이지</A></Link></MenuLi>
                 <p></p><br />
               </>)
@@ -166,6 +170,7 @@ const AppLayout: FC = ({ children }) => {
               (<>
                 <MenuLi underline={true}><Link href={`/factory/order-list`}><A>주문현황</A></Link></MenuLi>
                 <MenuLi underline={true}><Link href={`/factory/add-order`}><A>주문추가</A></Link></MenuLi>
+                <MenuLi underline={true}><Link href={`/inventory`}><A>재고관리</A></Link></MenuLi>
                 <MenuLi underline={true}><Link href={`/factory`}><A>관리자페이지</A></Link></MenuLi>
                 <p></p><br />
               </>)
@@ -175,13 +180,13 @@ const AppLayout: FC = ({ children }) => {
                   <MenuLi underline={true}><Link href="/post/list"><A>공지사항</A></Link></MenuLi>
                   <MenuLi underline={true}><Link href="/order/order-items"><A>주문하기</A></Link></MenuLi>
                   <MenuLi underline={true}><Link href={`/item/order/list/${myUserInfo?.id}`}><A>주문목록</A></Link></MenuLi>
+                  <MenuLi underline={true}><Link href={`/inventory`}><A>재고관리</A></Link></MenuLi>
                 </>
               : null}
             </MenuUl>
             </div>
           </MenuModal>
         : null}
-
         <Content style={{ backgroundColor: '#ffffff', marginTop: '20px', paddingTop: '10px' }}>
           {children}
           <br/><br/>

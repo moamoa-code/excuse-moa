@@ -54,6 +54,7 @@ module.exports = (sequelize, DataTypes) => {
   });
   OrderDetail.associate = (db) => { // 릴레이션(관계) 정의
     db.OrderDetail.belongsTo(db.Order); // 주문 ID
+    db.User.hasMany(db.InventoryDetail); // 재고 보고서
   };
   return OrderDetail;
 };
