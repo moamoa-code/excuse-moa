@@ -60,8 +60,8 @@ app.use(session({
   cookie: { // 쿠키 공유를 위한 필수 옵션
     httpOnly: true,
     secure: false,
-    domain: process.env.NODE_ENV === 'production' && '.excusemoa.com', 
-    // domain: process.env.NODE_ENV === 'production' && '.moaorder.com', 
+    // domain: process.env.NODE_ENV === 'production' && '.excusemoa.com', 
+    domain: process.env.NODE_ENV === 'production' && '.moaorder.com', 
     // 백, 프론트 서버 IP 다르다면 쿠키공유 위해 도메인설정 필수
   },
 }));
