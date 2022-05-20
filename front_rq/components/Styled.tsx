@@ -915,6 +915,24 @@ export const InventoryTable = styled .table`
   min-width: 350px;
   border-collapse: collapse;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  .extended{
+    .container {
+      background-color:white;
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px solid #d4d4d4;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      div {
+        flex: 1;
+        .tag {
+          display: block;
+          font-weight: bold;
+        }
+      }
+    }
+  }
   .name {
     color:#1890ff;
   }
@@ -922,6 +940,21 @@ export const InventoryTable = styled .table`
     width: 80px;
     text-align: center;
     font-size: 12pt;
+    div {
+      display: flex;
+      margin:0 auto;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      .unitTag {
+        background-color: white;
+        box-sizing: border-box;
+        border-radius: 4px;
+        border: 1px solid #d4d4d4;
+        padding: 1px 4px 1px 4px;
+        font-size: 8pt;
+      }
+    }
   }
   .unit {
     width: 60px;

@@ -16,6 +16,7 @@ import useInput from '../../../../hooks/useInput';
 import Form from 'antd/lib/form/Form';
 import styled from 'styled-components';
 import ReactToPrint from "react-to-print";
+import { Container800 } from '../../../../components/Styled';
 
 
 const A4style = styled.div`
@@ -67,19 +68,19 @@ const PrintOrder = () => {
 
   return (
     <>
-      <div style={{maxWidth: '800px', padding: '10px', margin: '0 auto'}}>
-      <Space>
-        <ReactToPrint
-          trigger={() => <Button type="primary">인쇄하기</Button>}
-          content={() => componentRef.current}
-        />
-        <Button onClick={onToggleShip}>배송지 숨기기/보이기</Button>
-        <Button onClick={onTogglePrice}>금액 숨기기/보이기</Button>
-      </Space>
-    </div>
+      <Container800>
+        <Space>
+          <ReactToPrint
+            trigger={() => <Button type="primary">인쇄하기</Button>}
+            content={() => componentRef.current}
+          />
+          <Button onClick={onToggleShip}>배송지 숨기기/보이기</Button>
+          <Button onClick={onTogglePrice}>금액 숨기기/보이기</Button>
+        </Space>
+      </Container800>
     <A4style ref={componentRef}>
-        <OrderView orderData={orderData} mode={mode} />
-      </A4style>
+      <OrderView orderData={orderData} mode={mode} />
+    </A4style>
     </>
   );
 };
@@ -91,12 +92,41 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
   if (context.req && cookie) {
     axios.defaults.headers.Cookie = cookie;
   }
+
   const queryClient = new QueryClient();
   const response = await loadMyInfoAPI();
+  const orderData = await loadOrderAPI(Number(orderId))
+  .catch((error) => {
+    return {
+      redirect: {
+        destination: '/unauth',
+        permanent: false,
+      },
+    };
+  })
   if (!response) { // 로그인 안했으면 홈으로
     return {
       redirect: {
-        destination: '/',
+        destination: '/unauth',
+        permanent: false,
+      },
+    };
+  }
+  if (!orderData) {
+    return {
+      redirect: {
+        destination: '/unauth',
+        permanent: false,
+      },
+    };
+  }
+  if (orderData.order?.ProviderId !== response.id 
+    && orderData.order?.CustomerId !== response.id
+    && response.role !== 'ADMINISTRATOR'
+    ){
+    return {
+      redirect: {
+        destination: '/unauth',
         permanent: false,
       },
     };

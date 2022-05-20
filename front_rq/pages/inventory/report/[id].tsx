@@ -35,6 +35,7 @@ const InventoryReports = () => {
   const { Title } = Typography;
   const [ memo, onChangeMemo, setMemo ] = useInput('');
   const [ isEmpty, setIsEmpty ] = useState(false);
+  const [ extendedRow, setExtendedRow ] = useState(null);
   const isMobile = useMediaQuery({
     query: "(min-width:0px) and (max-width:740px)",
   });
@@ -73,6 +74,7 @@ const InventoryReports = () => {
         location: v?.location, 
         status: v?.status, 
         memo: v.memo,
+        desc: v.Stock.desc,
       }
       return stock;
     })
@@ -248,53 +250,75 @@ const InventoryReports = () => {
                     {stockInputs?.map((v, j)=>{
                       if (v.stockType === type) {
                         return (
-                          <tr key={j}>
-                            <td>
-                              <Popover content={
-                                v?.memo } title="메모" trigger="hover" placement="bottomLeft">
-                                <span className='name'>{v.stockName}</span>
-                              </Popover>
-                            </td>
-                            {isMobile? null
-                            :<td>{v?.location}</td>
-                            }
-                            {isMobile? null
-                            :<td>{v?.unit}</td>
-                            }
-                            {isMobile? null
-                            :<td className='qty'>{v?.reqQty.toFixed(1)}</td>}
-                            {isMobile? <td className='qty'>
-                              <Space wrap>
-                                <span>{v?.qty.toFixed(1)}</span>
-                                <span>{v?.unit}</span>
-                              </Space>
-                            </td>
-                            :<td className='qty'>{v?.qty.toFixed(1)}</td>}
-                            <td className='status'>
-                              {statusArray.indexOf(v.status) === -1?
-                                <div className='selectWrap'>
-                                  <input 
-                                    name="status"
-                                    value={v.status}
-                                    onChange={(e) => (handleInputChange(e, j))}
-                                    maxLength={10}
-                                    autoComplete="off"
-                                    required
-                                  />
-                                  <button onClick={(e) => (onModifyInput('status', j, 'OK'))}><MoreOutlined /></button>
-                                </div>
-                                :
-                                <div className='selectWrap'>
-                                  <select name='status' value={v.status} onChange={(e) => (handleInputChange(e, j))}>
-                                    {statusArray.map((value) => {
-                                      return <option value={value}>{value}</option>
-                                    })}
-                                  </select>
-                                  <button onClick={(e) => (onModifyInput('status', j, ''))}><MoreOutlined /></button>
-                                </div>
+                          <>
+                            <tr key={j}>
+                              <td
+                                onClick={()=>{
+                                  if (extendedRow === j){
+                                    return setExtendedRow(null);
+                                  }
+                                  setExtendedRow(j);
+                                }}
+                              >
+                                <span  className='name'>{v.stockName}</span>
+                              </td>
+                              {isMobile? null
+                              :<td>{v?.location}</td>
                               }
-                            </td>
-                          </tr>
+                              {isMobile? null
+                              :<td>{v?.unit}</td>
+                              }
+                              {isMobile? null
+                              :<td className='qty'>{v?.reqQty.toFixed(1)}</td>}
+                              {isMobile? <td className='qty'>
+                                <div>
+                                  <span>{v?.qty.toFixed(1)}</span>
+                                  <span className='unitTag'>{v?.unit}</span>
+                                </div>
+                              </td>
+                              :<td className='qty'>{v?.qty.toFixed(1)}</td>}
+                              <td className='status'>
+                                {statusArray.indexOf(v.status) === -1?
+                                  <div className='selectWrap'>
+                                    <input 
+                                      name="status"
+                                      value={v.status}
+                                      onChange={(e) => (handleInputChange(e, j))}
+                                      maxLength={10}
+                                      autoComplete="off"
+                                      required
+                                    />
+                                    <button onClick={(e) => (onModifyInput('status', j, 'OK'))}><MoreOutlined /></button>
+                                  </div>
+                                  :
+                                  <div className='selectWrap'>
+                                    <select name='status' value={v.status} onChange={(e) => (handleInputChange(e, j))}>
+                                      {statusArray.map((value) => {
+                                        return <option value={value}>{value}</option>
+                                      })}
+                                    </select>
+                                    <button onClick={(e) => (onModifyInput('status', j, ''))}><MoreOutlined /></button>
+                                  </div>
+                                }
+                              </td>
+                            </tr>
+                            {extendedRow === j?
+                              <tr className='extended'>
+                                <td colSpan={isMobile?3:6}>
+                                  <div className='container'>
+                                    <div>
+                                      <span className='tag'>설명</span>
+                                      <span>{v?.desc}</span>
+                                    </div>
+                                    <div>
+                                      <span className='tag'>메모</span>
+                                      <span>{v?.memo}</span>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            :null}
+                          </>
                         )
                       }
                     })}

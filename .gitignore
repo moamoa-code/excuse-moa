@@ -1,4 +1,5 @@
 excuse-moa.pem
+*.pem
 node_modules
 .env
 *.tmp

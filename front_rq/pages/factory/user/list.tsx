@@ -10,7 +10,7 @@ import styled from 'styled-components';
 import dayjs from 'dayjs';
 
 import { loadMyInfoAPI, loadUserAPI, loadAllUserListAPI, 
-  updateUserRoleAPI, updateUserAPI, changePasswordAPI, terminateUserAPI, loadAddrsAPI, addNewAddrAPI, removeAddrAPI, searchUsersByCompanyAPI } from '../../../apis/user';
+  updateUserRoleAPI, updateUserAPI, changePasswordAPI, terminateUserAPI, loadAddrsAPI, addNewAddrAPI, removeAddrAPI, searchUsersByCompanyAPI, updateMemoAPI } from '../../../apis/user';
 import AppLayout from '../../../components/AppLayout';
 import User from '../../../interfaces/user';
 import useInput from '../../../hooks/useInput';
@@ -37,8 +37,9 @@ const UserList = () => {
   const [ keyValidError, setKeyValidError ] = useState(false);
   const [ uCompany, onChangeUcompany, setUcompany ] = useInput('');
   const [ uName, onChangeUname, setUname ] = useInput('');
-  const [ uPhone, onChangeUphone, setUphone ] = useInput('');
+  const [ uPhone, setUphone ] = useState('');
   const [ uEmail, onChangeUemail, setUemail ] = useInput('');
+  const [ uMemo, onChangeUMemo, setMemo ] = useInput('');
   const [ myProvider, setMyProvider ] = useState<any>({});
   const [ password, onChangePassword, setPassword ] = useInput('');
   const [ uRole, setUrole ] = useState('');
@@ -70,6 +71,11 @@ const UserList = () => {
   // 주문목록
   const [ isCustomerOrdersModal, setIsCustomerOrdersModal ] = useState(false);
   const [ isProviderOrdersModal, setIsProviderOrdersModal ] = useState(false);
+  // 회원목록 페이징 관련
+  const [ isPagination, setIsPagenation ] = useState(false);
+  const [ page, setPage ] = useState(1);
+  const [ count, setCount ] = useState(0); // inventories.count
+
 
   const divRef = useRef<HTMLDivElement>(null);
   const modalOutside = useRef(); // 모달 바깥부분 클릭시 닫기 위한 ref
@@ -86,6 +92,13 @@ const UserList = () => {
   },
   [uKey],
 );
+
+const onChangeUphone = (e) => {
+  const { value } = e.target;
+  const onlyNumber = value.replace(/[^0-9]/g, '');
+  // const regExpPhone = /[^0-9]/;
+  setUphone(onlyNumber);
+}
 
   // 주소관련 상태 초기화
   const initAddrStates = () => {
@@ -121,6 +134,7 @@ const UserList = () => {
         setUname(response.name);
         setUphone(response.phone);
         setUemail(response.email);
+        setMemo(response?.memo);
         setUrole(response.role);
         setUdate(response.createdAt);
         setUroleToChange(response.role);
@@ -220,6 +234,19 @@ const UserList = () => {
     });
   }
 
+  const onReqUpdateMemo = (id) => {
+    updateMemoAPI({userId: id, memo: uMemo})
+    .then((response) => {
+      message.success('회원 메모를 추가했습니다.');
+    })
+    .catch((error) => {
+      message.error(error.response.data);
+    })
+    .finally(() => {
+      setLoading(false);
+    });
+  }
+
   const onTerminateUser = () => {
     setLoading(true);
     terminateUserAPI({userKey: uKey})
@@ -233,6 +260,7 @@ const UserList = () => {
       setUname('');
       setUphone('');
       setUemail('');
+      setMemo('');
       setUrole('');
       setUroleToChange('');
       setUdate('');
@@ -302,12 +330,14 @@ const UserList = () => {
     setIsDaumZipVisible(false);
   };
 
-  // 모든 회원 목록 불러오기
-  const onLoadAllUsers = () => {
+  // 모든 회원 목록 불러오기 // 페이징
+  const onLoadAllUsers = (page) => {
     setLoading(true);
-    loadAllUserListAPI()
+    loadAllUserListAPI(page)
     .then((response) => {
-      setUserList(response);
+      setIsPagenation(true);
+      setUserList(response?.rows);
+      setCount(response?.count);
     })
     .catch((error) => {
       message.error(error.response.data);
@@ -336,6 +366,7 @@ const UserList = () => {
           setUname(response.name);
           setUphone(response.phone);
           setUemail(response.email);
+          setMemo(response?.memo);
           setUrole(response.role);
           setUroleToChange(response.role);
           setUdate(response.createdAt);
@@ -363,6 +394,7 @@ const UserList = () => {
     if (searchType === 'COMPANY') {
       searchUsersByCompanyAPI(searchTxt)
       .then((response) => {
+        setIsPagenation(false);
         setUserList(response);
       })
       .catch((error) => {
@@ -434,7 +466,17 @@ const UserList = () => {
     .finally(() => {
       setLoading(false);
     })
-    
+  }
+
+  const changePage = (page, pageSize) => (clickedPage) => {
+    // message.success(clickedPage)
+    onLoadAllUsers(clickedPage);
+    setPage(clickedPage);
+  }
+
+  const pagination = {
+    total: count,
+    onChange: changePage(page, 10),
   }
 
   const userTableColumns = [
@@ -512,7 +554,7 @@ const UserList = () => {
         </div>
         <button 
           type='button' 
-          onClick={onLoadAllUsers}>
+          onClick={()=>onLoadAllUsers(page)}>
             전체목록
         </button>
       </SearchBlock>
@@ -523,6 +565,7 @@ const UserList = () => {
           loading={loading}
           columns={userTableColumns}
           dataSource={userList}
+          pagination={isPagination?pagination:null}
         />
       :
         <Table 
@@ -531,6 +574,7 @@ const UserList = () => {
           rowKey="id"
           columns={userTableColumns}
           dataSource={userList}
+          pagination={isPagination?pagination:null}
         />
       }
       <HGap /><HGap />
@@ -655,6 +699,12 @@ const UserList = () => {
               <Space>
                 <Button onClick={()=>setIsCustomerOrdersModal(true)}>구매주문</Button>
                 <Button onClick={()=>setIsProviderOrdersModal(true)}>판매주문</Button>
+              </Space>
+            </Descriptions.Item>
+            <Descriptions.Item label="메모" span={2}>
+              <Space>
+                <input value={uMemo} onChange={onChangeUMemo} maxLength={29}></input>
+                <Button onClick={()=>onReqUpdateMemo(uId)}>메모수정</Button>
               </Space>
             </Descriptions.Item>
           </Descriptions><br />
@@ -857,7 +907,7 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
       },
     };
   }
-  if (response.role !== 'PROVIDER' && response.role !== 'ADMINISTRATOR') { // 로그인 안했으면 홈으로
+  if (response.role !== 'ADMINISTRATOR') { // 관리자 권한
     return {
       redirect: {
         destination: '/unauth',

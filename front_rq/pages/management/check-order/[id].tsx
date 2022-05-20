@@ -1,7 +1,7 @@
 // 주문확인서 보기
 import axios from 'axios';
 import { GetServerSidePropsContext } from 'next';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { dehydrate, QueryClient, useQuery, useQueryClient } from 'react-query';
 import { loadMyInfoAPI } from '../../../apis/user';
@@ -9,12 +9,13 @@ import { loadOrderAPI } from '../../../apis/order';
 import AppLayout from '../../../components/AppLayout';
 import OrderView from '../../../components/OrderView';
 import User from '../../../interfaces/user';
-import { Button, Input, notification, Popconfirm, Space } from 'antd';
+import { Button, Input, notification, Popconfirm, Space, message as meSsage } from 'antd';
 import Form from 'antd/lib/form/Form';
 import useInput from '../../../hooks/useInput';
 import { cancelOrderAPI, confirmOrderAPI } from '../../../apis/order';
 import { CheckCircleOutlined, PrinterTwoTone } from '@ant-design/icons';
 import Link from 'next/link';
+import { Container800 } from '../../../components/Styled';
 
 const OrderCheck = () => {
   const router = useRouter();
@@ -25,6 +26,17 @@ const OrderCheck = () => {
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
   const { data: orderData } = useQuery(['orderData', orderId], () => loadOrderAPI(Number(orderId)));
   const [ mode, setMode ] = useState({ ship: true, price: true}); // 주문서보기 옵션
+
+
+  useEffect(
+    () => { 
+      if (orderData.order?.ProviderId !== myUserInfo.id 
+        && orderData.order?.CustomerId !== myUserInfo.id
+        && myUserInfo.role !== 'ADMINISTRATOR'
+        ){
+        router.replace(`/unauth`);
+      }
+  }, [myUserInfo, orderData])
 
   const openNotification = (text) => {
     notification.open({
@@ -66,7 +78,7 @@ const OrderCheck = () => {
 
   return (
     <AppLayout>
-      <div style={{maxWidth: '800px', padding: '10px', margin: '0 auto', position: 'relative' }}>
+      <Container800>
         {orderData.order.isCanceled? 
           <div style={{ width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.2)', position: 'absolute', borderRadius: '10px', zIndex: 2 }}>
             <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', backgroundColor: 'white', padding: '20px', borderRadius: '10px' }}>
@@ -76,8 +88,8 @@ const OrderCheck = () => {
           </div>
         : null}
         <OrderView orderData={orderData} mode={mode}/>
-      </div>
-      <div style={{maxWidth: '800px', padding: '10px', margin: '0 auto', marginTop: '15px' }}>
+      </Container800>
+      <Container800>
         <Form>
           <Space size={8} wrap>
             <Input value={message} onChange={onChangeMessage} placeholder='배송사항/취소사유 등'></Input>
@@ -101,7 +113,7 @@ const OrderCheck = () => {
             </Link>
           </Space>
         </Form>
-      </div>
+      </Container800>
     </AppLayout>
   );
 };
@@ -115,6 +127,15 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
   }
   const queryClient = new QueryClient();
   const response = await loadMyInfoAPI();
+  const orderData = await loadOrderAPI(Number(orderId))
+  .catch((error) => {
+    return {
+      redirect: {
+        destination: '/unauth',
+        permanent: false,
+      },
+    };
+  })
   if (!response) { // 로그인 안했으면 홈으로
     return {
       redirect: {
@@ -123,7 +144,7 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
       },
     };
   }
-  if (response.role !== 'PROVIDER' && response.role !== 'ADMINISTRATOR') { // 로그인 안했으면 홈으로
+  if (!orderData) {
     return {
       redirect: {
         destination: '/unauth',
@@ -131,6 +152,18 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
       },
     };
   }
+  if (orderData.order?.ProviderId !== response.id 
+    && orderData.order?.CustomerId !== response.id
+    && response.role !== 'ADMINISTRATOR'
+    ){
+    return {
+      redirect: {
+        destination: '/unauth',
+        permanent: false,
+      },
+    };
+  }
+
   await queryClient.prefetchQuery(['user'], () => loadMyInfoAPI());
   await queryClient.prefetchQuery(['orderData', orderId], () => loadOrderAPI(Number(orderId)));
   return {

@@ -13,8 +13,7 @@ import ItemView from '../../components/ItemView'; // 제품 상세정보 보기 
 import User from '../../interfaces/user';
 import Item from '../../interfaces/item';
 
-import ItemAddCustomer from '../../components/ItemAddCustomer';
-import { CheckCircleOutlined } from '@ant-design/icons';
+import { Container800 } from '../../components/Styled';
 
 const ViewItem = () => {
   const router = useRouter();
@@ -22,52 +21,13 @@ const ViewItem = () => {
   const { id } = router.query; // 제품의 id
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
   const { data: item } = useQuery<Item>(['item', id], () => loadItemAPI(Number(id)));
-  const [showScope, setShowScope] = useState(item.scope);
-  const [loading, setLoading] = useState(false);
 
-  // const onSubmit = (values) => {
-  //   console.log(values);
-  //   const itemId = Number(id);
-  //   addCustomerToItemAPI({ itemId, values })
-  //   .then(() => {
-  //     message.success('제품을 열람가능한 고객 추가를 완료했습니다.')
-  //   })
-  //   .catch((error) => {
-  //     alert(error.response.data);
-  //   })
-  //   .finally(() => {
-  //     setLoading(false);
-  //   })
-  // }
   return (
     <AppLayout>
-      <div style={{maxWidth: '800px', padding: '10px', margin: '0 auto'}}>
+      <Container800>
+        {JSON.stringify(item)}
         <ItemView item={item} myUserInfo={myUserInfo} />
-        {/* <Form 
-          style={{ margin: '10px 0 20px' }}
-          encType="multipart/form-data"
-          onFinish={onSubmit}
-          initialValues={{ // 제품 볼 수 있는 유저 체크
-            'customerIds': item.ItemViewUsers.map((v) => (v.id)),
-          }}
-        >
-        <Divider orientation="left">열람가능한 고객 추가</Divider>
-          <Form.Item name="customerIds">
-            <Checkbox.Group>
-              <Space size={8} wrap>
-                {myUserInfo.Customers.map((v) => (
-                  <>
-                    <Tag color="blue"><Checkbox value={v.id} >{v.company} / {v.name}</Checkbox> </Tag>
-                  </>
-                ))}
-              </Space>
-            </Checkbox.Group>
-          </Form.Item>
-          <Button type="primary" htmlType="submit" loading={loading}>
-            적용 완료
-          </Button>
-        </Form> */}
-      </div>
+      </Container800>
     </AppLayout>
   );
 };

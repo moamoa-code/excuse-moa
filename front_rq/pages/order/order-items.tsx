@@ -69,7 +69,7 @@ const OrderItems = () => {
   const [ isNewCustomer, setIsNewCustomer ] = useState(false); // 구매자 새로입력
   const [ isNewProduct, setIsNewProduct ] = useState(false); // 제품 새로 입력
   // 새로운 제품 입력 값
-  const codeNames = ['싱글', 'ES', 'HOUSE', 'BKY', 'KM5', 'KM6', 'KM5 212', 'HYA', 'BR', 'C7', '506', 'A', 'B', 'P', 'HA', 'ST', 'HOUSE 212', 'DECAFFEIN'];
+  const codeNames = ['싱글', 'ES', 'HOUSE', 'BKY', 'KM5', 'KM6', 'KM5 212', 'HYA', 'BR', 'C7', '506', 'A', 'B', 'P', 'HA', 'ST', 'HOUSE 212', 'DECAFFEIN', '블랜드'];
   const units = ['200g', '500g', '1Kg', '400g', '100g'];
   const packages = ['M 무지', 'M 브랜드스티커', 'M 브랜드인쇄', '지퍼 무지', '지퍼 브랜드인쇄', '지퍼 브랜드스티커'];
   const productTags = ['BR', 'ST', 'C7', '디카페인', 'BKY', '아리차블랜드', '케냐블랜드', '케냐', '예가체프', '수프리모'];
@@ -438,7 +438,7 @@ const OrderItems = () => {
                   </span>
                   <div>
                     <span className='underline'>
-                      <span className='codeName'>{v.codeName}</span>
+                      {/* <span className='codeName'>{v.codeName}</span> */}
                       <div className='space' />
                       <span className='id'>({v.id}) </span>
                       <span className='name'>{v.name}</span>
@@ -582,7 +582,7 @@ const OrderItems = () => {
                 <div 
                   className='first'
                   >
-                  <span className='codeName'>{item.codeName}</span>
+                  {/* <span className='codeName'>{item.codeName}</span> */}
                   <div className='space' />
                   <span className='name'>
                     {item.name}

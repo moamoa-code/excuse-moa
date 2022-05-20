@@ -185,7 +185,7 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
       },
     };
   }
-  if (response.role !== 'PROVIDER' && response.role !== 'ADMINISTRATOR') { // 로그인 안했으면 홈으로
+  if (response.role !== 'ADMINISTRATOR') { // 관리자 권한
     return {
       redirect: {
         destination: '/unauth',

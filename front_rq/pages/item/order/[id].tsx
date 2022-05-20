@@ -107,10 +107,38 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
   }
   const queryClient = new QueryClient();
   const response = await loadMyInfoAPI();
+  const orderData = await loadOrderAPI(Number(orderId))
+  .catch((error) => {
+    return {
+      redirect: {
+        destination: '/unauth',
+        permanent: false,
+      },
+    };
+  })
   if (!response) { // 로그인 안했으면 홈으로
     return {
       redirect: {
-        destination: '/',
+        destination: '/unauth',
+        permanent: false,
+      },
+    };
+  }
+  if (!orderData) {
+    return {
+      redirect: {
+        destination: '/unauth',
+        permanent: false,
+      },
+    };
+  }
+  if (orderData.order?.ProviderId !== response.id 
+    && orderData.order?.CustomerId !== response.id
+    && response.role !== 'ADMINISTRATOR'
+    ){
+    return {
+      redirect: {
+        destination: '/unauth',
         permanent: false,
       },
     };

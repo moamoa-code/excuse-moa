@@ -9,7 +9,7 @@ const { isLoggedIn, isProvider, isNotLoggedIn, isAdmin } = require('./middlewear
 const e = require('express');
 
 // 판매자 목록 불러오기
-router.get('/show-provider', async (req, res, next) => { // 
+router.get('/show-provider', isProvider, async (req, res, next) => { // 
   try {
     const providers = await User.findAll({ 
       where: {
@@ -31,21 +31,28 @@ router.get('/show-provider', async (req, res, next) => { //
 
 
 // 모든 유저 목록 불러오기
-router.get('/list', async (req, res, next) => { // 
+router.get('/list/:page', isAdmin, async (req, res, next) => { // 
   try {
-    const userList = await User.findAll({
+
+    // 페이지네이션 (페이징 처리)
+    let limit = 10;
+    let offset = 0 + (req.params.page - 1) * limit;
+    const userList = await User.findAndCountAll({
       where: {
         role: {
           [Op.not]: 'ADMINISTRATOR'
         }
       },
+      distinct: true, // count 버그 해결
+      limit,
+      offset,
       order: [['createdAt', 'DESC']],
       attributes: {
         include: ["id", "company", "role", "name", "createdAt"],
         exclude: ["password", "phone", "email", "hqNumber"],
       },
     });
-    res.status(200).json(userList);
+    res.status(200).json(userList); // userList.count, userList.rows
   } catch (error) {
     console.error(error);
     next(error);
@@ -55,7 +62,6 @@ router.get('/list', async (req, res, next) => { //
 // 회원 등급 변경하기
 router.patch('/update-role', isProvider, async (req, res, next) => {
   try {
-    console.log(req.body);
     const user = await User.findOne({
       where: { id: req.body.userId }
     });
@@ -125,7 +131,7 @@ router.patch('/update', isLoggedIn, async (req, res, next) => { // post /user
 });
 
 // 비밀번호 변경
-router.patch('/update-password', async (req, res, next) => { // post /user
+router.patch('/update-password', isLoggedIn, async (req, res, next) => { // post /user
   try {
     const user = await User.findOne({ // 아이디 DB에서 중복체크
       where: {
@@ -269,14 +275,6 @@ router.patch('/addr/remove', isLoggedIn, async (req, res, next) => { //
   // front의 data: { providerId:string, customerId:string }
   console.log('주소삭제',req.body);
   try {
-    // const user = await User.findOne({ // 아이디 찾기
-    //   where: {
-    //     id: req.user.id,
-    //   }
-    // });
-    // if (!user) {
-    //   return res.status(403).send('아이디가 존재하지 않습니다.');
-    // }
     const addr = await Address.findOne({
       where: {
         id: req.body.id,
@@ -299,8 +297,6 @@ router.patch('/addr/remove', isLoggedIn, async (req, res, next) => { //
 // 회사명으로 유저목록 검색
 router.get("/search-company/:companyName", isProvider, async (req, res, next) => {
   try {
-    console.log('req.params~~',req.params);
-
       const users = await User.findAll({
         where: {
           company: {
@@ -847,7 +843,7 @@ router.patch('/resign', isLoggedIn, async (req, res, next) => { // post /user
   try {
     const user = await User.findOne({
       where: {
-          id: req.user.id,
+        id: req.user.id,
       }
     });
     if (!user) {
@@ -894,6 +890,28 @@ router.patch('/terminate', isAdmin, async (req, res, next) => { // post /user
       role: 'TERMINATED',
       key: newKey
     });
+    res.status(201).send('ok');
+  } catch (error) {
+    console.error(error);
+    next(error); // status 500
+  }
+});
+
+// 메모 추가
+router.patch('/memo', isProvider, async (req, res, next) => { // post /user
+  try {
+    const user = await User.findOne({ 
+      where: {
+        id: req.body.userId
+      }
+    });
+    if (!user) {
+      return res.status(403).send('회원이 존재하지 않습니다.');
+    }
+    if (!req.body.memo) {
+      return res.status(403).send('메모를 입력해주세요.');
+    }
+    await user.update({memo: req.body.memo});
     res.status(201).send('ok');
   } catch (error) {
     console.error(error);

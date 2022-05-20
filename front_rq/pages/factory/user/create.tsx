@@ -443,7 +443,7 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
       },
     };
   }
-  if (response.role !== 'PROVIDER' && response.role !== 'ADMINISTRATOR') { // 판매자권한
+  if (response.role !== 'ADMINISTRATOR') { // 관리자 권한
     return {
       redirect: {
         destination: '/unauth',

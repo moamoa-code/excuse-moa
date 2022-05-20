@@ -37,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
     },
     email: { // 담당자 이메일
-      type: DataTypes.STRING(20),
+      type: DataTypes.STRING(30),
       allowNull: true,
     },
     memo: { // 관리자 전용 회원 메모

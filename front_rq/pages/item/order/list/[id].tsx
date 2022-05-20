@@ -274,18 +274,20 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
   if (context.req && cookie) {
     axios.defaults.headers.Cookie = cookie;
   }
+  
   const datesVal = [moment().subtract(2, 'months').format('YYYY-MM-DD'), moment().format('YYYY-MM-DD')];
   const queryClient = new QueryClient();
   const response = await loadMyInfoAPI();
-  if (!response) { // 로그인 안했으면 홈으로
+  const orderDatas = await loadMyOrdersAPI(id, datesVal)
+  .catch((error) => {
     return {
       redirect: {
-        destination: '/',
+        destination: '/unauth',
         permanent: false,
       },
     };
-  }
-  else if ( String(response.id) !== id ) { // 본인만 접근가능
+  })
+  if (!response) { // 로그인 안했으면 홈으로
     return {
       redirect: {
         destination: '/unauth',
@@ -293,6 +295,24 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
       },
     };
   }
+  let error = false;
+  if (orderDatas?.length >= 1) {
+    if (orderDatas[0].ProviderId !== response.id
+      && orderDatas[0].CustomerId !== response.id
+      && response.role !== 'ADMINISTRATOR'
+      ){
+      error = true
+    }
+  }
+  if (error) {
+    return {
+      redirect: {
+        destination: '/unauth',
+        permanent: false,
+      },
+    };
+  }
+
   await queryClient.prefetchQuery(['user'], () => loadMyInfoAPI());
   await queryClient.prefetchQuery(['orders', datesVal], () => loadMyOrdersAPI(id, datesVal));
   return {

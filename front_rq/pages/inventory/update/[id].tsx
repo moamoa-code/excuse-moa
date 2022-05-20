@@ -47,6 +47,7 @@ const UpdateInventory = () => {
     border-bottom: 1px solid #e4e4e4;
     .title {
       font-size: 12pt;
+      color:#1890ff;
     }
     .action {
       margin-left:auto;
@@ -225,6 +226,7 @@ const UpdateInventory = () => {
     list.splice(index, 1);
     setStockInputs(list);
     refreshTypes(list);
+    setIsViewModalVisible(false);
   }
 
   const onModifyInput = (name, index, value) => {
@@ -785,6 +787,7 @@ const UpdateInventory = () => {
                         >
                           <input
                             name="stockName"
+                            className='name'
                             value={v.stockName}
                             disabled
                           />

@@ -227,15 +227,23 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
     axios.defaults.headers.Cookie = cookie;
   }
   const queryClient = new QueryClient();
-  // const response = await loadMyInfoAPI();
-  // if (!response) { // 로그인 안했으면 홈으로
-  //   return {
-  //     redirect: {
-  //       destination: '/',
-  //       permanent: false,
-  //     },
-  //   };
-  // }
+  const response = await loadMyInfoAPI();
+  if (!response) { // 로그인 안했으면 홈으로
+    return {
+      redirect: {
+        destination: '/unauth',
+        permanent: false,
+      },
+    };
+  }
+  if (response.role !== 'ADMINISTRATOR') { // 관리자 권한
+    return {
+      redirect: {
+        destination: '/unauth',
+        permanent: false,
+      },
+    };
+  }
   await queryClient.prefetchQuery(['user'], () => loadMyInfoAPI());
   return {
     props: {

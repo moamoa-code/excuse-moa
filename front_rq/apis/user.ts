@@ -76,6 +76,11 @@ export function terminateUserAPI(data: { userKey }) {
   return axios.patch('/user/terminate', data).then((response) => response.data);
 }
 
+// 회원 메모 수정
+export function updateMemoAPI(data: { userId, memo }) {
+  return axios.patch('/user/memo', data).then((response) => response.data);
+}
+
 // 주소 등록
 export function registAddrAPI(data: {addrName:String, zipCode:String, addressDetail:String, phone:Number}) {
   console.log('registAddrAPI', data);
@@ -122,8 +127,8 @@ export function removeItemToCustomerAPI(data: {itemId: number, customerKey: stri
   }
 
 // 모든 회원 목록 가져오기
-export function loadAllUserListAPI() {
-  return axios.get(`/user/list`).then((response) => response.data);
+export function loadAllUserListAPI(page: Number) {
+  return axios.get(`/user/list/${page}`).then((response) => response.data);
 }
 
 // 회원 등급 변경하기

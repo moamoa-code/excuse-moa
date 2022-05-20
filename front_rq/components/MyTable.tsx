@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { HGap } from './Styled';
 
 const MyTable = (props) => {
-  const {dataSource, columns, expandable, rowKey, selectKey, selectedId} = props;
+  const {dataSource, columns, expandable, rowKey, selectKey, selectedId, pagination} = props;
   const [showKey, setShowKey] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [postsPerPage, setPostsPerPage] = useState(10);
@@ -332,6 +332,9 @@ const MyTable = (props) => {
         </>
       :
       <HGap />}
+      {pagination?
+        <Pagination total={pagination?.total} onChange={pagination?.onChange}></Pagination>
+      :<HGap />}
 
     </div>
   )

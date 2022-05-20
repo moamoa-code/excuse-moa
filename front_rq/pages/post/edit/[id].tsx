@@ -61,7 +61,7 @@ const EditPost = () => {
       if (!isLoading){
         if(myUserInfo.role!== 'ADMINISTRATOR'){
           if(post.UserId !== myUserInfo.id){
-            message.success('권한이 없습니다.');
+            message.error('권한이 없습니다.');
             Router.replace(`/unauth`);
           }
         }
