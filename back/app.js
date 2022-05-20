@@ -61,6 +61,7 @@ app.use(session({
     httpOnly: true,
     secure: false,
     domain: process.env.NODE_ENV === 'production' && '.excusemoa.com', 
+    // domain: process.env.NODE_ENV === 'production' && '.moaorder.com', 
     // 백, 프론트 서버 IP 다르다면 쿠키공유 위해 도메인설정 필수
   },
 }));
