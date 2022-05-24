@@ -35,7 +35,6 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
     axios.defaults.headers.Cookie = cookie;
   }
   const response = await loadMyInfoAPI();
-  console.log('쿠키 여부 response', response);
   // if (response) {
   //   return {
   //     redirect: {

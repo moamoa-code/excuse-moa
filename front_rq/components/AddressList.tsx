@@ -14,7 +14,6 @@ const AddressList = forwardRef((props, ref) => {
   const [ phone, setPhone ] = useState('');
   const [ address, setAddress ] = useState('');
   const onChangeAddr = (value) => {
-    console.log(value, value === 'nope!')
     if (value === 'nope!'){
       props.setId();
       props.setName('');

@@ -2,14 +2,12 @@
 // 유저를 생성하고 판매자의 고객으로 등록한다.
 import axios from 'axios';
 import { GetServerSidePropsContext } from 'next';
-import Link from 'next/link';
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { dehydrate, QueryClient, useQuery, useQueryClient } from 'react-query';
 import Head from 'next/head';
 import { Form, Input, Checkbox, Button, notification, Space, Tag, Select, message, Radio, Modal } from 'antd';
 import { SearchOutlined, SmileOutlined } from '@ant-design/icons';
 import { Typography } from 'antd';
-import styled from 'styled-components';
 import DaumPostcode from 'react-daum-postcode';
 
 import { loadMyInfoAPI, createUserAPI, loadUserAPI, loadProvidersAPI } from '../../../apis/user';
@@ -160,7 +158,6 @@ const CreateUser = () => {
       fullAddress = address + ' ' + address2;
       addrData = { zip, address : fullAddress }
     }    
-    // console.log(email, nickname, password);
     createUserAPI({ providerKey: selectedProviderKey, role, key, password, company, name, phone, email, hqNumber, addrData })
       .then((response) => {
         openNotification(response);
@@ -429,7 +426,6 @@ const CreateUser = () => {
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
   const cookie = context.req ? context.req.headers.cookie : ''; // 쿠키 넣어주기
   axios.defaults.headers.Cookie = '';
-  const key = context.params?.key as string;
   if (context.req && cookie) {
     axios.defaults.headers.Cookie = cookie;
   }

@@ -39,8 +39,8 @@ const OrderView = ({ orderData, mode }) => {
       key: 'itemSupplyPrice',
       dataIndex: 'itemSupplyPrice',
       render: (text,record) => (
-        <>{text?.toString()
-          .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")}
+        <>{text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''
+          }
         </>
       )
     }, 
@@ -165,10 +165,11 @@ const OrderView = ({ orderData, mode }) => {
         dataSource={orderData.orderDetails}
         pagination={false}
     />}
+    {/* .replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? '' */}
+      
     {mode.price?
       <Divider orientation="right">총 {orderData.order?.totalWeight}, {
-        String(orderData.order.totalPrice).toString()
-      .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ?? ''
+        orderData.order.totalPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''
       } 원</Divider>
     :
       <Divider orientation="right">총 {orderData.order?.totalWeight}</Divider>

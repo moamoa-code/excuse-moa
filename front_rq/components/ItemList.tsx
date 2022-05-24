@@ -35,7 +35,6 @@ const ItemList = ({ items, myUserInfo }) => {
       e.stopPropagation();
       const itemId = id;
       const userId = myUserInfo.id;
-      console.log(itemId, userId);
       mutation.mutate({ itemId,  userId });
   };
 
@@ -80,7 +79,7 @@ const ItemList = ({ items, myUserInfo }) => {
       dataIndex: 'supplyPrice',
       render: (text, record) => (
         <>{text.toString()
-          .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")}</>
+          .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</>
       ),
     }, {
       title: '',

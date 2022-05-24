@@ -3,65 +3,52 @@ import axios from 'axios';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import React, { useState } from 'react';
-import { Button, message, Table, Typography } from 'antd';
-import { useRouter } from 'next/router';
+import { Button, Table, Typography } from 'antd';
 import { dehydrate, QueryClient, useQuery } from 'react-query';
 import { loadMyInfoAPI, loadProvidersAPI } from '../../../apis/user';
-import { loadItemListAPI, loadItemsAPI, loadMyItemsAPI } from '../../../apis/item';
+import { loadItemListAPI } from '../../../apis/item';
 import AppLayout from '../../../components/AppLayout';
-import ItemList from '../../../components/ItemList'; // 제품 상세정보 보기 컴포넌트
 import User from '../../../interfaces/user';
-import Item from '../../../interfaces/item';
-import styled from 'styled-components';
 import ItemView from '../../../components/ItemView';
 import { DownOutlined, RightOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import UserInfoBox from '../../../components/UserInfoBox';
 import { useMediaQuery } from 'react-responsive';
 import MyTable from '../../../components/MyTable';
-import { ContainerWide, HGap } from '../../../components/Styled';
+import { ContainerWide, OptionContainer } from '../../../components/Styled';
 
-const Container800 = styled.div`
-max-width: 800px;
-padding: 20px;
-margin: 0 auto;
-@media screen and (max-width: 600px) {
-  padding: 10px;
-}
-`
-
-const OptionContainer = styled.div`
-  padding: 10px 0px 10px 0px;
-  display: block;
-  overflow:auto;
-  max-height:300px;
-  p {
-    display: inline-block;
-    box-sizing: border-box;
-    border-radius: 4px;
-    padding: 5px 8px 5px 8px;
-    margin: 6px;
-    font-size: 10pt;
-  }
-  p:active {
-    position: relative; 
-    top:2px;
-  }
-  .codeName{
-    background-color:#00B4D8;
-    color: white;
-  }
-  .unit{
-    background-color:#FF5C8D;
-    color: white;
-  }
-  .package{
-    background-color:#ec7728;
-    color: white;
-  }
-  .provider{
-    border: 1px solid #999999;
-  }
-`
+// const OptionContainer = styled.div`
+//   padding: 10px 0px 10px 0px;
+//   display: block;
+//   overflow:auto;
+//   max-height:300px;
+//   p {
+//     display: inline-block;
+//     box-sizing: border-box;
+//     border-radius: 4px;
+//     padding: 5px 8px 5px 8px;
+//     margin: 6px;
+//     font-size: 10pt;
+//   }
+//   p:active {
+//     position: relative; 
+//     top:2px;
+//   }
+//   .codeName{
+//     background-color:#00B4D8;
+//     color: white;
+//   }
+//   .unit{
+//     background-color:#FF5C8D;
+//     color: white;
+//   }
+//   .package{
+//     background-color:#ec7728;
+//     color: white;
+//   }
+//   .provider{
+//     border: 1px solid #999999;
+//   }
+// `
 
 const FactoryItemList = () => {
   const isMobile = useMediaQuery({
@@ -69,7 +56,7 @@ const FactoryItemList = () => {
   });
   // const queryClient = useQueryClient();
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
-  const { data: items } = useQuery(['items'], loadItemsAPI);
+  // const { data: items } = useQuery(['items'], loadItemsAPI);
   const [ loading, setLoading ] = useState(false);
   const { data: providerList } = useQuery('userList', loadProvidersAPI);
   const [ itemList, setItemList ] = useState<any>([]);
@@ -142,7 +129,7 @@ const FactoryItemList = () => {
               <p className='provider' onClick={onLoadItems(v)}>{v.company}</p>
               ) 
           })}
-        </OptionContainer>
+        </OptionContainer><br />
         {selectedProvider? 
           <UserInfoBox userInfo={selectedProvider}/>
         :null}
@@ -169,6 +156,7 @@ const FactoryItemList = () => {
   );
 };
 
+
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
   const cookie = context.req ? context.req.headers.cookie : ''; // 쿠키 넣어주기
   axios.defaults.headers.Cookie = '';
@@ -194,7 +182,6 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
     };
   }
   await queryClient.prefetchQuery(['user'], () => loadMyInfoAPI());
-  await queryClient.prefetchQuery(['items'], () => loadMyItemsAPI());
   return {
     props: {
       dehydratedState: JSON.parse(JSON.stringify(dehydrate(queryClient))),

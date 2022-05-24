@@ -102,7 +102,6 @@ const RegistItem = () => {
     setPackage(e.target.value);
   }
   const handleScopeChange = (value) => {
-    console.log(value);
     setScope(value);
   }
   const onChangeMsrp = useCallback( // 가격 유효성검사
@@ -132,7 +131,6 @@ const RegistItem = () => {
     imageInput.current?.click();
   }, []);
   const onChangeImage = useCallback((e) => {
-    console.log('files[0]', e.target.files[0]);
     const fileName = e.target.files[0]?.name.split('.');
     const fileExt = fileName[fileName.length-1].toLowerCase();
     if (fileExt !== 'jpg' && fileExt !== 'png' && fileExt !== 'gif'){
@@ -141,9 +139,7 @@ const RegistItem = () => {
     const imageFormData = new FormData();
     imageFormData.append('image', e.target.files[0])
     uploadImageAPI<string>(imageFormData).then((result) => {
-      console.log('result', result);
       setImagePath(result);
-      console.log('onChange imagePath', imagePath);
     });
   }, []);
   // 업로드한 사진 제거 (패스만 제거)

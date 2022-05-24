@@ -89,7 +89,6 @@ const OrderList = () => {
   const [ endDate, setEndDate ] = useState(moment());
   const { data: providerList } = useQuery('userList', loadProvidersAPI);
   const getTotalPrice = (orders) => { // 총 금액 계산
-    console.log('getTotalPrice')
     let total = 0
     if(orders) {
       orders.map((v) => {
@@ -110,7 +109,6 @@ const OrderList = () => {
       return loadAllOrdersWithDatesAPI(data)
     }, {
       onSuccess: (data) => {
-        console.log('onSuccess');
         getTotalPrice(data);
       }
     }
@@ -126,7 +124,6 @@ const OrderList = () => {
     //   return;
     // }
     const newDates = [moment(startDate).format('YYYY-MM-DD'), moment(endDate).format('YYYY-MM-DD')];
-    console.log(newDates);
     setDatesVal(newDates);
     // queryClient.fetchQuery(['orders', datesVal], () => loadMyOrdersAPI(orderId, datesVal));
     queryClient.invalidateQueries('orders');
@@ -166,11 +163,9 @@ const OrderList = () => {
 
   const onChangeStartDate = (date, dateString) => {
     setStartDate(date)
-    console.log(startDate)
   };
   const onChangeEndtDate = (date, dateString) => {
     setEndDate(date)
-    console.log(endDate)
   };
 
   return (

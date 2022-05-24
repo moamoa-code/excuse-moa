@@ -141,7 +141,6 @@ const UserMultiCreate = () => {
       isAddrMode,
       userDatas: userInputs
     }
-    console.log(datas);
     createUsersAPI(datas)
     .then((result) => {
       message.success('회원생성이 완료됐습니다.')

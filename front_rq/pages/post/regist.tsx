@@ -45,7 +45,6 @@ const RegistPost = () => {
     imageInput.current?.click();
   }, []);
   const onChangeImage = useCallback((e) => {
-    console.log('files[0]', e.target.files[0]);
     const fileName = e.target.files[0]?.name.split('.');
     const fileExt = fileName[fileName.length-1].toLowerCase();
     if (fileExt !== 'jpg' && fileExt !== 'png' && fileExt !== 'gif'){
@@ -54,26 +53,21 @@ const RegistPost = () => {
     const imageFormData = new FormData();
     imageFormData.append('image', e.target.files[0])
     uploadImageAPI<string>(imageFormData).then((result) => {
-      console.log('result', result);
       setImagePath(result);
-      console.log('onChange imagePath', imagePath);
     });
   }, []);
   // 업로드한 사진 제거 (패스만 제거)
   const onRemoveImage = useCallback(() => {
-      console.log('사진제거')
       setImagePath(null);
     },
     [],
   );
 
   const handleScopeChange = (value) => {
-    console.log(value);
     setScope(value);
   }
 
   const onSubmit = useCallback(() => {
-    console.log('imagePath',imagePath)
     setLoading(true);
     const formData = new FormData();
     // data: { codeName: string, package: string, imgSrc: string|null, name: string, unit: string, msrp: string|null, supplyPrice: string|null }
@@ -83,7 +77,6 @@ const RegistPost = () => {
     if (imagePath){
       formData.append('imgSrc', imagePath);
     }
-    console.log('omSubmit imagePath', imagePath)
     registerPostAPI(formData)
     .then((data) => {
       openNotification();

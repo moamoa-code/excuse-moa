@@ -30,7 +30,6 @@ const ViewCartItems = () => {
   // const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
   const { data: myUserInfo } = useQuery<User>('me', loadMyInfoAPI, {
     onSuccess: (data) => {
-      console.log(data.id);
       loadAddrsAPI(data.id)
       .then((response) => {
         setAddrs(response);
@@ -56,7 +55,6 @@ const ViewCartItems = () => {
   });
 
   const onChangeQty = (target) => (value) => { // 수량 변경
-    console.log(value, target);
     let tag = '';
     if (theMap.has(target)) {
       tag = theMap.get(target).tag;
@@ -68,10 +66,8 @@ const ViewCartItems = () => {
     let qty = 1;
     if (theMap.has(target)) {
       qty = theMap.get(target).qty;
-      console.log('theMap.get(target).qty',theMap.get(target).qty);
     }
     const tag = value.target.value;
-    console.log('value.target.value',value.target.value);
     setTheMap((prev) => new Map(prev).set(target, { qty: qty, tag: tag }));
   }
 
@@ -83,12 +79,10 @@ const ViewCartItems = () => {
         newMap.set(item.id,{qty:1, tag:''});
       }
     });
-    console.log('after', newMap);
     setTheMap(newMap);
     const items = Object.fromEntries(newMap); // back에서 받기위해 형변환
     orderItemAPI({ items, comment, userId, zip, address, name, phone })
     .then((result) => {
-      console.log(result);
       router.replace(`/item/order/${result}`);
     })
     .catch((error) => {

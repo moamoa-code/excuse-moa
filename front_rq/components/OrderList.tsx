@@ -92,7 +92,6 @@ const OrderList = ({ userInfo, mode }) => {
       }
     }, {
       onSuccess: (data) => {
-        console.log('onSuccess');
         getTotalPrice(data);
         getTotalWeight(data);
       }
@@ -119,7 +118,6 @@ const OrderList = ({ userInfo, mode }) => {
     return String(totalWeight);
   };
   const getTotalPrice = (orders) => { // 총 금액 계산
-    console.log('getTotalPrice')
     let total = 0
     if(orders) {
       orders.map((v) => {
@@ -285,7 +283,7 @@ const OrderList = ({ userInfo, mode }) => {
             <div>
               총 주문 중량: {totalWeight}<br />
               총 주문가격: {String(totalPrice).toString()
-            .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원
+            } 원
             </div>
             <HGap />
           </>
@@ -351,10 +349,11 @@ const OrderList = ({ userInfo, mode }) => {
                 :null}
               </tbody>
             </ListTable>
+            
             <div>
               총 주문 중량: {totalWeight}<br />
               총 주문가격: {String(totalPrice).toString()
-              .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원
+              } 원
             </div>
           </>}
         </> 
@@ -370,10 +369,11 @@ const OrderList = ({ userInfo, mode }) => {
               dataSource={orders}
             />
             <HGap />
+            {/* .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ?? '' */}
             <div>
               총 주문 중량: {totalWeight}<br />
-              총 주문가격: {String(totalPrice).toString()
-            .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원
+              총 주문가격: {String(totalPrice).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            } 원
             </div>
             <HGap />
           </>
@@ -439,10 +439,11 @@ const OrderList = ({ userInfo, mode }) => {
               :null}
             </tbody>
           </ListTable>
+          {/* .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ?? '' */}
           <div>
             총 주문 중량: {totalWeight}<br />
-            총 주문가격: {String(totalPrice).toString()
-            .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원
+            총 주문가격: {String(totalPrice).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            } 원
           </div>
         </>}
       </>

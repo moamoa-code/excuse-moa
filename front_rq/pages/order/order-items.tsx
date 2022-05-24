@@ -28,7 +28,6 @@ const OrderItems = () => {
   const [ isValidUser, setIsValidUser ] = useState(false)
   const { isLoading, data: myUserInfo } = useQuery<User>('me', loadMyInfoAPI, {
     onSuccess(data) {
-      console.log(data);
       if(!data.ProviderId) {
         message.error('아직 판매자가 등록되지 않았습니다.');
         setIsValidUser(false);
@@ -131,7 +130,6 @@ const OrderItems = () => {
         totalWeight: tWeight
       })
     .then((result) => {
-      console.log(result);
       message.success('주문이 추가되었습니다.');
     })
     .catch((error) => {
@@ -178,7 +176,6 @@ const OrderItems = () => {
   const onItemSelectClick = (item) => (e) => {
     // 클릭 이벤트 자식요소에 전달 중지
     // if (e.target !== e.currentTarget) return;
-    console.log('item',item);
     item.qty = 1;
     item.tag = '';
     item.weight = '';
@@ -226,9 +223,7 @@ const OrderItems = () => {
       weight = '100g'
     }
     const id = 'F_' + shortId.generate();
-    console.log(id);
     const item = {id, codeName, name: productName, packageName, unit, weight: weight, tag: productTag, qty:1};
-    console.log('##NEW: ',item)
     const array = [...selectedItems, item];
     getTotalQty(array);
     getTotalWeight(array);

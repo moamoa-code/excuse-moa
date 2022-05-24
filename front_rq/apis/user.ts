@@ -40,7 +40,6 @@ export function loadProviderByIdAPI(data: number) {
 
 // 로그인
 export function logInAPI(data: { key: string; password: string }) {
-    console.log('loginAPI 실행', data);
   return axios.post('/user/login', data).then((response) => response.data);
 }
 
@@ -83,13 +82,11 @@ export function updateMemoAPI(data: { userId, memo }) {
 
 // 주소 등록
 export function registAddrAPI(data: {addrName:String, zipCode:String, addressDetail:String, phone:Number}) {
-  console.log('registAddrAPI', data);
   return axios.post('/user/addr', data).then((response) => response.data);
 }
 
 // 주소 등록 (관리자모드)
 export function addNewAddrAPI(data) {
-  console.log('registAddrAPI', data);
   return axios.post('/user/add-addr', data).then((response) => response.data);
 }
 

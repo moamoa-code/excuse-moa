@@ -30,7 +30,6 @@ const UserProfile = () => {
 
   const onLogout = useCallback( // 로그아웃 버튼 클릭
     () => {
-      console.log('logout mutate');
       mutation.mutate();
     }, [mutation],
   );

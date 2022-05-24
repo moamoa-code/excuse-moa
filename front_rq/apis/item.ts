@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { backUrl } from '../config/config';
-import User from '../interfaces/user';
 
 axios.defaults.baseURL = backUrl;
 axios.defaults.withCredentials = true; // 쿠키 포함
@@ -22,7 +21,6 @@ export function loadOrdersAPI(userId: string){
 
 // 제품 리스트 불러오기
 export function loadItemsAPI(){
-  console.log('loadItemsAPI 실행');
   return axios.get(`/item/all`).then((response) => response.data);
 }
 

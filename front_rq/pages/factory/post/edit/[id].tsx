@@ -94,7 +94,6 @@ const EditPost = () => {
     imageInput.current?.click();
   }, []);
   const onChangeImage = useCallback((e) => {
-    console.log('files[0]', e.target.files[0]);
     const fileName = e.target.files[0]?.name.split('.');
     const fileExt = fileName[fileName.length-1].toLowerCase();
     if (fileExt !== 'jpg' && fileExt !== 'png' && fileExt !== 'gif'){
@@ -103,21 +102,17 @@ const EditPost = () => {
     const imageFormData = new FormData();
     imageFormData.append('image', e.target.files[0])
     uploadImageAPI<string>(imageFormData).then((result) => {
-      console.log('result', result);
       setImagePath(result);
-      console.log('onChange imagePath', imagePath);
     });
   }, []);
   // 업로드한 사진 제거 (패스만 제거)
   const onRemoveImage = useCallback(() => {
-      console.log('사진제거')
       setImagePath(null);
     },
     [],
   );
 
   const onSubmit = (values) => {  // 열람가능 회원 추가
-    console.log(values);
     addCustomerToPostAPI({ id, values, providerId: providerId })
     .then(() => {
       message.success('게시글을 열람가능한 고객 추가를 완료했습니다.');
@@ -139,7 +134,6 @@ const EditPost = () => {
     if (imagePath){
       formData.append('imgSrc', imagePath);
     }
-    console.log('omSubmit imagePath', imagePath)
     editPostAPI(formData)
     .then((data) => {
       message.success('수정을 완료했습니다.');
@@ -156,7 +150,6 @@ const EditPost = () => {
   }
 
   const handleScopeChange = (value) => {
-    console.log(value);
     setScope(value);
   }
 

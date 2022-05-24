@@ -34,7 +34,6 @@ const LoginForm = () => {
   });
 
   const onSubmitForm = useCallback(() => {
-    console.log(key, password);
     mutation.mutate({ key, password });
   }, [key, password, mutation]);
 

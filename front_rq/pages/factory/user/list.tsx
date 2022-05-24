@@ -23,9 +23,8 @@ import { useMediaQuery } from 'react-responsive';
 import MyTable from '../../../components/MyTable';
 
 const UserList = () => {
-  const { Title, Text } = Typography;
+  const { Title } = Typography;
   const [loading, setLoading] = useState(false);
-  const queryClient = useQueryClient();
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
   // const { data: userList } = useQuery('userList', loadAllUserListAPI);
   const [form] = Form.useForm();
@@ -145,7 +144,6 @@ const onChangeUphone = (e) => {
         } else {
           setUitems([]);
         }
-        console.log(uItems);
         form.resetFields();
         initAddrStates();
         setIsvisible(true);
@@ -409,7 +407,6 @@ const onChangeUphone = (e) => {
   };
 
   const onSearchTypeChange = (e) => {
-    console.log(e.target.value);
     setSearchType(e.target.value);
   }
 
@@ -893,7 +890,6 @@ const onChangeUphone = (e) => {
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
   const cookie = context.req ? context.req.headers.cookie : ''; // 쿠키 넣어주기
   axios.defaults.headers.Cookie = '';
-  const id = context.params?.id as string;
   if (context.req && cookie) {
     axios.defaults.headers.Cookie = cookie;
   }

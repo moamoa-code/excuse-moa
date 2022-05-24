@@ -4,7 +4,6 @@ const Test = () => {
     const groupBy = function (data, key) {
         return data.reduce(function (carry, el, i) {
             const group = el[key];
-            //console.log(key, i, group, carry, el);
             if (carry[group] === undefined) {
                 carry[group] = []
             }
@@ -20,9 +19,7 @@ const Test = () => {
         { category: 'B', id: 4, order: 2, content: '3333 b', qty: 5 },
         { category: 'C', id: 5, order: 2, content: '4444 C', qty: 5 },
     ];
-    //console.log(data[0].category);
     const newData = groupBy(data, 'category');
-    console.log(newData);
 
     return (
         <h1>a</h1>

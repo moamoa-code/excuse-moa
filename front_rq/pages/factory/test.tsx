@@ -225,7 +225,7 @@ const PaintStatus = (props) => {
   }
 };
 
-const orderList = () => {
+const Test = () => {
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const { data: myUserInfo } = useQuery<User>("user", loadMyInfoAPI);
@@ -1144,4 +1144,4 @@ export const getServerSideProps = async (
   };
 };
 
-export default orderList;
+export default Test;

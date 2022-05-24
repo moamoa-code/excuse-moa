@@ -1,19 +1,16 @@
+import { Button, message, Popconfirm, Typography } from 'antd';
 import axios from 'axios';
-import { GetServerSidePropsContext } from 'next';
-import React, { useCallback, useState, useEffect } from 'react';
-import Link from 'next/link';
-import Head from 'next/head';
-import { Form, Input, Checkbox, Button, Divider, Typography, Tag, message, Popconfirm } from 'antd';
-import { useQuery } from 'react-query';
-import Router from 'next/router';
-import { loadMyInfoAPI, signUpAPI } from '../../apis/user';
-import AppLayout from '../../components/AppLayout';
-import useInput from '../../hooks/useInput';
-import User from '../../interfaces/user';
-import { Block, Container800, ContainerSmall, FormBox, HGap, Red } from '../../components/Styled';
-import { getInventoriesAPI, getInventoryGroupsAPI, onDeleteInventoryGroupAPI } from '../../apis/inventory';
 import dayjs from 'dayjs';
+import { GetServerSidePropsContext } from 'next';
+import Link from 'next/link';
+import React, { useEffect, useState } from 'react';
+import { dehydrate, QueryClient, useQuery } from 'react-query';
+import { getInventoryGroupsAPI, onDeleteInventoryGroupAPI } from '../../apis/inventory';
+import { loadMyInfoAPI } from '../../apis/user';
+import AppLayout from '../../components/AppLayout';
 import MyTable from '../../components/MyTable';
+import { Container800, HGap } from '../../components/Styled';
+import User from '../../interfaces/user';
 
 
 // 재고
@@ -123,8 +120,9 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
   if (context.req && cookie) {
     axios.defaults.headers.Cookie = cookie;
   }
-  const response = await loadMyInfoAPI();
-  console.log('쿠키 여부 response', response);
+  // const response = await loadMyInfoAPI();
+  const queryClient = new QueryClient();
+
   // if (response) {
   //   return {
   //     redirect: {
@@ -133,8 +131,11 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
   //     },
   //   };
   // }
+  await queryClient.prefetchQuery(["user"], () => loadMyInfoAPI());
   return {
-    props: {},
+    props: {
+      dehydratedState: JSON.parse(JSON.stringify(dehydrate(queryClient))),
+    },
   };
 };
 

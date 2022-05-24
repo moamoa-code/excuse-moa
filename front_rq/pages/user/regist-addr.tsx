@@ -25,7 +25,6 @@ const RegistAddress = () => {
   const { Title } = Typography;
 
   const submitDatas = (datas) => {
-    console.log('got it')
     registAddress(datas);
   }
 

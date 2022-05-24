@@ -47,7 +47,6 @@ const AddrList = () => {
     })
   }
   useEffect(() => { // 로그인시 데이터 가져오기.
-    console.log('useEffect 실행됨');
     if (myUserInfo.id) {
       gerAddrDatas(myUserInfo);
     } 

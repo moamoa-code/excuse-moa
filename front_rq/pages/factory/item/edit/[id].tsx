@@ -49,7 +49,6 @@ const EditItem = () => {
   };
 
   const onSubmit = (values) => {
-    console.log(values);
     const itemId = Number(id);
     setLoading(true);
     addCustomerToItemAPI({ itemId, values })

@@ -21,7 +21,6 @@ const Signup = () => {
   const { Title } = Typography;
   useEffect(() => { // 로그인 됐을 경우 홈으로 이동
     if (myUserInfo) {
-      console.log('redirects to /');
       Router.replace('/');
     }
   }, [myUserInfo]);
@@ -240,7 +239,6 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
     axios.defaults.headers.Cookie = cookie;
   }
   const response = await loadMyInfoAPI();
-  console.log('쿠키 여부 response', response);
   if (response) {
     return {
       redirect: {

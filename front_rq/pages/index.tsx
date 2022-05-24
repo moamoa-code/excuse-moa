@@ -73,13 +73,11 @@ const Home = () => {
       //   loadRecentReceivedOrdersAPI(data.key)
       //   .then((response) => {
       //     setOderdata(response);
-      //     console.log('setOderdata', response);
       //   })
       // } if (data?.role === 'PROVIDER') {
       //   loadAdnminPostAPI()
       //   .then((response) => {
       //     setPosts(response);
-      //     console.log('setOderdata', response);
       //   })
       // }
     }
@@ -107,7 +105,6 @@ const Home = () => {
   }
 
   useEffect(() => { // 로그인시 데이터 가져오기.
-    console.log('useEffect 실행됨');
     if (myUserInfo) {
       getPostsOrOrdersData(myUserInfo);
     } 
@@ -188,13 +185,10 @@ const Home = () => {
   ]
 
   useEffect(() => {
-    console.log('myUserInfo');
     if (myUserInfo) {
-      console.log(true)
       setIsloggedin(true);
     } else {
       setIsloggedin(false);
-      console.log(false)
     }
   }, [myUserInfo]);
 

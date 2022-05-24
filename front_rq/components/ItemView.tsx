@@ -58,10 +58,10 @@ const ItemView = ({ item, myUserInfo }) => {
               <span>권장소비자가</span> <span style={{color: 'blue'}}>*</span>
             </>
           }>{item.msrp.toString()
-            .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")}</Descriptions.Item>
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</Descriptions.Item>
         : null}
         <Descriptions.Item label="공급가">{item.supplyPrice.toString()
-  .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")}</Descriptions.Item>
+  .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</Descriptions.Item>
         <Descriptions.Item label="제품설명">{item.description}</Descriptions.Item>
       </Descriptions>
       {item.UserId === myUserInfo.id ? 

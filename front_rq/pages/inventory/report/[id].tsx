@@ -260,7 +260,7 @@ const InventoryReports = () => {
                                   setExtendedRow(j);
                                 }}
                               >
-                                <span  className='name'>{v.stockName}</span>
+                                <span className='name'>{v.stockName}</span>
                               </td>
                               {isMobile? null
                               :<td>{v?.location}</td>

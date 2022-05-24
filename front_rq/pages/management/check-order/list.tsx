@@ -117,7 +117,6 @@ const Orders = () => {
     query: "(min-width:0px) and (max-width:768px)",
   });  
   const getTotalPrice = (orders) => { // 총 금액 계산
-    console.log('getTotalPrice')
     let total = 0;
     if(orders) {
       orders.map((v) => {
@@ -129,7 +128,6 @@ const Orders = () => {
       })
     }
     setTotalPrice(total);
-    console.log(total);
     return String(total);
   };
   const getTotalWeight = (orders) => { // 총 금액 계산
@@ -157,7 +155,6 @@ const Orders = () => {
       return loadReceivedOrdersWithDatesAPI(String(id), datesVal)
     }, {
       onSuccess: (data) => {
-        console.log('onSuccess');
         getTotalPrice(data);
         getTotalWeight(data);
       }
@@ -173,11 +170,9 @@ const Orders = () => {
 
   const onChangeStartDate = (date, dateString) => {
     setStartDate(date)
-    console.log(startDate)
   };
   const onChangeEndtDate = (date, dateString) => {
     setEndDate(date)
-    console.log(endDate)
   };
 
   const onLoadOrdersWithDates = () => {
@@ -190,7 +185,6 @@ const Orders = () => {
     //   return;
     // }
     const newDates = [moment(startDate).format('YYYY-MM-DD'), moment(endDate).format('YYYY-MM-DD')];
-    console.log(newDates);
     setDatesVal(newDates);
     // queryClient.fetchQuery(['orders', datesVal], () => loadMyOrdersAPI(orderId, datesVal));
     queryClient.invalidateQueries('orders');
@@ -307,7 +301,7 @@ const Orders = () => {
         {totalPrice?
         <>
           <Divider orientation="right">주문 총계: {totalWeight} , {String(totalPrice).toString()
-            .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원</Divider>
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원</Divider>
           <RightText>*주문취소 제외 기간내 검색결과 모든페이지 합산. </RightText>
         </>
         : null}<br />

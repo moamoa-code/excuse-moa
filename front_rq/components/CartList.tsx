@@ -9,7 +9,6 @@ import { RightOutlined, DownOutlined, DeleteOutlined } from '@ant-design/icons';
 
 
 const CartList = ({ items, myUserInfo }) => {
-  // console.log('ItemList', items);
   const [notiApi, contextHolder] = notification.useNotification(); // antd 알림창
   const [loading, setLoading] = useState(false); 
 
@@ -39,7 +38,6 @@ const CartList = ({ items, myUserInfo }) => {
   const onClickCart = (id) => () => {
       const itemId = id;
       const userId = myUserInfo.id;
-      console.log(itemId, userId);
       mutation.mutate({ itemId,  userId });
   };
 

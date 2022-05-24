@@ -55,7 +55,6 @@ const ProviderList = () => {
   };
 
   const onSearchProvider = (value) => {
-    console.log(value);
     setLoading(true);
     setIsvisible(false);
     loadUserAPI(String(value).trim())
@@ -120,7 +119,6 @@ const ProviderList = () => {
     loadItemListAPI(String(key))
     .then((response) => {
       setItemsOfProvider(response);
-      console.log('판매자:',response);
     })
     .catch((error) => {
       alert(error.response.data);
@@ -158,7 +156,6 @@ const ProviderList = () => {
 
   
   const onToggleItem = (e) => { // 고객에 열람가능 제품 추가/제거
-    console.log('click', e.target.value)
     const itemId = parseInt(e.target.value);
     if (e.target.checked) {
       setLoading(true);

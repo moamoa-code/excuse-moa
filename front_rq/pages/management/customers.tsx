@@ -172,7 +172,6 @@ const Customers = () => {
 
   const onSearch = (value) => {
     let key = String(value).replace(' ','');
-    console.log(key);
     setLoading(true);
     setIsEditable(false);
     initAddrStates();
@@ -339,7 +338,6 @@ const Customers = () => {
   }
 
   const onToggleItem = (e) => { // 고객에 열람가능 제품 추가/제거
-    console.log('click', e.target.value)
     const itemId = parseInt(e.target.value);
     if (e.target.checked) {
       setLoading(true);
@@ -401,7 +399,6 @@ const Customers = () => {
         } else {
           setUitems([])
         }
-        console.log(uItems);
         form.resetFields();
         setIsvisible(true);
         divRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -423,7 +420,6 @@ const Customers = () => {
       openNotification('고객 등록이 완료됐습니다.');
       setUrole('CUSTOMER');
       setIsmine(true);
-      console.log(response);
     })
     .catch((error) => {
       alert(error.response.data);
@@ -441,7 +437,6 @@ const Customers = () => {
     .then((response) => {
       openNotification('고객 해제가 완료됐습니다.');
       setIsmine(false);
-      console.log(response);
     })
     .catch((error) => {
       alert(error.response.data);

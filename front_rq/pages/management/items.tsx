@@ -57,7 +57,7 @@ const ProvidersItemList = () => {
       dataIndex: 'supplyPrice',
       render: (text, record) => (
         <>{text.toString()
-          .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")}원</>
+          .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}원</>
       ),
     }, {
       title: '무게단위',

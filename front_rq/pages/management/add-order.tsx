@@ -121,7 +121,6 @@ const addOrder = () => {
       return message.error('구매자 이름을 입력하세요.');
     }
     let customerId = selectedCustomer;
-    console.log('onOrderClick selectedItems', selectedItems);
     const tWeight = totalWeight.toFixed(1);
     orderPosItemAPI(
       { items : selectedItems, 
@@ -134,7 +133,6 @@ const addOrder = () => {
         totalWeight: tWeight
       })
     .then((result) => {
-      console.log(result);
       openNotification('주문이 추가되었습니다.');
     })
     .catch((error) => {
@@ -195,7 +193,6 @@ const addOrder = () => {
 
   // 제품 선택
   const onItemSelectClick = (item) => () => {
-    console.log('item',item);
     item.qty = 1;
     item.tag = '';
     item.weight = '';
@@ -243,9 +240,7 @@ const addOrder = () => {
       weight = '100g'
     }
     const id = 'F_' + shortId.generate();
-    console.log(id);
     const item = {id, codeName, name: productName, packageName, unit, weight: weight, tag: productTag, qty:1};
-    console.log('##NEW: ',item)
     const array = [...selectedItems, item];
     getTotalQty(array);
     getTotalWeight(array);

@@ -54,7 +54,6 @@ const ItemEdit = ({ item, myUserInfo }) => {
     imageInput.current?.click();
   }, []);
   const onChangeImage = useCallback((e) => {
-    console.log('files[0]', e.target.files[0]);
     const fileName = e.target.files[0]?.name.split('.');
     const fileExt = fileName[fileName.length-1].toLowerCase();
     if (fileExt !== 'jpg' && fileExt !== 'png' && fileExt !== 'gif'){
@@ -63,9 +62,7 @@ const ItemEdit = ({ item, myUserInfo }) => {
     const imageFormData = new FormData();
     imageFormData.append('image', e.target.files[0])
     uploadImageAPI<string>(imageFormData).then((result) => {
-      console.log('result', result);
       setImagePath(result);
-      console.log('onChange imagePath', imagePath);
     });
   }, []);
   // 업로드한 사진 제거 (패스만 제거)
@@ -90,7 +87,6 @@ const ItemEdit = ({ item, myUserInfo }) => {
     if (imagePath){
       formData.append('imgSrc', imagePath);
     }
-    console.log('omSubmit imagePath', imagePath)
     updateItemAPI(formData)
     .then((data) => {
       setShowScope(scope);
@@ -121,7 +117,6 @@ const ItemEdit = ({ item, myUserInfo }) => {
     if (imagePath){
       formData.append('imgSrc', imagePath);
     }
-    console.log('omSubmit imagePath', imagePath)
     registerItemAPI(formData)
     .then((data) => {
       message.success('제품 복사생성이 완료되었습니다.');
@@ -143,7 +138,6 @@ const ItemEdit = ({ item, myUserInfo }) => {
     setLoading(true);
     deleteItemAPI({ itemId: item.id })
     .then((data) => {
-      console.log(data);
     })
     .catch((error) => {
       alert(error.response.data);
@@ -156,7 +150,6 @@ const ItemEdit = ({ item, myUserInfo }) => {
 
   
   const onAddCustomerSubmit = (values) => {
-    console.log(values);
     const itemId = Number(item.id);
     setLoading(true);
     addCustomerToItemAPI({ itemId, values })

@@ -77,7 +77,6 @@ const OrderList = () => {
     query: "(min-width:0px) and (max-width:768px)",
   });
   const getTotalPrice = (orders) => { // 총 금액 계산
-    console.log('getTotalPrice')
     let total = 0
     if(orders) {
       orders.map((v) => {
@@ -96,7 +95,6 @@ const OrderList = () => {
       return loadMyOrdersAPI(userId, datesVal)
     }, {
       onSuccess: (data) => {
-        console.log('onSuccess');
         getTotalPrice(data);
         getTotalWeight(data);
       }
@@ -135,7 +133,6 @@ const OrderList = () => {
       return;
     }
     const newDates = [moment(startDate).format('YYYY-MM-DD'), moment(endDate).format('YYYY-MM-DD')];
-    console.log(newDates);
     setDatesVal(newDates);
     queryClient.invalidateQueries('orders');
   }
@@ -194,11 +191,9 @@ const OrderList = () => {
 
   const onChangeStartDate = (date, dateString) => {
     setStartDate(date)
-    console.log(startDate)
   };
   const onChangeEndtDate = (date, dateString) => {
     setEndDate(date)
-    console.log(endDate)
   };
 
   return (
@@ -258,7 +253,7 @@ const OrderList = () => {
         <HGap />
         {totalPrice?<>
         <Divider orientation="right">총 중량 {totalWeight} , 총 금액: {String(totalPrice).toString()
-          .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원</Divider>
+          .replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원</Divider>
         <RightText>*주문취소 제외 기간내 검색결과 모든페이지 합산. </RightText></>
         : null}
         
@@ -274,7 +269,6 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
   if (context.req && cookie) {
     axios.defaults.headers.Cookie = cookie;
   }
-  
   const datesVal = [moment().subtract(2, 'months').format('YYYY-MM-DD'), moment().format('YYYY-MM-DD')];
   const queryClient = new QueryClient();
   const response = await loadMyInfoAPI();
