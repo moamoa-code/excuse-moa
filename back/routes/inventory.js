@@ -19,7 +19,6 @@ router.post('/create-group', isLoggedIn, async (req, res, next) => {
     if(!req.body.name) {
       return res.status(403).send('보고서명을 입력하세요.');
     }
-    console.log('보고서등록 req.body',req.body);
     const inventoryGroup = await InventoryGroup.create({
       name: req.body.name,
       desc: req.body.desc,
@@ -208,7 +207,6 @@ router.patch('/confirm', isLoggedIn, async (req, res, next) => {
       const data = datas.find((x) => Number(x.id) === Number(v.id))
       v.status = data.status
     });
-    console.log("#!@#@!#datasToUpdate", details);
 
     Array.from(details).forEach((v) => {
       InventoryDetail.update( { status: v.status }, { where: { id: v.id } })
@@ -243,7 +241,6 @@ router.patch('/confirm', isLoggedIn, async (req, res, next) => {
 // 재고보고서 그룹 목록 가져오기
 router.get('/group-list/:userId', async (req, res, next) => {
   try {
-    console.log('#!@#@!', req.params)
     const user = await User.findOne({
       where: {
         id: req.params.userId,
@@ -309,7 +306,6 @@ router.get('/list/:groupId/:page', async (req, res, next) => {
         id: req.user.id
       }
     })
-    console.log('#!@#@!', req.body)
     const group = await InventoryGroup.findOne({
       where: {
         id: req.params.groupId,
@@ -368,7 +364,6 @@ router.get('/report/:id', async (req, res, next) => {
     if (loggedInUser.role !== 'ADMINISTRATOR' && loggedInUser.id !== group.UserId) {
       return res.status(403).send('권한이 없습니다.');
     }
-    console.log('#!@#@!', req.body)
 
     const inventoryDetails = await InventoryDetail.findAll({
       where: {
@@ -399,7 +394,6 @@ router.get('/stocks/:userId', isLoggedIn, async (req, res, next) => {
         id: req.user.id
       }
     })
-    console.log('#!@#@!', req.body)
     const user = await User.findOne({
       where: {
         id: req.params.userId,
@@ -434,7 +428,6 @@ router.post('/create', isLoggedIn, async (req, res, next) => {
         id: req.user.id
       }
     })
-    console.log('!@#@!#@!#!@#!#@!', req.body);
     if (req.body.memo?.length > 99) {
       return res.status(401).send('메모가 100자(줄바꿈 포함)를 초과했습니다.');
     }
@@ -463,7 +456,6 @@ router.post('/create', isLoggedIn, async (req, res, next) => {
     dataArray.map((v) => {
       stockIds.push(v.stockId);
     })
-    console.log('stockIds#####', stockIds);
     if (stockIds.length >= 1) {
       stocks = await Stock.findAll({  // 해당되는 재고품들 찾기
         where: {

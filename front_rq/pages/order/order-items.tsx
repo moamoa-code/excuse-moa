@@ -117,6 +117,16 @@ const OrderItems = () => {
       setLoading(false);
       return message.error('구매자 이름을 입력하세요.');
     }
+    let qtyError = false;
+    selectedItems.forEach((v) => {
+      if (v.qty < 1 || v.qty > 9999) {
+        qtyError = true;
+      }
+    })
+    if (qtyError) {
+      setLoading(false);
+      return message.error("수량을 1~9999 사이로 입력하세요.");
+    }
     let customerId = selectedCustomer;
     const tWeight = totalWeight.toFixed(1)
     orderPosItemAPI(
@@ -647,31 +657,55 @@ const OrderItems = () => {
                           return setSelectedItems(array);
                         }}>
                           <MinusOutlined style={minusButtonStyle} />
-                      </button>
-                      <input 
-                        type='number'
+                      </button>                      
+                      <input
+                        type="number"
                         min={1}
                         max={9999}
-                        value={item?.qty} 
-                        onChange={
-                          (e)=>{
-                            let array = JSON.parse(JSON.stringify(selectedItems));
-                            const idx = array.findIndex((v) => v.id === item.id);
-                            if (Number(e.target.value) >= 9999){
-                              array[idx].qty = 9999;
-                              return setSelectedItems(array);
-                            }
-                            if (Number(e.target.value) <= 1){
-                              array[idx].qty = 1;
-                              return setSelectedItems(array);
-                            }
-                            array[idx].qty = Number(e.target.value);
-                            getTotalQty(array);
-                            getTotalWeight(array);
-                            return setSelectedItems(array);
+                        value={item?.qty}
+                        onChange={(e) => {
+                          let array = JSON.parse(JSON.stringify(selectedItems));
+                          const idx = array.findIndex((v) => v.id === item.id);
+                          array[idx].qty = Number(e.target.value);
+                          const newQty = Number(array[idx].qty);
+                          if (
+                            String(item.unit).toUpperCase().replace(" ", "") ===
+                            "1KG"
+                          ) {
+                            array[idx].weight = newQty * 1 + "Kg";
+                          } else if (
+                            String(item.unit).toUpperCase().replace(" ", "") ===
+                            "500G"
+                          ) {
+                            array[idx].weight =
+                              (newQty * 0.5).toFixed(1) + "Kg";
+                          } else if (
+                            String(item.unit).toUpperCase().replace(" ", "") ===
+                            "400G"
+                          ) {
+                            array[idx].weight =
+                              (newQty * 0.4).toFixed(1) + "Kg";
+                          } else if (
+                            String(item.unit).toUpperCase().replace(" ", "") ===
+                            "200G"
+                          ) {
+                            array[idx].weight =
+                              (newQty * 0.2).toFixed(1) + "Kg";
+                          } else if (
+                            String(item.unit).toUpperCase().replace(" ", "") ===
+                            "100G"
+                          ) {
+                            array[idx].weight =
+                              (newQty * 0.1).toFixed(1) + "Kg";
+                          } else {
+                            array[idx].weight = "0";
                           }
-                        }
-                        />
+                          array[idx].qty = newQty;
+                          getTotalQty(array);
+                          getTotalWeight(array);
+                          return setSelectedItems(array);
+                        }}
+                      />
                       <button 
                         onClick={()=>{
                           let array = JSON.parse(JSON.stringify(selectedItems));

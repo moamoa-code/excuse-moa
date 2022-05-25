@@ -7,7 +7,7 @@ import Link from "next/link";
 import React from "react";
 import Head from "next/head";
 import { Typography } from "antd";
-import { dehydrate, QueryClient, useQuery, useQueryClient } from "react-query";
+import { dehydrate, QueryClient, } from "react-query";
 
 import { loadMyInfoAPI } from "../../apis/user";
 import AppLayout from "../../components/AppLayout";

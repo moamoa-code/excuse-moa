@@ -64,7 +64,6 @@ const upload = multer({
 // 게시글 등록
 router.post('/regist', isProvider, upload.none(), async (req, res, next) => {
   try {
-    console.log('게시글등록 req.body',req.body);
     let done = false;
     let post;
     let scope = req.body.scope;
@@ -155,8 +154,6 @@ router.post('/regist', isProvider, upload.none(), async (req, res, next) => {
 });
 // 사진 업로드 
 router.post('/image', isLoggedIn, upload.array('image'), (req, res, next) => {
-  console.log(req.files);
-  console.log('@@@req.files[0]',req.files[0]);
   // res.json(req.files[0].filename);
   res.json(req.files[0].location); // S3는 location
 });
@@ -164,7 +161,6 @@ router.post('/image', isLoggedIn, upload.array('image'), (req, res, next) => {
 // 게시글 수정
 router.post('/edit', isLoggedIn, upload.none(), async (req, res, next) => {
   try {
-    console.log('게시글수정 req.body',req.body);
     const post = await Post.findOne({ 
         where: { id: req.body.postId } 
     });
@@ -204,7 +200,6 @@ router.post('/edit', isLoggedIn, upload.none(), async (req, res, next) => {
 // 게시글 삭제
 router.patch('/delete', isProvider, upload.none(), async (req, res, next) => {
   try {
-    console.log('게시글삭제 req.body',req.body);
     const post = await Post.findOne({ 
         where: { id: req.body.id }
     });
@@ -274,7 +269,6 @@ router.get('/list', isLoggedIn, async (req, res, next) => {
     })
 
     let myPosts = [...myProviderPosts, ...adminPosts, ...myPrivatePosts];
-    console.log('myPosts#@!#!@#@!', myPosts);
     myPosts.sort((a, b) => b.id - a.id);
 
     return res.status(200).json(myPosts);
@@ -423,7 +417,6 @@ router.get('/my', isLoggedIn, async (req, res, next) => {
 // 게시글 열람가능한 고객 등록
 router.post('/add-customer', isLoggedIn, async (req, res, next) => {
   try {
-    console.log('고객등록 req.body',req.body);
     let provider;
     if (req.body.providerId !== null && req.body.providerId !== undefined){
       provider = await User.findOne({
@@ -463,7 +456,6 @@ router.post('/add-customer', isLoggedIn, async (req, res, next) => {
     }
     // 제품 열람가능한 유저 추가
     const postUsers = await post.addPostViewUsers(req.body.values.customerIds);
-    console.log('\x1b[36m',postUsers);
 
     res.status(200).json(post);
   } catch (error) {

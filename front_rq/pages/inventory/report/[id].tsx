@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Form, Input, Button, Tag, Checkbox, Divider, Space, notification, Card, Image, Typography, Popconfirm, message, Table, Popover, Dropdown, Menu } from 'antd';
 import { useRouter } from 'next/router';
 import Router from 'next/router';
@@ -36,6 +36,7 @@ const InventoryReports = () => {
   const [ memo, onChangeMemo, setMemo ] = useInput('');
   const [ isEmpty, setIsEmpty ] = useState(false);
   const [ extendedRow, setExtendedRow ] = useState(null);
+  const shortageStyle = useMemo(() => ({backgroundColor: '#FFBCD1'}), []);
   const isMobile = useMediaQuery({
     query: "(min-width:0px) and (max-width:740px)",
   });
@@ -251,7 +252,10 @@ const InventoryReports = () => {
                       if (v.stockType === type) {
                         return (
                           <>
-                            <tr key={j}>
+                            <tr 
+                              key={j}
+                              style={v.status === '주문필요'? shortageStyle : null}
+                            >
                               <td
                                 onClick={()=>{
                                   if (extendedRow === j){

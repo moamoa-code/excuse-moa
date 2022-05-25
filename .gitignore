@@ -1,4 +1,5 @@
 excuse-moa.pem
+package-lock.json
 *.pem
 node_modules
 .env

@@ -273,7 +273,6 @@ router.get('/addr/:userId', isLoggedIn, async (req, res, next) => { // GET /user
 // 주소 삭제
 router.patch('/addr/remove', isLoggedIn, async (req, res, next) => { // 
   // front의 data: { providerId:string, customerId:string }
-  console.log('주소삭제',req.body);
   try {
     const addr = await Address.findOne({
       where: {
@@ -325,7 +324,6 @@ router.get("/search-company/:companyName", isProvider, async (req, res, next) =>
 // 유저정보 불러오기
 router.get("/:userKey", isLoggedIn, async (req, res, next) => {
   try {
-    console.log('req.params~~',req.params);
     const userDataWithItems = await User.findOne({
       where: { key: req.params.userKey },
       attributes: {
@@ -377,7 +375,6 @@ router.get("/:userKey", isLoggedIn, async (req, res, next) => {
 
 router.get("/id/:userId", isLoggedIn, async (req, res, next) => {
   try {
-    console.log('req.params~~',req.params);
     const userDataWithItems = await User.findOne({
       where: { id: req.params.userId },
       attributes: {
@@ -466,7 +463,6 @@ router.post('/login', (req, res, next) => {
       return next(err);
     }
     if (info) { // 클라이언트 입력 애러시
-      console.log(info);
       return res.status(401).send(info.reason);
     }
     return req.login(user, async (loginErr) => { // 실제 패스포트 로그인 처리
@@ -490,16 +486,20 @@ router.post('/login', (req, res, next) => {
 
 // 로그아웃
 router.post('/logout', isLoggedIn, (req, res) => {
-  // console.log('logut', req.body.data);
-  req.logout();
+  // req.logout();
+  req.logout(() => { // passport v0.6 변경사항
+    res.redirect('/');
+  });
   req.session.destroy();
   res.status(200).send('ok');
+
+  // req.session.destroy();
+  // res.status(200).send('ok');
 });
 
 // 회원/고객생성
 router.post('/create/', isLoggedIn, async (req, res, next) => { // post /user
   // front의 data: { providerId: string, id: string, password: string, company: string, name: string|null, phone: string|null, email: string|null }를 axios 통해 받음
-  console.log('고객등록 req.body',req.body);
   try {
     const exUser = await User.findOne({ // 아이디 DB에서 중복체크
       where: {
@@ -668,7 +668,6 @@ router.post('/create/', isLoggedIn, async (req, res, next) => { // post /user
 
 // 복수 회원 생성
 router.post('/multi-create', isProvider, async (req, res, next) => { // post /user
-  console.log('multi-create',req.body);
   try {
     const hashedPassword = await bcrypt.hash('123123', 10);
     let error = false;
@@ -768,7 +767,6 @@ router.post('/multi-create', isProvider, async (req, res, next) => { // post /us
 
 // 회원가입
 router.post('/', isNotLoggedIn, async (req, res, next) => { // post /user
-  console.log('회원가입 req.body',req.body);
   try {
     const exUser = await User.findOne({ // 아이디 DB에서 중복체크
       where: {
@@ -798,7 +796,6 @@ router.post('/', isNotLoggedIn, async (req, res, next) => { // post /user
 
 // 정보수정
 router.patch('/edit', isLoggedIn, async (req, res, next) => { // post /user
-  console.log('정보수정 req.body',req.body);
   try {
     const user = await User.findOne({
       where: {
@@ -921,7 +918,6 @@ router.patch('/memo', isProvider, async (req, res, next) => { // post /user
 
 // 주소 추가
 router.post('/addr', isLoggedIn, async (req, res, next) => { // post /user
-  console.log('주소추가 #@#@#@',req.body);
   try {
     const user = await User.findOne({ 
       where: {
@@ -949,7 +945,6 @@ router.post('/addr', isLoggedIn, async (req, res, next) => { // post /user
 
 // 주소 추가
 router.post('/add-addr', isProvider, async (req, res, next) => { // post /user
-  console.log('주소추가 #@#@#@',req.body);
   try {
     const user = await User.findOne({ 
       where: {
@@ -979,7 +974,6 @@ router.post('/add-addr', isProvider, async (req, res, next) => { // post /user
 // 고객등록
 router.patch('/add-customer', isLoggedIn, async (req, res, next) => { // 
   // front의 data: { providerId:string, customerId:string }
-  console.log('고객등록',req.body);
   try {
     const customer = await User.findOne({ // 아이디 찾기
       where: {
@@ -1044,7 +1038,6 @@ router.patch('/delete-customer', isLoggedIn, async (req, res, next) => { //
     await provider.removeCustomers(customer.id);
     await customer.update({ProviderId: null});
 
-    console.log('@##@%#!', items);
     const userDataWithoutPassword = await User.findOne({
       // 프론트로 보낼 유저 정보를 재가공
       where: { id: customer.id },
@@ -1076,7 +1069,6 @@ router.patch('/add-item', isProvider, async (req, res, next) => {
       return res.status(404).send('해당 회원이 존재하지 않습니다.')
     }
     const itemUser = await user.addUserViewItems(item.id)
-    console.log('\x1b[36m',itemUser);
     res.status(200).send('ok');
   } catch (error) {
     console.error(error);
@@ -1088,7 +1080,6 @@ router.patch('/add-item', isProvider, async (req, res, next) => {
 router.patch('/remove-item', isProvider, async (req, res, next) => {
   // {itemId: number, customerId: string}
   try {
-    console.log(req.body);
     const item = await Item.findOne({
       where: { id: req.body.itemId }
     });
@@ -1102,7 +1093,6 @@ router.patch('/remove-item', isProvider, async (req, res, next) => {
       return res.status(404).send('해당 회원이 존재하지 않습니다.')
     }
     const itemUser = await user.removeUserViewItems(item.id)
-    console.log('\x1b[36m',itemUser);
     res.status(200).send('ok');
   } catch (error) {
     console.error(error);

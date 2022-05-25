@@ -245,6 +245,7 @@ const orderList = () => {
   ]);
   const [isFloatingButtonVisibale, setIsFloatingButtonVisibale] =
     useState(true);
+  const [todayTotalWeight, setTodayTotalWeight] = useState(0);
 
   const [itemCodes, setItemCodes] = useState([]); // 제품코드 기준으로 카테고리화
   // 주문서 보기 모달
@@ -346,6 +347,7 @@ const orderList = () => {
         const newArr = Array.from(new Set(codes.flat(2))); // 코드네임 중복제거
         const objArr = newArr.map((v) => ({ name: v, amount: 0 }));
         setItemCodes(objArr);
+        getTodaysTotalWeight(data);
       },
     }
   );
@@ -620,6 +622,32 @@ const orderList = () => {
     }
     return weight.toFixed(1) + "Kg";
   };
+
+  // 전체 중량 계산
+
+  const getTodaysTotalWeight = (datas) => {
+    let totalWeight = 0;
+    const array1 = datas.map((order, index) => {
+      const details = order.OrderDetails;
+      return {
+        details,
+      };
+    });
+    const array2 = array1.filter(function (item, index) {
+      if (item.details?.length >= 1) {
+        return true;
+      }
+    });
+    array2.map((order, i) => {
+      order.details.map((detail) => {
+        const weight = getWeight(detail.itemUnit, detail.qty);
+        totalWeight =
+        totalWeight +
+          Number(weight.toUpperCase().replace(" ", "").replace("KG", ""));
+      });
+    });
+    setTodayTotalWeight(totalWeight);
+  }
 
   // 코드별 중량 계산
   const getCodeWeight = (codeName, datas) => {
@@ -1085,6 +1113,7 @@ const orderList = () => {
           </>
         )}
         <HGap />
+        <h2>조회된 주문 총 중량 : {String(todayTotalWeight.toFixed(1))}kg<br /></h2>
         <Space>
           <Link href={`/factory/add-order`}>
             <a>

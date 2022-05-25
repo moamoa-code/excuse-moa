@@ -64,7 +64,6 @@ router.post('/', isLoggedIn, async (req, res, next) => {
       }
       return totalPrice = totalPrice + (price * Number(item.qty));
     });
-    console.log(totalPrice);
 
     order.update({
       totalPrice: String(totalPrice),
@@ -80,7 +79,6 @@ router.post('/', isLoggedIn, async (req, res, next) => {
 // 공장에서 제품 주문
 router.post('/from-factory', isLoggedIn, async (req, res, next) => { 
   try {
-    console.log(req.body);
     const itemsArray = req.body.items;
     let itemIds = [];
     let tempItems = [];
@@ -91,9 +89,6 @@ router.post('/from-factory', isLoggedIn, async (req, res, next) => {
         itemIds.push(v.id);
       }
     });
-
-    console.log('itemIds#####', itemIds);
-    console.log('tempItems####', tempItems);
 
     let items = []
     if (itemIds.length >= 1) {
@@ -106,7 +101,6 @@ router.post('/from-factory', isLoggedIn, async (req, res, next) => {
       });
     }
 
-    console.log('items###', items);
     const provider = await User.findOne({ // 판매자 찾기
       where: {
         id: req.body.providerId
@@ -184,7 +178,6 @@ router.post('/from-factory', isLoggedIn, async (req, res, next) => {
       }
       return totalPrice = totalPrice + (price * Number(item.qty));
     });
-    console.log(totalPrice);
 
     order.update({
       totalPrice: String(totalPrice),
@@ -200,7 +193,6 @@ router.post('/from-factory', isLoggedIn, async (req, res, next) => {
 // 일정기간 주문목록 가져오기 (구매자용)
 router.get('/:userId/:from/:til', async (req, res, next) => {
   try {
-    console.log(req.params.userId);
     let from = new Date(req.params.from);
     from.setHours('0');
     let til = new Date(req.params.til);
@@ -264,14 +256,12 @@ router.patch('/req-cancel', isLoggedIn, async (req, res, next) => {
 // 주문확인 완료 (판매자)
 router.patch('/confirm', isProvider, async (req, res, next) => { 
   // req.body: {orderId: number, message: string}
-  console.log('/confirm !@#@!#!@$!', req.user.id);
   try {
     const me = await User.findOne({
       where: {
         id: req.user.id
       }
     })
-    console.log('/confirm @#@#@##@#', req.body);
     const order = await Order.findOne({ // 주문 찾기
       where: {
         id: req.body.orderId,
@@ -326,7 +316,6 @@ router.patch('/cancel', isProvider, async (req, res, next) => {
 // 포장 완료 (생산자)
 router.patch('/pack-complete', isAdmin, async (req, res, next) => { 
   try {
-    console.log('/pack-complete @#@#@##@#', req.body);
     const orderDetail = await OrderDetail.findOne({ // 주문 찾기
       where: {
         id: req.body.id
@@ -363,7 +352,6 @@ router.patch('/pack-cancel', isAdmin, async (req, res, next) => {
 // 출하 완료 (판매자)
 router.patch('/task-complete', isAdmin, async (req, res, next) => { 
   // req.body: {orderId: number, message: string}
-  console.log('/task-complete !@#@!#!@$!', req.body);
   try {
     const orders = await Order.findAll({
       where: { id: req.body.ids },
@@ -380,7 +368,6 @@ router.patch('/task-complete', isAdmin, async (req, res, next) => {
       }
     })
     const doneOrderIds = req.body.ids.filter((v) => !unDoneOrderIds.includes(v));
-    console.log(doneOrderIds);
     // const doneOrders = await Order.findAll({
     //   where: { id: doneOrderIds }
     // })
@@ -399,17 +386,13 @@ router.patch('/task-complete', isAdmin, async (req, res, next) => {
 
 // 일정기간 모든 주문목록 가져오기 (관리자용)
 router.post('/all-orders', isAdmin, async (req, res, next) => { 
-  console.log('#!@#@!#@! all-orders 진입');
   try {
-    console.log(req.body);
     let from = new Date(req.body.from);
     from.setHours('0');
     let til = new Date(req.body.til);
     til.setHours('23');
     til.setMinutes('59');
     til.setSeconds('59');
-
-    console.log('!@#@!#!@ all-orders', from, til);
 
     const order = await Order.findAll({
       where: {
@@ -430,8 +413,6 @@ router.post('/all-orders', isAdmin, async (req, res, next) => {
       }]
     }); 
 
-    console.log(order);
-
     if (!order) {
       return res.status(403).send('해당 제품이 존재하지 않습니다.');
     }
@@ -445,17 +426,12 @@ router.post('/all-orders', isAdmin, async (req, res, next) => {
 // 일정기간 주문목록 가져오기 (판매자용)
 router.get('/received-orders-dates/:userId/:from/:til', isProvider, async (req, res, next) => { 
   try {
-    console.log('일정기간 주문목록 가져오기 (판매자용)');
-    console.log(req.params.userId);
     let from = new Date(req.params.from);
     from.setHours('0');
     let til = new Date(req.params.til);
     til.setHours('23');
     til.setMinutes('59');
     til.setSeconds('59');
-
-
-    console.log(from, til)
 
     const user = await User.findOne({
       where: { id: req.params.userId }
@@ -537,7 +513,6 @@ router.get('/all', isProvider, async (req, res, next) => {
 // 주문목록 가져오기 (공장)
 router.post('/todos', async (req, res, next) => {
   try {
-    console.log(req.body);
     let from = new Date(req.body.from);
     from.setHours('0');
     let til = new Date(req.body.til);
@@ -698,7 +673,6 @@ router.get('/received-orders/:userId', isProvider, async (req, res, next) => {
 // 주문서 조회
 router.get('/:orderId', isLoggedIn, async (req, res, next) => { // GET /post/1
   try {
-    console.log(req.params.orderId);
     const order = await Order.findOne({
       where: { id: req.params.orderId },
       // attributes: ["id", "date", "totalPice", "comment", "address", "zip", "phone", "name", "isConfirmed", "isCanceled"],

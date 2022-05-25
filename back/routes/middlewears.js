@@ -23,7 +23,6 @@ exports.isProvider = async (req, res, next) => {
         where: { id: req.user.id }
       });
       if ( me.role !== 'ADMINISTRATOR' && me.role !== 'PROVIDER')  {
-        console.log('권한없음');
         return res.status(403).send('열람권한이 없습니다.');
       }
       next(); // 다음 미들웨어로 보냄.

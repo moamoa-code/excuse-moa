@@ -29,10 +29,7 @@ const upload = multer({
     },
     filename(req, file, done) {
       const ext = path.extname(file.originalname);
-      console.log('#### ile.originalname',file.originalname)
-      console.log('#### ext',ext)
       const basename = path.basename(file.originalname, ext).substring(0,5);
-      console.log('#### ext',basename)
       done(null, basename + '_' + new Date().getTime() + ext);
     },
   }),
@@ -41,7 +38,6 @@ const upload = multer({
 // 제품등록
 router.post('/regist', isProvider, upload.none(), async (req, res, next) => {
   try {
-    console.log('제품등록 req.body',req.body);
     let item;
     let userId;
     let scope = req.body.scope;
@@ -85,7 +81,6 @@ router.post('/regist', isProvider, upload.none(), async (req, res, next) => {
         UserId: userId,
       })
     }
-    console.log('생성함', item);
     res.status(200).json(item);
   } catch (error) {
     console.error(error);
@@ -97,7 +92,6 @@ router.post('/regist', isProvider, upload.none(), async (req, res, next) => {
 router.post('/update', isLoggedIn, upload.none(), async (req, res, next) => {
   // data: { itemId: number, codeName: string, string, imgSrc: string|null, name: string, unit: string, msrp: string|null, supplyPrice: string|null }
   try {
-    console.log('제품등록 req.body',req.body);
     let exItem = await Item.findOne({
       where: { id: req.body.itemId }
     });
@@ -146,8 +140,6 @@ router.post('/update', isLoggedIn, upload.none(), async (req, res, next) => {
 
 // 사진 업로드 
 router.post('/image', isLoggedIn, upload.array('image'), (req, res, next) => { // POST /post/images
-  console.log(req.files);
-  console.log('@@@req.files[0]',req.files[0]);
   res.json(req.files[0].filename);
 });
 
@@ -155,7 +147,6 @@ router.post('/image', isLoggedIn, upload.array('image'), (req, res, next) => { /
 // 모든 제품 목록 불러오기
 router.get('/all', isLoggedIn, async (req, res, next) => { // GET /posts
   try {
-    console.log('모든 제품 목록 불러오기');
     const items = await Item.findAll({
       include: [{
         model: User,
@@ -166,7 +157,6 @@ router.get('/all', isLoggedIn, async (req, res, next) => { // GET /posts
         attributes: ["id", "company"],
       }]
     });
-    console.log(items);
     res.status(200).json(items);
   } catch (error) {
     console.error(error);
@@ -177,7 +167,6 @@ router.get('/all', isLoggedIn, async (req, res, next) => { // GET /posts
 // 내 제품 목록 불러오기 (판매자)
 router.get('/my', isLoggedIn, async (req, res, next) => { // GET /posts
   try {
-    console.log('모든 제품 목록 불러오기');
     const items = await Item.findAll({
       where: { UserId: req.user.id },
       include: [{
@@ -345,7 +334,6 @@ router.get('/customer', isLoggedIn, async (req, res, next) => { // GET /posts
 // 카트에 담긴 제품 불러오기
 router.get('/cart/:userId', isLoggedIn, async (req, res, next) => { 
   try {
-    console.log('카트 제품 불러오기');
     const user = await User.findOne({
       where: { id: req.params.userId },
     });
@@ -393,7 +381,6 @@ router.get('/cart/:userId', isLoggedIn, async (req, res, next) => {
 router.patch('/add-cart', isLoggedIn, async (req, res, next) => { 
   // req.body: { itemId: 10, userId: 'tester1' }
   try {
-    console.log('/add-cart/add-cart/', req.body);
     const item = await Item.findOne({ // 제품 찾기
       where: {
         id: req.body.itemId,
@@ -410,7 +397,6 @@ router.patch('/add-cart', isLoggedIn, async (req, res, next) => {
     // const itemUsers = await item.addItemViewUsers(req.body.values.customerIds);
     const result = await item.addUser(user.id);
     // const result = await user.addItem(item.id);
-    console.log('result', result);
     res.status(200).json(result);
   } catch (error) {
     console.error(error);
@@ -422,7 +408,6 @@ router.patch('/add-cart', isLoggedIn, async (req, res, next) => {
 router.patch('/remove-cart', isLoggedIn, async (req, res, next) => { 
   // req.body: { itemId: 10, userId: 'tester1' }
   try {
-    console.log('/remove-cart', req.body);
     const item = await Item.findOne({ // 제품 찾기
       where: {
         id: req.body.itemId,
@@ -448,7 +433,6 @@ router.patch('/remove-cart', isLoggedIn, async (req, res, next) => {
 
 // 제품 삭제
 router.patch('/delete', isLoggedIn, async (req, res, next) => { 
-  console.log("#!@#!@#!@", req.body);
   try {
     const item = await Item.findOne({
       where: { id: req.body.itemId }
@@ -472,7 +456,6 @@ router.get('/orders/:userId', async (req, res, next) => { // GET /post/1
   try {
     let date1 = new Date();
     let date2 = new Date('2021-12-28')
-    console.log(req.params.userId);
     const order = await Order.findAll({
       where: {
         customerId: req.params.userId,
@@ -506,7 +489,6 @@ router.get('/orders/:userId', async (req, res, next) => { // GET /post/1
 // 주문목록 가져오기 (판매자용)
 router.get('/received-orders/:userId', async (req, res, next) => { // GET /post/1
   try {
-    console.log(req.params.userId);
     const order = await Order.findAll({
       where: { providerId: req.params.userId },
       order: [
@@ -589,7 +571,6 @@ router.post('/add-customer', isLoggedIn, async (req, res, next) => {
     }
     // 제품 열람가능한 유저 추가
     const itemUsers = await item.addItemViewUsers(req.body.values.customerIds);
-    console.log('\x1b[36m',itemUsers);
 
     res.status(200).json(item);
   } catch (error) {
