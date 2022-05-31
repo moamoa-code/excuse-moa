@@ -8,7 +8,7 @@ const db = require('../models');
 const { User, OrderDetail, Inventory, Stock, InventoryGroup, InventoryDetail } = require('../models'); // 시퀄라이즈 - MySQL DB연결
 const { Item } = require('../models'); // 시퀄라이즈 - MySQL DB연결
 const { Order } = require('../models'); // 시퀄라이즈 - MySQL DB연결
-const { Op } = require("sequelize"); // 시퀄라이즈 연산자 사용
+const { Op, NOW } = require("sequelize"); // 시퀄라이즈 연산자 사용
 
 const { isLoggedIn, isProvider, isAdmin } = require('./middlewears'); // 로그인 검사 미들웨어
 const { text } = require('express');
@@ -219,18 +219,25 @@ router.patch('/confirm', isLoggedIn, async (req, res, next) => {
 
     if (req.body.memo === '' || req.body.memo === undefined || req.body.memo === null) {
       await inventory.update({
-        status: '확인완료',
+        status: req.body.value,
       },{
         where: { id: inventory.id },
       });
     } else {
       await inventory.update({
-        status: '확인완료',
+        status: req.body.value,
         memo: req.body.memo,
       },{
         where: { id: inventory.id },
       });
     }
+
+    // 보고서그룹 업데이트날짜 업데이트
+    group.changed('updatedAt', true); 
+    await group.update({
+      updatedAt: new Date()
+    });
+
     res.status(200).send('ok');
   } catch (error) {
     console.error(error);
@@ -486,6 +493,11 @@ router.post('/create', isLoggedIn, async (req, res, next) => {
       }
     })
     const inventoryDetails = await InventoryDetail.bulkCreate(inventoryDetailDatas);
+    // 보고서그룹 업데이트날짜 업데이트
+    group.changed('updatedAt', true); 
+    await group.update({
+      updatedAt: new Date()
+    });
     res.status(200).json(inventory);
   } catch (error) {
     console.error(error);

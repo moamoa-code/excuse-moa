@@ -135,7 +135,7 @@ const UpdateInventory = () => {
   const minusButtonStyle = useMemo(() => ({fontSize:'14pt', color:'#ff4d4f'}), []);
   const plusButtonStyle = useMemo(() => ({fontSize:'14pt', color:'#1890ff'}), []);
   const unitArray = ['개', '묶음', '박스', 'kg', 'l'];
-  const statusArray = ['OK', '부족', '주문완료', '주문필요', '불요', '보류'];
+  const statusArray = ['OK', '부족', '주문완료', '주문필요', '불요', '보류', '과다'];
   const locArray = ['A', 'B', 'C', 'D'];
   const isMobile = useMediaQuery({
     query: "(min-width:0px) and (max-width:740px)",
@@ -275,7 +275,8 @@ const UpdateInventory = () => {
         const stock = {
           stockId: v.Stock.id, 
           stockName: v.Stock.name, 
-          stockType: v.Stock.type, 
+          stockType: v.Stock.type,
+          desc: v.Stock.desc, 
           reqQty: v.reqQty, 
           unit: v.unit, 
           qty: v.qty, 
@@ -441,6 +442,7 @@ const UpdateInventory = () => {
             {stockInputs[selectedStockIndex] !== undefined && stockInputs[selectedStockIndex] !== null?
               <StockViewModal>
                 <h1>{stockInputs[selectedStockIndex].stockName}</h1>
+                <p>{stockInputs[selectedStockIndex]?.desc}</p>
                 <div>
                   {locArray.indexOf(stockInputs[selectedStockIndex].location) === -1?
                   <div className='selectWrap'>

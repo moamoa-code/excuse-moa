@@ -697,7 +697,7 @@ const Customers = () => {
               회원정보 수정
             </Button>
             :isMine ?
-            <Space>
+            <Space wrap>
               <Popconfirm
                 title="고객을 해제하시겠습니까?"
                 onConfirm={onDeleteCustomer}

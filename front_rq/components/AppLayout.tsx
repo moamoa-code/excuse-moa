@@ -12,6 +12,7 @@ import { MenuOutlined, UserOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
 import UserProfile from './UserProfile';
 import LoginForm from './LoginForm';
+import { HGap } from './Styled';
 
 const { Header, Content, Footer } = Layout;
 
@@ -143,11 +144,10 @@ const AppLayout: FC = ({ children }) => {
                 <MenuLi underline={true}><Link href={`/factory/add-order`}><A>주문추가</A></Link></MenuLi>
                 <MenuLi underline={false}><Link href={`/inventory`}><A>재고관리</A></Link></MenuLi>
                 <MenuLi underline={true}><Link href={`/factory`}><A>관리자페이지</A></Link></MenuLi>
-                <p></p><br />
               </>)
               : null}
             </MenuUl>
-            <Logo><Link href="/"><A>Excuse-Moa</A></Link></Logo>
+            <Logo><Link href="/"><A>Moa-Order</A></Link></Logo>
             <MenuBtn onClick={onShowMenuModal}><MenuOutlined /><UserOutlined /></MenuBtn>
           </Nav>
         </HeaderBar>
@@ -163,6 +163,8 @@ const AppLayout: FC = ({ children }) => {
                 <MenuLi underline={true}><Link href={`/management/add-order`}><A>주문추가</A></Link></MenuLi>
                 <MenuLi underline={true}><Link href={`/inventory`}><A>재고관리</A></Link></MenuLi>
                 <MenuLi underline={true}><Link href={`/management`}><A>판매자페이지</A></Link></MenuLi>
+                <HGap />
+                <MenuLi underline={true}><Link href={`/intro`}><A>About Moa-order</A></Link></MenuLi>
                 <p></p><br />
               </>)
               : null}
@@ -172,6 +174,8 @@ const AppLayout: FC = ({ children }) => {
                 <MenuLi underline={true}><Link href={`/factory/add-order`}><A>주문추가</A></Link></MenuLi>
                 <MenuLi underline={true}><Link href={`/inventory`}><A>재고관리</A></Link></MenuLi>
                 <MenuLi underline={true}><Link href={`/factory`}><A>관리자페이지</A></Link></MenuLi>
+                <HGap />
+                <MenuLi underline={true}><Link href={`/intro`}><A>About Moa-order</A></Link></MenuLi>
                 <p></p><br />
               </>)
               : null}
@@ -181,6 +185,8 @@ const AppLayout: FC = ({ children }) => {
                   <MenuLi underline={true}><Link href="/order/order-items"><A>주문하기</A></Link></MenuLi>
                   <MenuLi underline={true}><Link href={`/item/order/list/${myUserInfo?.id}`}><A>주문목록</A></Link></MenuLi>
                   <MenuLi underline={true}><Link href={`/inventory`}><A>재고관리</A></Link></MenuLi>
+                  <HGap />
+                  <MenuLi underline={true}><Link href={`/intro`}><A>About Moa-order</A></Link></MenuLi>
                 </>
               : null}
             </MenuUl>

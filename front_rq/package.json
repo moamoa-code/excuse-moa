@@ -35,6 +35,7 @@
     "react-to-print": "^2.14.3",
     "regenerator-runtime": "^0.13.9",
     "shortid": "^2.2.16",
+    "slick-carousel": "^1.8.1",
     "styled-components": "^5.2.1",
     "waait": "^1.0.5"
   },

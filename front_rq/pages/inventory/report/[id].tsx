@@ -11,6 +11,7 @@ import AppLayout from '../../../components/AppLayout';
 import User from '../../../interfaces/user';
 import { confirmInventoryReportAPI, deleteInventoryAPI, getInventoriesAPI, getInventoryDataAPI, getInventoryGroupAPI } from '../../../apis/inventory';
 import dayjs from 'dayjs';
+import 'dayjs/locale/ko';
 import { Block, ContainerBig, ContainerWide, FormBox, HGap, InventoryTable, LeftAndRightDiv } from '../../../components/Styled';
 import useInput from '../../../hooks/useInput';
 import { useMediaQuery } from 'react-responsive';
@@ -18,6 +19,7 @@ import ResDataWithCount from '../../../interfaces/resData';
 import { MoreOutlined } from '@ant-design/icons';
 
 const InventoryReports = () => {
+  dayjs.locale('ko');
   const router = useRouter();
   const queryClient = useQueryClient();
   const { id } = router.query; // 인벤토리 그룹 id
@@ -30,7 +32,7 @@ const InventoryReports = () => {
   const [ inventoriesData, setInventoriesData ] = useState(null); // inventories.rows
   const [ inventoryData, setInventoryData ] = useState(null);
   const [ stockInputs, setStockInputs ] = useState([]);
-  const statusArray = ['OK', '부족', '주문완료', '주문필요', '불요', '보류'];
+  const statusArray = ['OK', '부족', '주문완료', '주문필요', '불요', '보류', '과다'];
   const [ types, setTypes ] = useState([]); // 재고품목 카테고리
   const { Title } = Typography;
   const [ memo, onChangeMemo, setMemo ] = useInput('');
@@ -116,7 +118,7 @@ const InventoryReports = () => {
     getInventoryData(id);
   }
 
-  const onConfirmReport = () => {
+  const onConfirmReport = (value) => () =>{
     if (!inventoryData) {
       return message.error('보고서 데이터가 없습니다.');
     }
@@ -126,6 +128,7 @@ const InventoryReports = () => {
     const data = { 
       id: inventoryData?.inventory.id, 
       memo,
+      value,
       datas: stockInputs,
     }
     setLoading(true);
@@ -166,7 +169,7 @@ const InventoryReports = () => {
       dataIndex: 'updatedAt',
       key: 'updatedAt',
       render: (text, record) => (
-        <>{dayjs(text).format('YY.MM.DD HH:mm')}</>
+        <>{dayjs(text).format('YY.MM.DD (dd) HH:mm')}</>
       )
     }, {
       title: '상태',
@@ -217,7 +220,7 @@ const InventoryReports = () => {
           <Divider><Title level={4}>{inventoryGroup?.name} 재고 보고서</Title></Divider>
           <LeftAndRightDiv>
             <div className='left'>
-              {dayjs(inventoryData?.inventory.updatedAt).format('YYYY.MM.DD HH:MM')}
+              {dayjs(inventoryData?.inventory.updatedAt).format('YYYY.MM.DD (dd) HH:MM')}
             </div>
             <div className='right'>
               <Link href={`/inventory/update/${inventoryData?.inventory.id}`}><a>
@@ -336,7 +339,8 @@ const InventoryReports = () => {
             <Block>
             <Space wrap>
               <input onChange={onChangeMemo} value={memo} maxLength={99}></input>
-              <Button type='primary' onClick={onConfirmReport}>보고서 확인 완료</Button>
+              <Button type='primary' onClick={onConfirmReport('확인완료')}>보고서 확인 완료</Button>
+              <Button type='dashed' onClick={onConfirmReport('출고완료')} danger>재고 출고완료</Button>
             </Space>
             </Block>
           </FormBox>

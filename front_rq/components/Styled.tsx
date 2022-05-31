@@ -1066,6 +1066,10 @@ export const StockViewModal = styled.div`
 
   h1 {
     flex-basis: 100%;
+    margin: 0;
+  }
+  p {
+    flex-basis: 100%;
   }
   div {
     

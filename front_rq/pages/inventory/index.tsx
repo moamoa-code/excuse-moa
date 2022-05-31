@@ -1,6 +1,7 @@
 import { Button, message, Popconfirm, Typography } from 'antd';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import 'dayjs/locale/ko';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
@@ -15,6 +16,7 @@ import User from '../../interfaces/user';
 
 // 재고
 const CreateInventory = () => {
+  dayjs.locale('ko');
   const [loading, setLoading] = useState(false);
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
   const { Title } = Typography;
@@ -67,7 +69,7 @@ const CreateInventory = () => {
       dataIndex: 'updatedAt',
       key: 'updatedAt',
       render: (text, record) => (
-        <>{dayjs(text).format('YY.MM.DD HH:mm')}</>
+        <>{dayjs(text).format('YY.MM.DD (dd) HH:mm')}</>
       )
     }, {
       title: '',
