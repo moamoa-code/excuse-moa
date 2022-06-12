@@ -452,8 +452,6 @@ const OrderAnalysis = () => {
   return (
     <AppLayout>
       <ContainerBig>
-      {JSON.stringify(datasByProvider)}<br /><br />
-      {JSON.stringify(orders)}
       {isLoading?
         <LoadingModal>
           <Spin /> 로딩중
