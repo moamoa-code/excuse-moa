@@ -140,10 +140,11 @@ const AppLayout: FC = ({ children }) => {
               : null}
               {myUserInfo?.role === 'ADMINISTRATOR'?
               (<>
-                <MenuLi underline={true}><Link href={`/factory/order-list`}><A>주문현황</A></Link></MenuLi>
-                <MenuLi underline={true}><Link href={`/factory/add-order`}><A>주문추가</A></Link></MenuLi>
+                <MenuLi underline={false}><Link href={`/factory/order-list`}><A>주문현황</A></Link></MenuLi>
+                <MenuLi underline={false}><Link href={`/factory/add-order`}><A>주문추가</A></Link></MenuLi>
+                <MenuLi underline={false}><Link href={`/factory/orders`}><A>출하량분석</A></Link></MenuLi>
                 <MenuLi underline={false}><Link href={`/inventory`}><A>재고관리</A></Link></MenuLi>
-                <MenuLi underline={true}><Link href={`/factory`}><A>관리자페이지</A></Link></MenuLi>
+                <MenuLi underline={false}><Link href={`/factory`}><A>관리자페이지</A></Link></MenuLi>
               </>)
               : null}
             </MenuUl>
@@ -172,6 +173,7 @@ const AppLayout: FC = ({ children }) => {
               (<>
                 <MenuLi underline={true}><Link href={`/factory/order-list`}><A>주문현황</A></Link></MenuLi>
                 <MenuLi underline={true}><Link href={`/factory/add-order`}><A>주문추가</A></Link></MenuLi>
+                <MenuLi underline={true}><Link href={`/factory/orders`}><A>출하량분석</A></Link></MenuLi>
                 <MenuLi underline={true}><Link href={`/inventory`}><A>재고관리</A></Link></MenuLi>
                 <MenuLi underline={true}><Link href={`/factory`}><A>관리자페이지</A></Link></MenuLi>
                 <HGap />

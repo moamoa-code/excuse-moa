@@ -20,7 +20,7 @@ import ItemView from '../../components/ItemView';
 import shortId from 'shortid';
 import UserInfoBox from '../../components/UserInfoBox';
 import useInput from '../../hooks/useInput';
-import { CartItems, CenteredDiv, CommentInput, Container800, ContentsBox, CustomerForm, ItemForm, ItemsContainer, ItemSelector, ListBox, LoadingModal, OrderTypeSelects, Red, SearchAndTitle, TiTle } from '../../components/Styled';
+import { CartItems, CenteredDiv, CommentInput, Container800, ContentsBox, CustomerForm, ItemForm, ItemsContainer, ItemSelector, ListBox, LoadingModal, OrderTypeSelects, Red, SearchAndTitle, SearchBlock, TiTle } from '../../components/Styled';
 
 const addOrder = () => {
   const router = useRouter();
@@ -59,6 +59,10 @@ const addOrder = () => {
   // 입력 모드 상태
   const [ isNewCustomer, setIsNewCustomer ] = useState(false); // 구매자 새로입력
   const [ isNewProduct, setIsNewProduct ] = useState(false); // 제품 새로 입력
+  // 구매자 검색
+  const [ searchCustomerTxt, onChangeSearchCustomerTxt, setSearchCustomerTxt ] = useInput('');
+  const [ filteredCustomers, setFilteredCustomers ] = useState(null);
+  const [ isFilteredCustomerList, setIsFilteredCustomerList ] = useState(false);
   // 새로운 제품 입력 값
   const codeNames = ['싱글', 'ES', 'HOUSE', 'BKY', 'KM5', 'KM6', 'KM5 212', 'HYA', 'BR', 'C7', '506', 'A', 'B', 'P', 'HA', 'ST', 'HOUSE 212', 'DECAFFEIN', '블랜드'];
   const units = ['200g', '500g', '1Kg', '400g', '100g'];
@@ -331,6 +335,19 @@ const addOrder = () => {
     setIsVisible(false);
   };
 
+  // 구매자 검색
+  const onCustomerSearch = () => {
+    if (searchCustomerTxt.length < 1) {
+      return message.error('검색할 회사명을 입력해 주세요.');
+    }
+    let list = null;
+    list = customers.filter(
+      (v) => v.company.includes(searchCustomerTxt)
+    );
+    setFilteredCustomers(list);
+    setIsFilteredCustomerList(true);
+  }
+
   return (
     <AppLayout>
       <Container800>
@@ -365,46 +382,81 @@ const addOrder = () => {
         : null}
         <br />
         <Divider orientation="left">
-          <TiTle>
-          2. 구매자 선택
-          </TiTle>
+          <TiTle>2. 구매자 선택</TiTle>
         </Divider>
-        {!selectedProvider? null :
+        {customers?.length > 9? 
+          <SearchBlock>
+            <div>
+              <input
+                placeholder="회사명"
+                value={searchCustomerTxt}
+                onChange={onChangeSearchCustomerTxt}
+              />
+              <button type='button' className='search' 
+              onClick={onCustomerSearch}
+              >
+                <SearchOutlined />
+              </button>
+            </div>
+            <button 
+              type='button' 
+              onClick={()=>{
+                setIsFilteredCustomerList(false);
+              }}>전체보기
+            </button>
+          </SearchBlock>
+        :null}
+        {!selectedProvider ? null 
+        : (
           <ContentsBox>
             <ListBox>
               <Space wrap>
-                {customers?.map((v) => {
+                {
+                (!isFilteredCustomerList? customers:
+                filteredCustomers)?.map((v) => {
                   if (v.id === selectedCustomer) {
-                    return <Button size='large' type="primary">{v.company}</Button>
+                    return (
+                      <Button size="large" type="primary">
+                        {v.company}
+                      </Button>
+                    );
                   }
-                  return <Button size='large' type="dashed" onClick={onCustomerSelectClick(v.id)}>{v.company}</Button>
+                  return (
+                    <Button
+                      size="large"
+                      type="dashed"
+                      onClick={onCustomerSelectClick(v.id)}
+                    >
+                      {v.company}
+                    </Button>
+                  );
                 })}
               </Space>
-            </ListBox><br />
-              <Button 
-                size='large'
-                type="dashed"
-                onClick={
-                  () => {
-                    setSelectedCustomer(null);
-                    setIsNewCustomer(true);
-                }} 
-                danger
-              >
-                <PlusOutlined /> 새로입력
-              </Button>
-            {isNewCustomer? 
+            </ListBox>
+            <br />
+            <Button
+              size="large"
+              type="dashed"
+              onClick={() => {
+                setSelectedCustomer(null);
+                setIsNewCustomer(true);
+              }}
+              danger
+            >
+              <PlusOutlined /> 새로입력
+            </Button>
+            {isNewCustomer ? (
               <CustomerForm>
                 <tr>
-                  <td>받는분 <Red>*</Red></td>
+                  <td>
+                    받는분 <Red>*</Red>
+                  </td>
                   <td>
                     <input
-                      placeholder='필수항목'
+                      placeholder="필수항목"
                       maxLength={18}
                       value={name}
-                      onChange={
-                        (e) => (setName(e.target.value))
-                      }
+                      onChange={(e) => setName(e.target.value)}
                     />
                   </td>
                 </tr>
@@ -412,16 +464,14 @@ const addOrder = () => {
                   <td>전화번호</td>
                   <td>
                     <input
-                      placeholder='필요시 입력'
+                      placeholder="필요시 입력"
                       value={phone}
                       maxLength={12}
-                      onChange={
-                        (e) => {
-                          let value = e.target.value;
-                          value = e.target.value.replace(/[^0-9]/g, '');
-                          setPhone(value);
-                        }
-                      }
+                      onChange={(e) => {
+                        let value = e.target.value;
+                        value = e.target.value.replace(/[^0-9]/g, "");
+                        setPhone(value);
+                      }}
                     />
                   </td>
                 </tr>
@@ -429,24 +479,21 @@ const addOrder = () => {
                   <td>주소</td>
                   <td>
                     <input
-                      placeholder='필요시 입력'
+                      placeholder="필요시 입력"
                       value={address}
                       maxLength={100}
-                      onChange={
-                        (e) => (setAddress(e.target.value))
-                      }
+                      onChange={(e) => setAddress(e.target.value)}
                     />
                   </td>
                 </tr>
               </CustomerForm>
-            : null
-            }
+            ) : null}
           </ContentsBox>
-        }
+        )}
         <br />
-        {selectedCustomer? 
+        {selectedCustomer ? (
           <UserInfoBox userInfo={selectedCustomerData} />
-        : null}
+        ) : null}
         <br />
         {isNewCustomer ? null :
         <>

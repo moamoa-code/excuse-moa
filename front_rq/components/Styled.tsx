@@ -1010,6 +1010,12 @@ export const InventoryTable = styled .table`
     font-size: 12pt;
     font-weight: 600;
   }
+  .totalQty {
+    background-color: white;
+    td {
+      text-align: right;
+    }
+  }
   .numberInput {
     font-size: 13pt;
     font-weight: bold;

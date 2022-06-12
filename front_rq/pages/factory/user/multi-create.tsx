@@ -6,7 +6,7 @@ import Link from 'next/link';
 import React, { useCallback, useState, useEffect } from 'react';
 import { dehydrate, QueryClient, useQuery, useQueryClient } from 'react-query';
 import Head from 'next/head';
-import { Form, Input, Checkbox, Button, notification, Space, Tag, Select, message, Radio } from 'antd';
+import { Form, Input, Checkbox, Button, notification, Space, Tag, Select, message, Radio, Breadcrumb } from 'antd';
 import { SearchOutlined, SmileOutlined } from '@ant-design/icons';
 import { Typography } from 'antd';
 
@@ -185,6 +185,13 @@ const CreateUser = () => {
       <Head>
           <title>회원 생성</title>
         </Head>
+      <Breadcrumb>
+        <Breadcrumb.Item>
+          <Link href='/factory/'><a>관리자페이지</a></Link>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>회원관리</Breadcrumb.Item>
+        <Breadcrumb.Item>여러회원생성</Breadcrumb.Item>
+      </Breadcrumb><br />
         <Title level={3}>회원 생성</Title><br />
       <Radio.Group onChange={handleAutoKeyChange} defaultValue={true}>
         <Radio.Button value={false}>아이디 수동입력</Radio.Button>

@@ -66,6 +66,11 @@ export function loadTodosAPI(data){
   return axios.post(`/order/todos`, data).then((response) => response.data);
 }
 
+// 주문통계 불러오기
+export function loadOrderDetails(data){
+  return axios.post(`/order/order-details`, data).then((response) => response.data);
+}
+
 // 주문서 목록 불러오기 (판매자용)
 export function loadReceivedOrdersAPI(userId: string, number?: number){
   if (number){

@@ -57,11 +57,11 @@ router.post('/regist', isProvider, upload.none(), async (req, res, next) => {
     }
     if (req.body.imgSrc !== undefined) {
       item = await Item.create({
-        codeName: req.body.codeName,
+        codeName: String(req.body.codeName).toUpperCase().trim(),
         name: req.body.name,
         scope,
         packageName: req.body.packageName,
-        unit: req.body.unit,
+        unit: String(req.body.unit).toUpperCase().trim(),
         msrp: req.body.msrp,
         supplyPrice: req.body.supplyPrice,
         description: req.body.description,
@@ -70,11 +70,11 @@ router.post('/regist', isProvider, upload.none(), async (req, res, next) => {
       })
     } else {
       item = await Item.create({
-        codeName: req.body.codeName,
+        codeName: String(req.body.codeName).toUpperCase().trim(),
         name: req.body.name,
         scope,
         packageName: req.body.packageName,
-        unit: req.body.unit,
+        unit: String(req.body.unit).toUpperCase().trim(),
         msrp: req.body.msrp,
         description: req.body.description,
         supplyPrice: req.body.supplyPrice,
@@ -104,11 +104,11 @@ router.post('/update', isLoggedIn, upload.none(), async (req, res, next) => {
     }
     if (req.body.imgSrc !== undefined) {
       await Item.update({
-        codeName: req.body.codeName,
+        codeName: String(req.body.codeName).toUpperCase().trim(),
         name: req.body.name,
         scope,
         packageName: req.body.packageName,
-        unit: req.body.unit,
+        unit: String(req.body.unit).toUpperCase().trim(),
         msrp: req.body.msrp,
         supplyPrice: req.body.supplyPrice,
         description: req.body.description,
@@ -119,10 +119,10 @@ router.post('/update', isLoggedIn, upload.none(), async (req, res, next) => {
       })
     } else {
       await Item.update({
-        codeName: req.body.codeName,
+        codeName: String(req.body.codeName).toUpperCase().trim(),
         name: req.body.name,
         packageName: req.body.packageName,
-        unit: req.body.unit,
+        unit: String(req.body.unit).toUpperCase().trim(),
         scope,
         msrp: req.body.msrp,
         description: req.body.description,
@@ -434,17 +434,23 @@ router.patch('/remove-cart', isLoggedIn, async (req, res, next) => {
 // 제품 삭제
 router.patch('/delete', isLoggedIn, async (req, res, next) => { 
   try {
+    const user = await User.findOne({
+      where: { id: req.user.id }
+    })
+    if (!user) {
+      return res.status(404).send('권한이 없습니다.');
+    }
     const item = await Item.findOne({
       where: { id: req.body.itemId }
     })
-    if ( item.UserId === req.user.id ) {
+    if ( item.UserId === req.user.id || user.role === 'ADMINISTRATOR') {
       await Item.destroy({
         where: { id: item.id }
       })
     } else {
-      res.status(404).send('권한이 없습니다.');
+      return res.status(404).send('권한이 없습니다.');
     }
-    res.status(200).json(item.id);
+    res.status(200).send('ok');
   } catch (error) {
     console.error(error);
     next(error);

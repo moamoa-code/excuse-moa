@@ -16,7 +16,7 @@ import { Block, ContainerBig, ContainerWide, FormBox, HGap, InventoryTable, Left
 import useInput from '../../../hooks/useInput';
 import { useMediaQuery } from 'react-responsive';
 import ResDataWithCount from '../../../interfaces/resData';
-import { MoreOutlined } from '@ant-design/icons';
+import { CalculatorOutlined, MoreOutlined } from '@ant-design/icons';
 
 const InventoryReports = () => {
   dayjs.locale('ko');
@@ -38,7 +38,9 @@ const InventoryReports = () => {
   const [ memo, onChangeMemo, setMemo ] = useInput('');
   const [ isEmpty, setIsEmpty ] = useState(false);
   const [ extendedRow, setExtendedRow ] = useState(null);
+  const [ showTotalQty, setShowTotalQty ] = useState(false);
   const shortageStyle = useMemo(() => ({backgroundColor: '#FFBCD1'}), []);
+  const calcBtnStyle = useMemo(() => ({fontSize: '16pt', color: '#5e5e5e'}), []);
   const isMobile = useMediaQuery({
     query: "(min-width:0px) and (max-width:740px)",
   });
@@ -223,9 +225,19 @@ const InventoryReports = () => {
               {dayjs(inventoryData?.inventory.updatedAt).format('YYYY.MM.DD (dd) HH:MM')}
             </div>
             <div className='right'>
+              
+              <Space wrap>
+              <Button 
+                icon={<CalculatorOutlined style={calcBtnStyle}/>} 
+                onClick={()=>{
+                  setShowTotalQty(!showTotalQty);
+                }}
+              >
+              </Button>
               <Link href={`/inventory/update/${inventoryData?.inventory.id}`}><a>
                 <Button type='primary' disabled={!inventoryData}>+ 재고조사 보고서 갱신</Button>
               </a></Link>
+              </Space>
             </div>
           </LeftAndRightDiv>
           <HGap />
@@ -244,6 +256,7 @@ const InventoryReports = () => {
               </tr>
             </thead>
               {types?.map((type, i) => {
+                let totalQty = 0;
                 return (
                   <tbody key={i}>
                     <tr className='code'>
@@ -253,6 +266,7 @@ const InventoryReports = () => {
                     </tr>
                     {stockInputs?.map((v, j)=>{
                       if (v.stockType === type) {
+                        totalQty = totalQty + v?.qty;
                         return (
                           <>
                             <tr 
@@ -329,6 +343,13 @@ const InventoryReports = () => {
                         )
                       }
                     })}
+                    {showTotalQty? 
+                      <tr className='totalQty'>
+                        <td colSpan={isMobile?3:6}>
+                          총 현재수량: {totalQty.toFixed(1)}
+                        </td>
+                      </tr>
+                    :null}
                   </tbody>
                 )
               })}

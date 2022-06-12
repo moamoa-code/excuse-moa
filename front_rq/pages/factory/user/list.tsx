@@ -4,7 +4,7 @@ import React, { useCallback, useState, useRef, useEffect } from 'react';
 import { dehydrate, QueryClient, useQuery, useQueryClient } from 'react-query';
 import Head from 'next/head';
 import { Form, Input, Button, notification, 
-  Space, Descriptions, Table, Select, message, Popconfirm, Modal } from 'antd';
+  Space, Descriptions, Table, Select, message, Popconfirm, Modal, Breadcrumb } from 'antd';
 import { Typography } from 'antd';
 import styled from 'styled-components';
 import dayjs from 'dayjs';
@@ -532,8 +532,15 @@ const onChangeUphone = (e) => {
   <AppLayout>
     <ContainerWide>
       <Head>
-        <title>고객 등록</title>
+        <title>회원목록</title>
       </Head>
+      <Breadcrumb>
+        <Breadcrumb.Item>
+          <Link href='/factory/'><a>관리자페이지</a></Link>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>회원관리</Breadcrumb.Item>
+        <Breadcrumb.Item>회원목록</Breadcrumb.Item>
+      </Breadcrumb>
       <Title level={4} style={{ marginTop: '30px' }} >회원 검색</Title>
       <SearchBlock>
         <div>

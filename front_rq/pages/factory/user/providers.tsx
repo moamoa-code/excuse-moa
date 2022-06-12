@@ -4,7 +4,7 @@ import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { dehydrate, QueryClient, useQuery, useQueryClient } from 'react-query';
 import Head from 'next/head';
 import { Form, Input, Checkbox, Button, notification, 
-  Space, Tag, Descriptions, Table, Select, message, Popconfirm } from 'antd';
+  Space, Tag, Descriptions, Table, Select, message, Popconfirm, Breadcrumb } from 'antd';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { Typography } from 'antd';
 import styled from 'styled-components';
@@ -17,6 +17,8 @@ import AppLayout from '../../../components/AppLayout';
 import User from '../../../interfaces/user';
 import { useMediaQuery } from 'react-responsive';
 import MyTable from '../../../components/MyTable';
+import { Container800 } from '../../../components/Styled';
+import Link from 'next/link';
 
 
 const ProviderList = () => {
@@ -280,10 +282,17 @@ const ProviderList = () => {
 
   return (
   <AppLayout>
-    <div style={{maxWidth: '800px', padding: '10px', margin: '0 auto'}}>
+    <Container800>
       <Head>
         <title>판매회원 관리</title>
       </Head>
+      <Breadcrumb>
+        <Breadcrumb.Item>
+          <Link href='/factory/'><a>관리자페이지</a></Link>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>회원관리</Breadcrumb.Item>
+        <Breadcrumb.Item>판매회원관리</Breadcrumb.Item>
+      </Breadcrumb><br />
       <Title level={4} >판매회원 관리</Title>
       {isMobile? 
         <MyTable
@@ -401,7 +410,7 @@ const ProviderList = () => {
         : null}
         </div>
       :null}
-    </div>
+    </Container800>
   </AppLayout>
   );
 };

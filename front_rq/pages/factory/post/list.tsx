@@ -3,7 +3,7 @@ import axios from 'axios';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import React, { useState } from 'react';
-import { message, Table, Typography } from 'antd';
+import { Breadcrumb, message, Table, Typography } from 'antd';
 import { dehydrate, QueryClient, useQuery } from 'react-query';
 import { loadMyInfoAPI } from '../../../apis/user';
 import AppLayout from '../../../components/AppLayout';
@@ -14,6 +14,7 @@ import dayjs from 'dayjs';
 import { useMediaQuery } from 'react-responsive';
 import MyTable from '../../../components/MyTable';
 import User from '../../../interfaces/user';
+import { Container800 } from '../../../components/Styled';
 
 const ProviderPostList = () => {
   // const queryClient = useQueryClient();
@@ -85,7 +86,14 @@ const ProviderPostList = () => {
 
   return (
     <AppLayout>
-      <div style={{maxWidth: '800px', padding: '10px', margin: '0 auto'}}>
+      <Container800>
+      <Breadcrumb>
+        <Breadcrumb.Item>
+          <Link href='/factory/'><a>관리자페이지</a></Link>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>공지관리</Breadcrumb.Item>
+        <Breadcrumb.Item>공지목록</Breadcrumb.Item>
+      </Breadcrumb><br />
         <Title level={4}>게시글 관리</Title> <br/>
         {isMobile?
           <MyTable 
@@ -103,7 +111,7 @@ const ProviderPostList = () => {
             expandable={expandable}
           />
         }
-      </div>
+      </Container800>
     </AppLayout>
   );
 };

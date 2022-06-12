@@ -31,6 +31,7 @@ import {
   InfoCircleTwoTone,
   MinusOutlined,
   PlusOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import Modal from "antd/lib/modal/Modal";
 import { loadCustomerItemListAPI, loadItemListAPI } from "../../apis/item";
@@ -55,6 +56,7 @@ import {
   LoadingModal,
   OrderTypeSelects,
   Red,
+  SearchBlock,
   TiTle,
 } from "../../components/Styled";
 
@@ -90,6 +92,10 @@ const addNewOrder = () => {
   // 입력 모드 상태
   const [isNewCustomer, setIsNewCustomer] = useState(false); // 구매자 새로입력
   const [isNewProduct, setIsNewProduct] = useState(false); // 제품 새로 입력
+  // 구매자 검색
+  const [ searchCustomerTxt, onChangeSearchCustomerTxt, setSearchCustomerTxt ] = useInput('');
+  const [ filteredCustomers, setFilteredCustomers ] = useState(null);
+  const [ isFilteredCustomerList, setIsFilteredCustomerList ] = useState(false);
   // 새로운 제품 입력 값
   const codeNames = [
     "싱글",
@@ -241,6 +247,9 @@ const addNewOrder = () => {
   };
   // 판매자 선택
   const onProviderSelectClick = (id) => () => {
+    setIsFilteredCustomerList(false);
+    setSearchCustomerTxt('');
+    setFilteredCustomers(null);
     setSelectedProvider(id);
     getProviderData(id);
     setSelectedCustomer("");
@@ -397,6 +406,9 @@ const addNewOrder = () => {
     setLoading(true);
     loadProviderByIdAPI(userId)
       .then((response) => {
+        setIsFilteredCustomerList(false);
+        setSearchCustomerTxt('');
+        setFilteredCustomers(null);
         setSelectedProviderData(response);
         setCustomers(response.Customers);
       })
@@ -463,6 +475,19 @@ const addNewOrder = () => {
   const handleModalClose = () => {
     setIsVisible(false);
   };
+
+  // 구매자 검색
+  const onCustomerSearch = () => {
+    if (searchCustomerTxt.length < 1) {
+      return message.error('검색할 회사명을 입력해 주세요.');
+    }
+    let list = null;
+    list = customers.filter(
+      (v) => v.company.includes(searchCustomerTxt)
+    );
+    setFilteredCustomers(list);
+    setIsFilteredCustomerList(true);
+  }
 
   return (
     <AppLayout>
@@ -537,11 +562,36 @@ const addNewOrder = () => {
         <Divider orientation="left">
           <TiTle>2. 구매자 선택</TiTle>
         </Divider>
-        {!selectedProvider ? null : (
+        {customers?.length > 9? 
+          <SearchBlock>
+            <div>
+              <input
+                placeholder="회사명"
+                value={searchCustomerTxt}
+                onChange={onChangeSearchCustomerTxt}
+              />
+              <button type='button' className='search' 
+              onClick={onCustomerSearch}
+              >
+                <SearchOutlined />
+              </button>
+            </div>
+            <button 
+              type='button' 
+              onClick={()=>{
+                setIsFilteredCustomerList(false);
+              }}>전체보기
+            </button>
+          </SearchBlock>
+        :null}
+        {!selectedProvider ? null 
+        : (
           <ContentsBox>
             <ListBox>
               <Space wrap>
-                {customers?.map((v) => {
+                {
+                (!isFilteredCustomerList? customers:
+                filteredCustomers)?.map((v) => {
                   if (v.id === selectedCustomer) {
                     return (
                       <Button size="large" type="primary">

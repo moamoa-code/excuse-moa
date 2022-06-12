@@ -510,6 +510,72 @@ router.get('/all', isProvider, async (req, res, next) => {
   }
 });
 
+
+// 주문 상세 불러오기 (주문 통계)
+router.post('/order-details', async (req, res, next) => {
+  try {
+    console.log('order-details @##@#@',req.body)
+    let from = new Date(req.body.from);
+    from.setHours('0');
+    let til = new Date(req.body.til);
+    til.setHours('23');
+    til.setMinutes('59');
+    til.setSeconds('59');
+    const codeNames = req.body.codeNames? req.body.codeNames : [];
+    const itemStatus = req.body.itemStatus? req.body.itemStatus : '';
+    const providerIdList = req.body.providerIdList? req.body.providerIdList : '';
+    let orderDetailWhere = {
+      createdAt: { [Op.between]: [from, til] },
+      status: itemStatus
+    }
+    if (codeNames.length >= 1){
+      orderDetailWhere = {
+        createdAt: { [Op.between]: [from, til] },
+        status: itemStatus,
+        itemCodeName: { [Op.or]: codeNames}
+      }
+    }
+    let orderWhere = {
+      status: {[Op.notLike]: '%' +'주문취소' + '%'},
+      factoryStatus: '출하',
+    }
+    if (providerIdList !== '') {
+      orderWhere = {
+        status: {[Op.notLike]: '%' +'주문취소' + '%'},
+        factoryStatus: '출하',
+        ProviderId: { [Op.or]: providerIdList}
+      }
+    }
+    const orderDetails = await OrderDetail.findAll({
+      where: orderDetailWhere,
+      attributes: ["id", "itemSupplyPrice", "qty", "itemUnit", "itemCodeName"],
+      order: [
+        ['createdAt', 'DESC'],
+      ],
+      include: [{
+        model: Order,
+        as: 'Order',
+        attributes: ["id"],
+        where: orderWhere,
+        include: [{
+          model: User,
+          as: 'Provider',
+          attributes: ["id", "company", "key"],
+        }, {
+          model: User,
+          as: 'Customer',
+          attributes: ["id", "company", "key"],
+        }]
+      }]
+    });
+    res.status(200).json(orderDetails);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+
 // 주문목록 가져오기 (공장)
 router.post('/todos', async (req, res, next) => {
   try {

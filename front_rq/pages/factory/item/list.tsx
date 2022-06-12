@@ -3,7 +3,7 @@ import axios from 'axios';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import React, { useState } from 'react';
-import { Button, Table, Typography } from 'antd';
+import { Breadcrumb, Button, Table, Typography } from 'antd';
 import { dehydrate, QueryClient, useQuery } from 'react-query';
 import { loadMyInfoAPI, loadProvidersAPI } from '../../../apis/user';
 import { loadItemListAPI } from '../../../apis/item';
@@ -122,6 +122,13 @@ const FactoryItemList = () => {
   return (
     <AppLayout>
       <ContainerWide>
+      <Breadcrumb>
+        <Breadcrumb.Item>
+          <Link href='/factory/'><a>관리자페이지</a></Link>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>제품관리</Breadcrumb.Item>
+        <Breadcrumb.Item>제품목록</Breadcrumb.Item>
+      </Breadcrumb><br />
       <Title level={4}>판매사 선택</Title>
         <OptionContainer>
           {providerList?.map((v)=>{

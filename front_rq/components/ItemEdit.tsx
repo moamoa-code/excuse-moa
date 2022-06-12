@@ -143,7 +143,8 @@ const ItemEdit = ({ item, myUserInfo }) => {
       alert(error.response.data);
     })
     .finally(() => {
-      Router.replace(`/management/items`);
+      // Router.replace(`/management/items`);
+      Router.back()
       setLoading(false);
     });
   }, []);
@@ -163,7 +164,7 @@ const ItemEdit = ({ item, myUserInfo }) => {
 
   return (
     <>
-      <Divider>제품 수정ㅇㅈㅂ {itemId}</Divider>
+      <Divider>제품 수정 {itemId}</Divider>
       <Form>
         <div style={{ textAlign: 'center' }}>
           <label htmlFor="user-price">제품사진 (2MB 제한)</label>

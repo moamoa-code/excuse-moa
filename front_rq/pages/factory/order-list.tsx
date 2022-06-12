@@ -196,8 +196,10 @@ const CodeName = styled.div`
   }
 `;
 const FloatingButton = styled.div`
+  width: 44px;
   position: fixed;
   left: 50%;
+  transform: translate(-50%, 0);
   bottom: 20px;
   z-index: 3;
 `;

@@ -2,7 +2,7 @@
 import axios, { AxiosError } from 'axios';
 import { GetServerSidePropsContext } from 'next';
 import React, { useCallback, useState } from 'react';
-import { Form, Input, Button, Tag, Checkbox, Divider, Space, notification, message } from 'antd';
+import { Form, Input, Button, Tag, Checkbox, Divider, Space, notification, message, Breadcrumb } from 'antd';
 import { useRouter } from 'next/router';
 import { dehydrate, QueryClient, useQuery, useMutation, useQueryClient } from 'react-query';
 import { loadMyInfoAPI, loadProviderByIdAPI } from '../../../../apis/user';
@@ -13,6 +13,8 @@ import User from '../../../../interfaces/user';
 import ItemEdit from '../../../../components/ItemEdit';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import Router from 'next/router';
+import { Container800 } from '../../../../components/Styled';
+import Link from 'next/link';
 
 const EditItem = () => {
   const router = useRouter();
@@ -61,11 +63,21 @@ const EditItem = () => {
   }
   return (
     <AppLayout>
-      <div style={{maxWidth: '800px', padding: '10px', margin: '0 auto'}}>
+      <Container800>
+      <Breadcrumb>
+        <Breadcrumb.Item>
+          <Link href='/factory/'><a>관리자페이지</a></Link>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>제품관리</Breadcrumb.Item>
+        <Breadcrumb.Item>
+          <Link href='/factory/item/list'><a>제품목록</a></Link>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>제품수정</Breadcrumb.Item>
+      </Breadcrumb><br />
         <ItemEdit item={item} myUserInfo={myUserInfo} />
         <br/><br/>
           <Button onClick={()=> (Router.replace(`/factory/item/list`))}>목록으로 돌아가기</Button>
-      </div>
+      </Container800>
     </AppLayout>
   );
 };

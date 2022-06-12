@@ -3,7 +3,7 @@ import axios, { AxiosError } from 'axios';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Form, Input, Button, Tag, Checkbox, Divider, Space, notification, Card, Image, Typography, Popconfirm, Select, message, Spin } from 'antd';
+import { Form, Input, Button, Tag, Checkbox, Divider, Space, notification, Card, Image, Typography, Popconfirm, Select, message, Spin, Breadcrumb } from 'antd';
 import { useRouter } from 'next/router';
 import Router from 'next/router';
 import { dehydrate, QueryClient, useQuery, useMutation, useQueryClient } from 'react-query';
@@ -177,7 +177,17 @@ const EditPost = () => {
         </LoadingModal>
       :null}
       <ContainerMid>
-      <Divider orientation="left"><Title level={4}>공지사항 수정</Title></Divider>
+        <Breadcrumb>
+          <Breadcrumb.Item>
+            <Link href='/factory/'><a>관리자페이지</a></Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Item>공지관리</Breadcrumb.Item>
+          <Breadcrumb.Item>
+            <Link href='/factory/post/list'><a>공지목록</a></Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Item>공지수정</Breadcrumb.Item>
+        </Breadcrumb><br />
+        <Divider orientation="left"><Title level={4}>공지사항 수정</Title></Divider>
         <UserInfoBox userInfo={provider}></UserInfoBox>
         <br/>
         공개범위:

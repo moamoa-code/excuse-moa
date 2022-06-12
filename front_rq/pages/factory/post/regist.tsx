@@ -6,7 +6,7 @@ import Router from 'next/router';
 
 import React, { useCallback, useState, useRef } from 'react';
 import Head from 'next/head';
-import { Form, Input, Checkbox, Button, List, Typography, message, Tag, Select } from 'antd';
+import { Form, Input, Checkbox, Button, List, Typography, message, Tag, Select, Breadcrumb } from 'antd';
 import { dehydrate, QueryClient, useQuery, useQueryClient } from 'react-query';
 
 import { backUrl } from '../../../config/config';
@@ -21,6 +21,7 @@ import { SearchOutlined } from '@ant-design/icons';
 import UserInfoBox from '../../../components/UserInfoBox';
 import { Block, ContainerMid, OptionContainer, Red, SearchBlock } from '../../../components/Styled';
 import { registerPostAPI } from '../../../apis/post';
+import Link from 'next/link';
 
 
 const RegistPost = () => {
@@ -127,6 +128,13 @@ const RegistPost = () => {
       <Head>
         <title>공지사항 등록</title>
       </Head>
+      <Breadcrumb>
+        <Breadcrumb.Item>
+          <Link href='/factory/'><a>관리자페이지</a></Link>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>공지관리</Breadcrumb.Item>
+        <Breadcrumb.Item>공지등록</Breadcrumb.Item>
+      </Breadcrumb><br />
       <Title level={3}>공지사항 등록</Title>
       <Form style={{ margin: '10px 0 20px' }} encType="multipart/form-data" onFinish={onSubmit} >
         <Block>

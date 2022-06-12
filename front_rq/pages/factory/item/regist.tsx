@@ -6,7 +6,7 @@ import Router from 'next/router';
 
 import React, { useCallback, useState, useRef } from 'react';
 import Head from 'next/head';
-import { Form, Input, Checkbox, Button, List, Typography, message, Tag, Select } from 'antd';
+import { Form, Input, Checkbox, Button, List, Typography, message, Tag, Select, Breadcrumb } from 'antd';
 import { dehydrate, QueryClient, useQuery, useQueryClient } from 'react-query';
 
 import { backUrl } from '../../../config/config';
@@ -20,6 +20,7 @@ import styled from 'styled-components';
 import { SearchOutlined } from '@ant-design/icons';
 import UserInfoBox from '../../../components/UserInfoBox';
 import { Block, ContainerMid, OptionContainer, Red, SearchBlock } from '../../../components/Styled';
+import Link from 'next/link';
 
 const RegistItem = () => {
   const [loading, setLoading] = useState(false);
@@ -180,6 +181,13 @@ const RegistItem = () => {
       <Head>
         <title>제품등록</title>
       </Head>
+      <Breadcrumb>
+        <Breadcrumb.Item>
+          <Link href='/factory/'><a>관리자페이지</a></Link>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>제품관리</Breadcrumb.Item>
+        <Breadcrumb.Item>제품등록</Breadcrumb.Item>
+      </Breadcrumb><br />
       <Title level={3}>제품 등록</Title>
       <Form style={{ margin: '10px 0 20px' }} encType="multipart/form-data" onFinish={onSubmit}>
         <label style={{margin: '0 0 7px 0'}}>판매자 선택</label>

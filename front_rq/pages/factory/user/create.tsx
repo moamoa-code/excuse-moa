@@ -5,7 +5,7 @@ import { GetServerSidePropsContext } from 'next';
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { dehydrate, QueryClient, useQuery, useQueryClient } from 'react-query';
 import Head from 'next/head';
-import { Form, Input, Checkbox, Button, notification, Space, Tag, Select, message, Radio, Modal } from 'antd';
+import { Form, Input, Checkbox, Button, notification, Space, Tag, Select, message, Radio, Modal, Breadcrumb } from 'antd';
 import { SearchOutlined, SmileOutlined } from '@ant-design/icons';
 import { Typography } from 'antd';
 import DaumPostcode from 'react-daum-postcode';
@@ -15,6 +15,7 @@ import AppLayout from '../../../components/AppLayout';
 import useInput from '../../../hooks/useInput';
 import User from '../../../interfaces/user';
 import { Block, ContainerMid, MoDal, OptionContainer, Red, SearchBlock } from '../../../components/Styled';
+import Link from 'next/link';
 
 const CreateUser = () => {
   const { Title, Text } = Typography;
@@ -217,6 +218,13 @@ const CreateUser = () => {
       <Head>
         <title>회원 생성</title>
       </Head>
+      <Breadcrumb>
+        <Breadcrumb.Item>
+          <Link href='/factory/'><a>관리자페이지</a></Link>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>회원관리</Breadcrumb.Item>
+        <Breadcrumb.Item>회원생성</Breadcrumb.Item>
+      </Breadcrumb><br />
       <Title level={3}>회원 생성</Title>
       <Form onFinish={onSubmit} form={form}>
         <Block>
