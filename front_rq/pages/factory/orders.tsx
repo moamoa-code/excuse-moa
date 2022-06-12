@@ -241,10 +241,13 @@ const OrderAnalysis = () => {
           setMode(modeSelector);
           getTotalWeight(data);
         }
-
         if (modeSelector === 'PROVIDER') {
-          const providers = data
-            .map((v) => (v.Order.Provider.id));
+          let providers = [];
+          data.forEach((v) => {
+            if (v.Order.Provider) {
+              providers.push(v.Order.Provider?.id);
+            }
+          })
           const proArr = Array.from(new Set(providers.flat(2))); 
           let providerNewArr = proArr.map((id) => ({ providerId: id, company: '', totalWeight: 0, totalSales: 0, datas: []}));
           providerNewArr.map((pro, i) => {
@@ -252,8 +255,12 @@ const OrderAnalysis = () => {
             let tWeight = 0.0;
             let tSales = 0;
             data.map((v) => {
-              if(v.Order.Provider.id === pro.providerId) {
-                datasOfProvider.push(v);
+              if(v.Order.Provider) {
+                if(v.Order.Provider?.id === pro.providerId) {
+                  datasOfProvider.push(v);
+                } else if (v.Order?.Provider === null && pro.providerId === null) {
+                  datasOfProvider.push(v);
+                }
               }
             });
             const codes = datasOfProvider
@@ -309,7 +316,10 @@ const OrderAnalysis = () => {
             }
             providerNewArr[i].totalSales = tSales;
             providerNewArr[i].totalWeight = tWeight;
-            providerNewArr[i].company = data.find((x) => x.Order?.Provider.id === pro.providerId).Order?.Provider.company;
+            let obj = data.find((x) => x.Order?.Provider?.id === pro.providerId)
+            if (obj.Order.Provider !== null) {
+              providerNewArr[i].company = obj.Order?.Provider.company;
+            }
             providerNewArr[i].datas = objArr;
           })
           if (sortMode === 'WEIGHT') {
@@ -442,6 +452,8 @@ const OrderAnalysis = () => {
   return (
     <AppLayout>
       <ContainerBig>
+      {JSON.stringify(datasByProvider)}<br /><br />
+      {JSON.stringify(orders)}
       {isLoading?
         <LoadingModal>
           <Spin /> 로딩중

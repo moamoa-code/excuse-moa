@@ -514,7 +514,6 @@ router.get('/all', isProvider, async (req, res, next) => {
 // 주문 상세 불러오기 (주문 통계)
 router.post('/order-details', async (req, res, next) => {
   try {
-    console.log('order-details @##@#@',req.body)
     let from = new Date(req.body.from);
     from.setHours('0');
     let til = new Date(req.body.til);
