@@ -21,7 +21,7 @@ const ExcuseMoa = ({ Component, pageProps }: AppProps) => {
       <Hydrate state={pageProps.dehydratedState}>
         <Head>
           <meta charSet="utf-8" />
-          <title>Excuse-Moa</title>
+          <title>Moa-Order</title>
         </Head>
         
         <Component {...pageProps} />

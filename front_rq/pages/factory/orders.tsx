@@ -1,7 +1,7 @@
 // 주문서 목록
 import axios, { AxiosError } from 'axios';
 import { GetServerSidePropsContext } from 'next';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Table, Typography, DatePicker, Button, Space, Divider, message, Tag, Radio, Checkbox, Spin, Popover } from 'antd';
 import { useRouter } from 'next/router';
@@ -13,10 +13,11 @@ import AppLayout from '../../components/AppLayout';
 import moment from 'moment';
 import 'moment/locale/ko';
 import styled from 'styled-components';
-import { ContainerBig, ContainerWide, ListBox, LoadingModal } from '../../components/Styled';
+import { ContainerBig, ContainerMax, ContainerWide, ListBox, LoadingModal } from '../../components/Styled';
 import ExpandableBox from '../../components/ExpandableBox';
 import { InfoCircleOutlined, InfoCircleTwoTone } from '@ant-design/icons';
 import Title from 'antd/lib/skeleton/Title';
+import MyChart from '../../components/MyChart';
 
 const RoundedBox = styled.div`
   margin-bottom: 20px;
@@ -33,8 +34,11 @@ const FlexBox = styled.div`
   display: flex;
   flex-wrap: wrap;
   justify-content:space-between;
+  gap: 15px;
   div {
+    min-width: 220px;
     flex: 1;
+    gap: 20px;
   }
 `
 
@@ -48,7 +52,7 @@ const TaBle = styled.table`
   border-collapse: collapse;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.09);
   th {
-    font-size: 13pt;
+    font-size: 12pt;
     position: sticky;
     top: 0px;
     background-color: #3498db;
@@ -131,13 +135,12 @@ const TiTle = styled.h1`
 `
 
 const OrderAnalysis = () => {
+  const [isLoading, setIsLoading] = useState(false)
   const [providers, setProviders] = useState([]);
-  // const { data: providers } = useQuery("providers", loadProvidersAPI);
   // 통계 모드 변경
   const [modeSelector, setModeSelector]=  useState('CODE');
   const [mode, setMode] = useState('CODE');
-  // 검색 조건
-  // 기간
+  // 검색할 기간
   const [startDate, setStartDate] = useState(moment().subtract(90, "days"));
   const [endDate, setEndDate] = useState(moment());
   // 원두 코드
@@ -149,8 +152,6 @@ const OrderAnalysis = () => {
   ]);
   // 판매사
   const [providerIdList, setProviderIdList] = useState([]);
-  // 구매사
-  const [customerIdList, setCustomerIdList] = useState([]);
   // 데이터
   const [datasByCode, setDatasByCode] = useState([]); // 제품코드 기준으로 카테고리화
   const [datasByProvider, setDatasByProvider] = useState([]);
@@ -163,11 +164,17 @@ const OrderAnalysis = () => {
   const [averageShowCheckBox, setAverageShowCheckBox] = useState<boolean>(false);
   const [isWithSales, setIsWithSales] = useState<boolean>(false);
   const [isWithAverage, setIsWithAverage] = useState<boolean>(false);
+  // 차트용 데이터
+  const [chartDatas, setChartDatas] = useState([]);
+  const [chartKeys, setChartKeys] = useState([]);
+  const [chartDateUnitSelector, setChartDateUnitSelector] = useState('months');
+  // css useMemo
+  const graphContainerWideStyle = useMemo(() => ({ height: '680px, maxWidth: 1920px' }), []); // 그래프 컨테이너 큰거
+  const graphContainerStyle = useMemo(() => ({ margin: '0 auto', height: '680px', maxWidth: '1440px' }), []); // 그래프 컨테이너 작은거 
 
-  
   // 주문 상세 불러오기 API
   const {
-    isLoading,
+    isLoading : loading,
     data: orders,
     refetch,
   } = useQuery(
@@ -181,12 +188,10 @@ const OrderAnalysis = () => {
         codeNames: codeNames,
         itemStatus: orderDetailStatOpt,
         providerIdList,
-        customerIdList,
       };
       return loadOrderDetails(data);
     },
     {
-      // refetchInterval: 2000,
       onSuccess: (data) => {
         if (modeSelector === 'CODE') {
           const codes = data
@@ -240,6 +245,7 @@ const OrderAnalysis = () => {
           setDatasByCode(objArr);
           setMode(modeSelector);
           getTotalWeight(data);
+          getChartDatas(data, chartDateUnitSelector);
         }
         if (modeSelector === 'PROVIDER') {
           let providers = [];
@@ -340,6 +346,62 @@ const OrderAnalysis = () => {
       },
     }
   );
+
+  // 차트용 데이터 만들기
+  const getChartDatas = (data, chartDateUnit) => {
+    setIsLoading(true);
+    const codes = data
+      .reverse()
+      .map((v) => (v.itemCodeName.toUpperCase().trim()));
+    // const newArr = [...new Set(codes.flat(2))]
+    const codeNameArray = Array.from(new Set(codes.flat(2))); // 코드네임 중복제거
+    setChartKeys(codeNameArray);
+    let start = startDate.clone();
+    let end = endDate.clone();
+    let dateIndex = [];
+    let howMany = Number(end.diff(start, chartDateUnit === 'months'? 'months' : 'weeks')) + 1; 
+    for (let i = 0; i < howMany; i++) {
+      dateIndex = [...dateIndex, start.format(chartDateUnit === 'months'? 'YY-MM' : 'gg-wo')]
+      start.add(1, chartDateUnit === 'months'? 'months' : 'weeks');
+    }
+    let output = [];
+    dateIndex.forEach((date, i) => {
+      let obj = {date:date, datas:[]};
+      data.map((v, j) => {
+        let thisDate = moment(v?.createdAt).format(chartDateUnit === 'months'? 'YY-MM' : 'gg-wo');
+        if (thisDate === date) {
+          obj.datas.push(v)
+        }              
+      });
+      output.push(obj);
+    })
+    setChartDatas(output);
+    type MyObjType = {
+      [key: string]: string | number
+      date: string
+    }
+    let ouput2 = [];
+    output.forEach((v) => {
+      let obj: MyObjType ={date: v.date};
+      codeNameArray.forEach((code) => {
+        let codeWeight = 0.0;
+        v.datas.forEach((o) => {
+          if(code === o.itemCodeName) {
+            const itemWeight = getWeight(o.itemUnit, o.qty);
+            codeWeight =
+            codeWeight +
+              Number(
+                itemWeight
+              );
+          }
+        })
+        obj[String(code)] = codeWeight;
+      })
+      ouput2 = [...ouput2, obj]
+    })
+    setChartDatas(ouput2);
+    setIsLoading(false);
+  }
 
   useEffect(() => {
     getProviders();
@@ -444,124 +506,136 @@ const OrderAnalysis = () => {
   const handleModeChange = (e) => {
     setModeSelector(e.target.value);
   }
-  // 모드 변경
+  // 정렬 기준 변경
   const handleSortChange = (e) => {
     setSortMode(e.target.value);
+  }
+  // 그래프 기간 단위 변경
+  const handleDateUnitChange = (e) => {
+    setChartDateUnitSelector(e.target.value);
+    getChartDatas(orders, e.target.value);
   }
   
   return (
     <AppLayout>
-      <ContainerBig>
-      {isLoading?
-        <LoadingModal>
-          <Spin /> 로딩중
-        </LoadingModal>
-      :null}
-      <TiTle>
-        출하량 분석&nbsp;
-        <Popover placement="bottom" content={()=>(<span>주문요청일, 출하 완료 기준</span>)}>
-          <InfoCircleTwoTone />
-        </Popover>
-      </TiTle>
-
-      <RoundedBox>
-        <div>
-          <LaBle>분석 모드</LaBle>
-          <Radio.Group onChange={handleModeChange} defaultValue='CODE'>
-            <Radio.Button value='CODE'>원두 코드별</Radio.Button>
-            <Radio.Button value='PROVIDER'>판매사별</Radio.Button>
-          </Radio.Group>
-        </div>
-        <br />
-        <div>
-          <LaBle>조회 기간</LaBle>
-          <span></span>
-          <span>&nbsp;시작:&nbsp;</span>
-          <DatePicker
-            onChange={onChangeStartDate}
-            // locale={locale_kr}
-            defaultValue={startDate}
-          />
-          <span>&nbsp;까지:&nbsp;</span>
-          <DatePicker
-            onChange={onChangeEndtDate}
-            // locale={locale_kr}
-            defaultValue={endDate}
-          />
-          &nbsp;총 {endDate.diff(startDate, 'days')}일
-        </div>
-        <br />
-        <div>
-          <ExpandableBox title='판매사 선택' tags={providerIdList}>
-            <ListBox>
-              <Space wrap>
-                {providers?.map((v) => {
-                  if (providerIdList.includes(v.id)) {
-                    return (
-                      <Button 
-                        size="small" 
-                        type="primary" 
+      <ContainerMax>
+        <ContainerBig>
+        {isLoading === true || loading === true?
+          <LoadingModal>
+            <Spin /> 로딩중
+          </LoadingModal>
+        :null}
+        <TiTle>
+          출하량 분석&nbsp;
+          <Popover placement="bottom" content={()=>(<span>주문요청일, 출하 완료 기준</span>)}>
+            <InfoCircleTwoTone />
+          </Popover>
+        </TiTle>
+        <RoundedBox>
+          <div>
+            <LaBle>분석 모드</LaBle>
+            <Radio.Group onChange={handleModeChange} defaultValue='CODE'>
+              <Radio.Button value='CODE'>원두 코드별</Radio.Button>
+              <Radio.Button value='PROVIDER'>판매사별</Radio.Button>
+            </Radio.Group>
+          </div>
+          <br />
+          <div>
+            <LaBle>조회 기간</LaBle>
+            <Space wrap>
+              <div>
+                <span>시작:&nbsp;</span>
+                <DatePicker
+                  onChange={onChangeStartDate}
+                  // locale={locale_kr}
+                  defaultValue={startDate}
+                />
+              </div>
+              <div>
+                <span>종료:&nbsp;</span>
+                <DatePicker
+                  onChange={onChangeEndtDate}
+                  // locale={locale_kr}
+                  defaultValue={endDate}
+                />
+              </div>
+              <div>
+                &nbsp;총 {endDate?.diff(startDate, 'days')}일
+              </div>
+            </Space>
+          </div>
+          <br />
+          <div>
+            <ExpandableBox title='판매사 선택' tags={providerIdList}>
+              <ListBox>
+                <Space wrap>
+                  {providers?.map((v) => {
+                    if (providerIdList.includes(v.id)) {
+                      return (
+                        <Button 
+                          size="small" 
+                          type="primary" 
+                          onClick={onProviderSelect(v.id)}
+                        >
+                          {v.company}
+                        </Button>
+                      );
+                    }
+                    else return (
+                      <Button
+                        size="small"
+                        type="dashed"
                         onClick={onProviderSelect(v.id)}
                       >
                         {v.company}
                       </Button>
                     );
-                  }
-                  else return (
-                    <Button
-                      size="small"
-                      type="dashed"
-                      onClick={onProviderSelect(v.id)}
-                    >
-                      {v.company}
-                    </Button>
-                  );
-                })}
-              </Space>
-            </ListBox>
-          </ExpandableBox>
-        </div>
-        <br />
-        <div>
-          <ExpandableBox title='원두코드 선택' tags={codeNames}>
-            <div>
-              <SimpleInput>
-                <input 
-                  onChange={onChangeCodeNameInput}
-                  value={codeNameInput}
-                  maxLength={13}
-                  onKeyPress={onCodeNameInputKeyPress}
-                />
-                <button
-                  onClick={onCodeNameInput}
-                >추가</button>
-              </SimpleInput>
-              <Space wrap>
-                {codeNames.map((v) => {
-                  return (
-                    <Tag 
-                      closable
-                      onClose={
-                        () => {
-                          let array = codeNames;
-                          let newArray = array.filter((i) => v !== i)
-                          setCodeNames(newArray);
-                        }
-                      }
-                    >
-                      {v}
-                    </Tag>
-                  )
-                })}
-              </Space>
-            </div>
-          </ExpandableBox>
-        </div>
-        <br />
-        <FlexBox>
+                  })}
+                </Space>
+              </ListBox>
+            </ExpandableBox>
+          </div>
+          <br />
           <div>
-            <LaBle>표시</LaBle>
-
+            <ExpandableBox title='원두코드 선택' tags={codeNames}>
+              <div>
+                <SimpleInput>
+                  <input 
+                    onChange={onChangeCodeNameInput}
+                    value={codeNameInput}
+                    maxLength={13}
+                    onKeyPress={onCodeNameInputKeyPress}
+                  />
+                  <button
+                    onClick={onCodeNameInput}
+                  >추가</button>
+                </SimpleInput>
+                <Space wrap>
+                  {codeNames.map((v) => {
+                    return (
+                      <Tag 
+                        closable
+                        onClose={
+                          (e) => {
+                            e.preventDefault();
+                            let array = codeNames;
+                            let newArray = array.filter((i) => v !== i)
+                            setCodeNames(newArray);
+                          }
+                        }
+                      >
+                        {v}
+                      </Tag>
+                    )
+                  })}
+                </Space>
+              </div>
+            </ExpandableBox>
+          </div>
+          <br />
+          <FlexBox>
+            <div>
+              <LaBle>표시</LaBle>
               <Checkbox 
                 checked={salesShowCheckBox}
                 onChange={(e)=>{setSalseShowCheckBox(e.target.checked)}}
@@ -572,157 +646,183 @@ const OrderAnalysis = () => {
                 onChange={(e)=>{setAverageShowCheckBox(e.target.checked)}}
               >일 평균
               </Checkbox>
+            </div>
+            <div>
+              <LaBle>정렬</LaBle>
+              <Radio.Group onChange={handleSortChange} defaultValue='CODE'>
+                <Radio.Button value='WEIGHT'>중량</Radio.Button>
+                <Radio.Button value='SALES'>금액</Radio.Button>
+                <Radio.Button value='CODE'>코드</Radio.Button>
+              </Radio.Group>
+            </div>
+          </FlexBox>
 
-          </div>
+          <br />
+          <Button type='primary' loading={isLoading} onClick={onLoadTodos}>
+            적용
+          </Button>
+        </RoundedBox>
+        {mode === 'CODE' ?
           <div>
-            <LaBle>정렬</LaBle>
-            <Radio.Group onChange={handleSortChange} defaultValue='CODE'>
-              <Radio.Button value='WEIGHT'>중량</Radio.Button>
-              <Radio.Button value='SALES'>금액</Radio.Button>
-              <Radio.Button value='CODE'>코드</Radio.Button>
-            </Radio.Group>
-          </div>
-        </FlexBox>
-
-        <br />
-        <Button type='primary' loading={isLoading} onClick={onLoadTodos}>
-          적용
-        </Button>
-      </RoundedBox>
-      {mode === 'CODE' ?
-        <TaBle>
-          <thead>
-            <tr>
-              <th>원두 코드</th>
-              <th>총 중량 (kg)</th>
-              {isWithSales? <th>총 금액 (원)</th> : null}
-            </tr>
-          </thead>
-          <tbody>
-            {datasByCode.map((code) => {
-              return(
+            <TaBle>
+              <thead>
                 <tr>
-                  <td className='codeName'>{code.name}</td>
+                  <th>원두 코드</th>
+                  <th>총 중량 (kg)</th>
+                  {isWithSales? <th>총 금액 (원)</th> : null}
+                </tr>
+              </thead>
+              <tbody>
+                {datasByCode.map((code, i) => {
+                  return(
+                    <tr key={i}>
+                      <td className='codeName'>{code.name}</td>
+                      <td>
+                        {code.weight.toFixed(1)}
+                        {isWithAverage? 
+                          <>&nbsp;<Tag>{(code?.weight/endDate.diff(startDate, 'days')).toFixed(2)}kg/일</Tag></>
+                        :null}
+                      </td>
+                      {isWithSales? 
+                        <td>
+                          {code.sales.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''}
+                          {isWithAverage? 
+                            <>&nbsp;<Tag>{(code?.sales/endDate.diff(startDate, 'days')).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''}원/일</Tag></>
+                          :null}
+                        </td> 
+                      : null}
+                    </tr>
+                  )
+                })}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td>합계</td>
                   <td>
-                    {code.weight.toFixed(1)}
+                    {totalWeight.toFixed(1)} kg
                     {isWithAverage? 
-                      <>&nbsp;<Tag>{(code?.weight/endDate.diff(startDate, 'days')).toFixed(2)}kg/일</Tag></>
+                      <>&nbsp;<Tag>{(totalWeight/endDate.diff(startDate, 'days')).toFixed(2)}kg/일</Tag></>
                     :null}
                   </td>
-                  {isWithSales? 
+                  {isWithSales?
                     <td>
-                      {code.sales.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''}
+                      {totalSales.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원
                       {isWithAverage? 
-                        <>&nbsp;<Tag>{(code?.sales/endDate.diff(startDate, 'days')).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''}원/일</Tag></>
+                        <>&nbsp;<Tag>{(totalSales/endDate.diff(startDate, 'days')).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''}원/일</Tag></>
                       :null}
-                    </td> 
-                  : null}
+                    </td>
+                  :null}
                 </tr>
+              </tfoot>
+            </TaBle><br /><br /><br />
+          </div>
+        :mode === 'PROVIDER'?
+          <>
+            {datasByProvider.map((pro, i) => {
+              return (
+                <div>
+                  <TiTle>{pro?.company}</TiTle>
+                  <TaBle>
+                    <thead>
+                      <tr key={i}>
+                        <th>원두 코드</th>
+                        <th>총 중량 (kg)</th>
+                        {isWithSales? <th>총 금액 (원)</th> : null}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pro?.datas.map((data, j) => {
+                        return (
+                          <tr key={j}>
+                            <td>
+                              {data?.name}
+                            </td>
+                            <td>
+                              {data?.weight.toFixed(1)}
+                              {isWithAverage? 
+                                <>&nbsp;<Tag>{(data?.weight/endDate.diff(startDate, 'days')).toFixed(2)}kg/일</Tag></>
+                              :null}
+                            </td>
+                            {isWithSales?
+                              <td>
+                                {data?.sales.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''}
+                                {isWithAverage? 
+                                  <>&nbsp;<Tag>{(data?.sales/endDate.diff(startDate, 'days')).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''}원/일</Tag></>
+                                :null}
+                              </td>
+                            :null}
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                      <td>합계</td>
+                      <td>
+                        {pro.totalWeight.toFixed(1)} kg
+                        {isWithAverage? 
+                          <>&nbsp;<Tag>{(pro?.totalWeight/endDate.diff(startDate, 'days')).toFixed(2)}kg/일</Tag></>
+                        :null}
+                      </td>
+                      {isWithSales?
+                        <td>
+                          {pro.totalSales.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원
+                          {isWithAverage? 
+                            <>&nbsp;<Tag>{(pro?.totalSales/endDate.diff(startDate, 'days')).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''}원/일</Tag></>
+                          :null}
+                        </td>
+                      :null}
+                    </tr>
+                  </tfoot>
+                </TaBle>
+                <br/><br/>
+              </div>
               )
             })}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td>합계</td>
-              <td>
+            <TiTle>
+                총
                 {totalWeight.toFixed(1)} kg
                 {isWithAverage? 
                   <>&nbsp;<Tag>{(totalWeight/endDate.diff(startDate, 'days')).toFixed(2)}kg/일</Tag></>
                 :null}
-              </td>
-              {isWithSales?
-                <td>
-                  {totalSales.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원
-                  {isWithAverage? 
-                    <>&nbsp;<Tag>{(totalSales/endDate.diff(startDate, 'days')).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''}원/일</Tag></>
-                  :null}
-                </td>
-              :null}
-            </tr>
-          </tfoot>
-        </TaBle>
-      :mode === 'PROVIDER'?
-        <>
-          {datasByProvider.map((pro) => {
-            return (
-              <div>
-                <TiTle>{pro?.company}</TiTle>
-                <TaBle>
-                  <thead>
-                    <tr>
-                      <th>원두 코드</th>
-                      <th>총 중량 (kg)</th>
-                      {isWithSales? <th>총 금액 (원)</th> : null}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pro?.datas.map((data) => {
-                      return (
-                        <tr>
-                          <td>
-                            {data?.name}
-                          </td>
-                          <td>
-                            {data?.weight.toFixed(1)}
-                            {isWithAverage? 
-                              <>&nbsp;<Tag>{(data?.weight/endDate.diff(startDate, 'days')).toFixed(2)}kg/일</Tag></>
-                            :null}
-                          </td>
-                          {isWithSales?
-                            <td>
-                              {data?.sales.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''}
-                              {isWithAverage? 
-                                <>&nbsp;<Tag>{(data?.sales/endDate.diff(startDate, 'days')).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''}원/일</Tag></>
-                              :null}
-                            </td>
-                          :null}
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                  <tfoot>
-                  <tr>
-                    <td>합계</td>
-                    <td>
-                      {pro.totalWeight.toFixed(1)} kg
-                      {isWithAverage? 
-                        <>&nbsp;<Tag>{(pro?.totalWeight/endDate.diff(startDate, 'days')).toFixed(2)}kg/일</Tag></>
-                      :null}
-                    </td>
-                    {isWithSales?
-                      <td>
-                        {pro.totalSales.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원
-                        {isWithAverage? 
-                          <>&nbsp;<Tag>{(pro?.totalSales/endDate.diff(startDate, 'days')).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''}원/일</Tag></>
-                        :null}
-                      </td>
+                &nbsp;
+                {isWithSales?
+                  <span>{totalSales.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원
+                    {isWithAverage? 
+                      <>&nbsp;<Tag>{(totalSales/endDate.diff(startDate, 'days')).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''}원/일</Tag></>
                     :null}
-                  </tr>
-                </tfoot>
-              </TaBle>
-              <br/><br/>
+                  </span>
+                :null}
+            </TiTle>
+          </>
+        :null
+        }
+        </ContainerBig>
+          {mode === 'CODE'?
+          <>
+            <ContainerBig>
+              <TiTle>기간별 출하량 그래프&nbsp;
+                <Popover placement="bottom" content={()=>(<span>조회기간시작을 해당 월 1일, 종료를 말일로 설정하세요.</span>)}>
+                  <InfoCircleTwoTone />
+                </Popover>
+              </TiTle>
+              <RoundedBox>
+                <div>
+                  <LaBle>기간 단위</LaBle>
+                  <Radio.Group onChange={handleDateUnitChange} defaultValue='months'>
+                    <Radio.Button value='weeks'>주별</Radio.Button>
+                    <Radio.Button value='months'>월별</Radio.Button>
+                  </Radio.Group>
+                </div>
+              </RoundedBox>
+            </ContainerBig>
+            <br />
+            <div style={chartDateUnitSelector === 'weeks'? graphContainerWideStyle : graphContainerStyle}>
+              <MyChart data={chartDatas} keys={chartKeys} indexBy={'date'}/>
             </div>
-            )
-          })}
-          <TiTle>
-              총
-              {totalWeight.toFixed(1)} kg
-              {isWithAverage? 
-                <>&nbsp;<Tag>{(totalWeight/endDate.diff(startDate, 'days')).toFixed(2)}kg/일</Tag></>
-              :null}
-              &nbsp;
-              {isWithSales?
-                <span>{totalSales.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''} 원
-                  {isWithAverage? 
-                    <>&nbsp;<Tag>{(totalSales/endDate.diff(startDate, 'days')).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? ''}원/일</Tag></>
-                  :null}
-                </span>
-              :null}
-          </TiTle>
-        </>
-      :null
-      }
-      </ContainerBig>
+          </>
+          :null}
+      </ContainerMax>
     </AppLayout>
   );
 };

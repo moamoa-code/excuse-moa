@@ -353,6 +353,11 @@ const Intro = () => {
           <div className='section feature' ref={divRef} key={5}>
             <Slider {...sliderSettings}>
               <div>
+                <img src={'./imgs/graph_2.png'} style={slideImgStyle}/>
+                <h1 style={slideTitleStyle}>원하는 주문 데이터를 시각화</h1>
+                <p style={slideDescStyle}>기간별, 품목별, 판매사별로 주문 통계</p>
+              </div>
+              <div>
                 <img src={'./imgs/graph_1.png'} style={slideImgStyle}/>
                 <h1 style={slideTitleStyle}>기간별 주문 열람</h1>
                 <p style={slideDescStyle}>기간별로 주문량 빠르게 파악</p>

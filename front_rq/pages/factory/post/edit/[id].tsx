@@ -159,7 +159,7 @@ const EditPost = () => {
     .then(() => {
       message.success('삭제가 완료되었습니다.');
       setEditMode(false);
-      Router.replace('/management/posts');
+      Router.replace('/factory/post/list');
     })
     .catch((error) => {
       alert(error.response.data);

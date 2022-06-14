@@ -547,7 +547,7 @@ router.post('/order-details', async (req, res, next) => {
     }
     const orderDetails = await OrderDetail.findAll({
       where: orderDetailWhere,
-      attributes: ["id", "itemSupplyPrice", "qty", "itemUnit", "itemCodeName"],
+      attributes: ["id", "itemSupplyPrice", "qty", "itemUnit", "itemCodeName", "createdAt"],
       order: [
         ['createdAt', 'DESC'],
       ],
@@ -559,11 +559,7 @@ router.post('/order-details', async (req, res, next) => {
         include: [{
           model: User,
           as: 'Provider',
-          attributes: ["id", "company", "key"],
-        }, {
-          model: User,
-          as: 'Customer',
-          attributes: ["id", "company", "key"],
+          attributes: ["id", "company",],
         }]
       }]
     });

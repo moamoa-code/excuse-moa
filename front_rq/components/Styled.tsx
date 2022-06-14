@@ -46,6 +46,12 @@ export const ContainerSmall = styled.div`
   padding: 10px;
 `
 
+// 레이아웃 대짜
+export const ContainerInnerBig = styled.div`
+  max-width: 1024px;
+  margin 0 auto;
+`
+
 // 공장-주문추가-상단 버튼
 export const OrderTypeSelects = styled.div`
   display: flex;

@@ -200,18 +200,22 @@ router.post('/edit', isLoggedIn, upload.none(), async (req, res, next) => {
 // 게시글 삭제
 router.patch('/delete', isProvider, upload.none(), async (req, res, next) => {
   try {
+    const user = await User.findOne({
+      where: { id: req.user.id }
+    })
     const post = await Post.findOne({ 
-        where: { id: req.body.id }
+      where: { id: req.body.id }
     });
     if (!post) {
       return res.status(403).send('해당 게시글이 존재하지 않습니다.');
     }
-    if (post.UserId !== req.user.id){
+    if (post.UserId === req.user.id || user.role === 'ADMINISTRATOR' ){
+      await Post.destroy({
+        where: { id: post.id }
+      })
+    } else {
       return res.status(403).send('권한이 없습니다.');
     }
-    await Post.destroy({
-      where: { id: post.id }
-    })
     res.status(200).send('ok');
   } catch (error) {
     console.error(error);
