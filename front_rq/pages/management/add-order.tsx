@@ -391,6 +391,11 @@ const addOrder = () => {
                 placeholder="회사명"
                 value={searchCustomerTxt}
                 onChange={onChangeSearchCustomerTxt}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    onCustomerSearch();
+                  }
+                }}
               />
               <button type='button' className='search' 
               onClick={onCustomerSearch}

@@ -215,6 +215,11 @@ const CreateUser = () => {
                 <input
                   value={searchTxt}
                   onChange={onChangeSearchTxt}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      onSearchClick();
+                    }
+                  }}
                 />
                 <button type='button' className='search' onClick={onSearchClick}>
                   <SearchOutlined />

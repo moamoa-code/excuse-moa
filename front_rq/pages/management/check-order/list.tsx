@@ -257,7 +257,7 @@ const Orders = () => {
             />
           </Space>
           <Space>
-            <span>까지:</span>
+            <span>종료:</span>
           <DatePicker
             onChange={onChangeEndtDate} 
             locale={pickerLocale}

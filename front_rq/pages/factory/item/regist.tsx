@@ -197,6 +197,11 @@ const RegistItem = () => {
               value={searchTxt}
               className='searchInput'
               onChange={onChangeSearchTxt}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  onSearchClick();
+                }
+              }}
             />
             <button type='button' className='search' onClick={onSearchClick}>
               <SearchOutlined />

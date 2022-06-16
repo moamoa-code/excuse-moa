@@ -59,8 +59,6 @@ https://github.com/moamoa-code/excuse-moa
 ![erdd](https://user-images.githubusercontent.com/73521025/173772945-c5e9f2ab-9ca0-4b80-a6be-18c2725e12fb.png)
 ERD<br/>
 
-<br/>
-
 - **회원**<br/>
 회원의 등급은 비회원, 구매회원, 판매회원, 관리자로 나뉩니다.
 - **회원관계**<br/>
@@ -90,6 +88,18 @@ ERD<br/>
 - **재고 그룹**<br/>
 여러개의 재고 보고서를 담습니다.
 
+<br/><br/>
+
+## 반응형 디자인
+![pc](https://user-images.githubusercontent.com/73521025/173990964-d2d9bdf5-091e-42e7-82c9-dd064c05c29a.PNG)<br/>
+**PC 화면**
+<br/><br/>
+![mobile](https://user-images.githubusercontent.com/73521025/173990956-187ef5ce-b520-48e6-b8a3-bb7f9cd976f0.PNG)
+<br/>
+
+**모바일 화면**
+
+반응형 디자인으로 PC, 모바일에서 모든 기능을 사용 할 수 있습니다.
 
 
 <br/><br/>
@@ -141,7 +151,7 @@ ERD<br/>
     + 공지사항 관리
       - [공지사항 등록](#공지사항-등록)
       - [공지사항 목록](#공지사항-목록)
-        +[공지사항 수정](#공지사항-수정)
+        + [공지사항 수정](#공지사항-수정)
 
 <br/><br/>
 ## 페이지 상세 설명

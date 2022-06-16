@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import Head from 'next/head';
 import 'antd/dist/antd.css';
 import { QueryClient, QueryClientProvider, Hydrate } from 'react-query';
-import { ReactQueryDevtools } from 'react-query/devtools';
+// import { ReactQueryDevtools } from 'react-query/devtools';
 
 import styled from 'styled-components'
 import GlobalFonts from '../fonts/fonts' // 1
@@ -25,7 +25,7 @@ const ExcuseMoa = ({ Component, pageProps }: AppProps) => {
         </Head>
         
         <Component {...pageProps} />
-        <ReactQueryDevtools initialIsOpen={false} />
+        {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       </Hydrate>
     </QueryClientProvider>
   );

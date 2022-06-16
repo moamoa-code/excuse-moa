@@ -880,18 +880,24 @@ const orderList = () => {
           <FilterBox>
             <div>
               <span>주문 날짜</span>
-              <span>&nbsp;시작:</span>
-              <DatePicker
-                onChange={onChangeStartDate}
-                // locale={locale_kr}
-                defaultValue={startDate}
-              />
-              <span>까지:</span>
-              <DatePicker
-                onChange={onChangeEndtDate}
-                // locale={locale_kr}
-                defaultValue={endDate}
-              />
+              <Space wrap>
+                <span>
+                  <span>시작:</span>
+                  <DatePicker
+                    onChange={onChangeStartDate}
+                    // locale={locale_kr}
+                    defaultValue={startDate}
+                  />
+                </span>
+                <span>
+                  <span>종료:</span>
+                  <DatePicker
+                    onChange={onChangeEndtDate}
+                    // locale={locale_kr}
+                    defaultValue={endDate}
+                  />
+                </span>
+              </Space>
               <div>
                 <Checkbox.Group
                   options={retailStatusOptions}
