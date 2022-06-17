@@ -3,7 +3,7 @@ module.exports = (sequelize, DataTypes) => {
   const Item = sequelize.define('Item', { // MySQL에는 users 테이블 생성
     // id는 mySQL에서 자동 생성됨.
     codeName: { // 원두 코드명 
-      type: DataTypes.STRING(10),
+      type: DataTypes.STRING(14),
       allowNull: false, // 필수
     },
     name: { // 제품 이름

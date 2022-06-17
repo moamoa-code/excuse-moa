@@ -46,7 +46,7 @@ const RegistItem = () => {
   const { Option } = Select;
 
   const onChangeCodeName = (e) => {
-    setCodeName(e.target.value);
+    setCodeName(e.target.value.toUpperCase());
   }
   const onChangeUnit = (e) => {
     setUnit(e.target.value);
@@ -110,14 +110,14 @@ const RegistItem = () => {
       return message.error('판매회원을 선택해 주세요.')
     }
     formData.append('providerKey', selectedProvider.key);
-    formData.append('codeName', codeName);
-    formData.append('name', name);
+    formData.append('codeName', codeName.trim());
+    formData.append('name', name.trim());
     formData.append('scope', scope);
-    formData.append('packageName', packageName);
-    formData.append('unit', unit);
+    formData.append('packageName', packageName.trim());
+    formData.append('unit', unit.trim());
     formData.append('msrp', msrp);
     formData.append('supplyPrice', price);
-    formData.append('description', description);
+    formData.append('description', description.trim());
     // for (var pair of formData.entries()) {
     // }
     if (imagePath){

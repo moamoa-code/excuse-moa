@@ -30,7 +30,7 @@ const ItemView = ({ item, myUserInfo }) => {
         </>
         : null}
       >
-        {item.UserId === myUserInfo.id ? 
+        {myUserInfo?.role === 'ADMINISTRATOR' || myUserInfo?.role === 'PROVIDER' ? 
           <Descriptions.Item label={
             <>
               코드명

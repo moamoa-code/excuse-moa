@@ -16,40 +16,6 @@ import { useMediaQuery } from 'react-responsive';
 import MyTable from '../../../components/MyTable';
 import { ContainerWide, OptionContainer } from '../../../components/Styled';
 
-// const OptionContainer = styled.div`
-//   padding: 10px 0px 10px 0px;
-//   display: block;
-//   overflow:auto;
-//   max-height:300px;
-//   p {
-//     display: inline-block;
-//     box-sizing: border-box;
-//     border-radius: 4px;
-//     padding: 5px 8px 5px 8px;
-//     margin: 6px;
-//     font-size: 10pt;
-//   }
-//   p:active {
-//     position: relative; 
-//     top:2px;
-//   }
-//   .codeName{
-//     background-color:#00B4D8;
-//     color: white;
-//   }
-//   .unit{
-//     background-color:#FF5C8D;
-//     color: white;
-//   }
-//   .package{
-//     background-color:#ec7728;
-//     color: white;
-//   }
-//   .provider{
-//     border: 1px solid #999999;
-//   }
-// `
-
 const FactoryItemList = () => {
   const isMobile = useMediaQuery({
     query: "(min-width:0px) and (max-width:768px)",
@@ -76,13 +42,10 @@ const FactoryItemList = () => {
   }
   const columns = [
     {
-      title: '판매사',
-      dataIndex: 'User',
+      title: '코드명',
+      dataIndex: 'codeName',
       type: 'id',
-      key: 'User',
-      render: (text, record) => (
-        <>{text?.company}</>
-      ),
+      key: 'codeName',
     }, {
       title: '제품명',
       dataIndex: 'name',
@@ -100,10 +63,24 @@ const FactoryItemList = () => {
       dataIndex: 'unit',
       type: 'right',
       key: 'unit',
-    },{
+    }, {
       title: '공급가',
       dataIndex: 'supplyPrice',
       key: 'supplyPrice',
+    }, {
+      title: '공개범위',
+      dataIndex: 'scope',
+      key: 'scope',
+      render: (text, record) => {
+        if (text === 'PRIVATE'){
+          return <>특정</>
+        } if (text === 'GROUP'){
+          return <>모든고객</>
+        }if (text === 'PUBLIC'){
+          return <>모든회원</>
+        }
+        else { return <>{text}</>}
+      },
     },
   ];
 
@@ -151,6 +128,7 @@ const FactoryItemList = () => {
         />
         :
         <Table
+          size='small'
           rowKey="id"
           columns={columns}
           expandable={expandable}

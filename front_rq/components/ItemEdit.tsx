@@ -10,7 +10,7 @@ import { useQuery } from 'react-query';
 const ItemEdit = ({ item, myUserInfo }) => {
   const [loading, setLoading] = useState(false);
   const [itemId] = useState(item.id);
-  const [codeName, onChangeCodeName] = useInput(item.codeName); // 제품 코드명 (사용자 비공개)
+  const [codeName, setCodeName] = useState(item.codeName); // 제품 코드명 (사용자 비공개)
   const [name, onChangeName] = useInput(item.name); // 제품 이름
   const [scope, setScope] = useState(item.scope); // 제품 공개 범위
   const [showScope, setShowScope] = useState(item.scope);
@@ -69,6 +69,10 @@ const ItemEdit = ({ item, myUserInfo }) => {
   const onRemoveImage = () => {
     setImagePath(null);
   };
+
+  const onChangeCodeName = (e) => {
+    setCodeName(e.target.value.toUpperCase());
+  }
 
   // 수정 완료
   const onEditSubmit = useCallback(() => {
