@@ -1,7 +1,6 @@
-// 주문확인서 보기
 import axios from 'axios';
 import { GetServerSidePropsContext } from 'next';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { dehydrate, QueryClient, useQuery, useQueryClient } from 'react-query';
 import { loadMyInfoAPI } from '../../../apis/user';
@@ -16,6 +15,7 @@ import useInput from '../../../hooks/useInput';
 import Form from 'antd/lib/form/Form';
 import Link from 'next/link';
 
+// --주문서 상세 페이지--
 const OrderConfirm = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -26,7 +26,6 @@ const OrderConfirm = () => {
   const { data: orderData } = useQuery(['orderData', orderId], () => loadOrderAPI(Number(orderId)));
   const [ mode, setMode ] = useState({ ship: true, price: true}); // 주문서보기 옵션
   
-
   const openNotification = (text) => {
     notification.open({
       message: `${text}`,

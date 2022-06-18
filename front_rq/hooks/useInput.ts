@@ -1,6 +1,6 @@
 import { useState, useCallback, SetStateAction, Dispatch } from 'react';
 
-// form의 input의 값을 state에 넣는 핸들러와 serValue 리턴
+// input onchange 훅
 type ReturnType<T> = [T, (e: any) => void, Dispatch<SetStateAction<T>>];
 export default <T extends string>(initialValue: T): ReturnType<T> => {
   const [value, setValue] = useState<T>(initialValue);

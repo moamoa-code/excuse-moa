@@ -18,7 +18,6 @@ import styled from 'styled-components';
 import ReactToPrint from "react-to-print";
 import { Container800 } from '../../../../components/Styled';
 
-
 const A4style = styled.div`
   width: 21cm;
   min-height: 29.7cm;
@@ -29,6 +28,7 @@ const A4style = styled.div`
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 `;
 
+// -- 주문서 인쇄 페이지 --
 const PrintOrder = () => {
   const router = useRouter();
   const { id: orderId } = router.query; // 주문서 id
@@ -37,6 +37,7 @@ const PrintOrder = () => {
   const componentRef = useRef(null);
   const [ mode, setMode ] = useState({ ship: true, price: true}); // 주문서보기 옵션
 
+  // 배송정보 표시 여부
   const onToggleShip = () => {
     if (mode.ship) {
       setMode({
@@ -51,6 +52,7 @@ const PrintOrder = () => {
     }
   }
 
+  // 금액 표시 여부
   const onTogglePrice = () => {
     if (mode.price) {
       setMode({
@@ -64,7 +66,6 @@ const PrintOrder = () => {
       })
     }
   }
-
 
   return (
     <>

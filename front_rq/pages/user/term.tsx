@@ -1,9 +1,6 @@
-import React from 'react';
-
-import styled from 'styled-components';
-
-import AppLayout from '../../components/AppLayout';
-
+import React from "react";
+import styled from "styled-components";
+import AppLayout from "../../components/AppLayout";
 
 const Container800 = styled.div`
   max-width: 800px;
@@ -12,11 +9,10 @@ const Container800 = styled.div`
   pre {
     white-space:pre-wrap;
   }
-`
+`;
 
-
-const EditUser = () => {
-
+// --표준 이용약관--
+const UserTerm = () => {
   const text = `
   제1장 총칙
 
@@ -313,17 +309,15 @@ const EditUser = () => {
   
   ④ "회사"는 "이용자" 상호간 또는 "이용자"와 제3자 간에 "콘텐츠"를 매개로 하여 발생한 분쟁 등에 대하여 책임을 지지 않습니다. 
   
-  제33조(분쟁의 해결) "회사"는 분쟁이 발생하였을 경우에 "이용자"가 제기하는 정당한 의견이나 불만을 반영하여 적절하고 신속한 조치를 취합니다. 다만, 신속한 처리가 곤란한 경우에 "회사"는 "이용자"에게 그 사유와 처리일정을 통보합니다. `
+  제33조(분쟁의 해결) "회사"는 분쟁이 발생하였을 경우에 "이용자"가 제기하는 정당한 의견이나 불만을 반영하여 적절하고 신속한 조치를 취합니다. 다만, 신속한 처리가 곤란한 경우에 "회사"는 "이용자"에게 그 사유와 처리일정을 통보합니다. `;
 
   return (
-  <AppLayout>
-    <Container800>
-      <pre>
-        {text}
-      </pre>
-    </Container800>
-  </AppLayout>
+    <AppLayout>
+      <Container800>
+        <pre>{text}</pre>
+      </Container800>
+    </AppLayout>
   );
 };
 
-export default EditUser;
+export default UserTerm;

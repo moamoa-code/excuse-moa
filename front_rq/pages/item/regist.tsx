@@ -1,22 +1,17 @@
-// 상품 등록 페이지
-// 관리자, 판매자만 열람 가능
+import { Button, Form, Input, Select, Typography } from 'antd';
 import axios from 'axios';
 import { GetServerSidePropsContext } from 'next';
-import Router from 'next/router';
-
-import React, { useCallback, useState, useRef } from 'react';
 import Head from 'next/head';
-import { Form, Input, Checkbox, Button, List, Typography, Select } from 'antd';
-import { dehydrate, QueryClient, useQuery, useQueryClient } from 'react-query';
-
-import { backUrl } from '../../config/config';
-
-import { loadMyInfoAPI } from '../../apis/user';
+import Router from 'next/router';
+import React, { useCallback, useRef, useState } from 'react';
+import { dehydrate, QueryClient, useQuery } from 'react-query';
+import styled from 'styled-components';
 import { registerItemAPI, uploadImageAPI } from '../../apis/item';
+import { loadMyInfoAPI } from '../../apis/user';
 import AppLayout from '../../components/AppLayout';
+import { backUrl } from '../../config/config';
 import useInput from '../../hooks/useInput';
 import User from '../../interfaces/user';
-import styled from 'styled-components';
 
 const Container600 = styled.div`
 max-width: 600px;
@@ -71,7 +66,7 @@ const RedBold = styled.span`
   color:red;
 `
 
-
+// --(판매회원)제품 등록 페이지--
 const RegistItem = () => {
   const [loading, setLoading] = useState(false);
   const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
@@ -91,7 +86,6 @@ const RegistItem = () => {
   const packages = ['M 무지', 'M 브랜드스티커', 'M 브랜드인쇄', '지퍼 무지', '지퍼 브랜드인쇄', '지퍼 브랜드스티커'];
   const { Option } = Select;
 
-
   const onChangeCodeName = (e) => {
     setCodeName(e.target.value);
   }
@@ -104,23 +98,21 @@ const RegistItem = () => {
   const handleScopeChange = (value) => {
     setScope(value);
   }
-  const onChangeMsrp = useCallback( // 가격 유효성검사
+  // 가격 유효성검사
+  const onChangeMsrp = useCallback(
     (e) => {
       const { value } = e.target;
       const onlyNumber = value.replace(/[^0-9]/g, '');
-      // const regExpPhone = /[^0-9]/;
       setMsrp(onlyNumber);
-      // setPhoneValidError(!regExpPhone.test(e.target.value));
     },
     [msrp],
   );
-  const onChangePrice = useCallback( // 가격 유효성검사
+  // 가격 유효성검사
+  const onChangePrice = useCallback(
     (e) => {
       const { value } = e.target;
       const onlyNumber = value.replace(/[^0-9]/g, '');
-      // const regExpPhone = /[^0-9]/;
       setPrice(onlyNumber);
-      // setPhoneValidError(!regExpPhone.test(e.target.value));
     },
     [price],
   );
@@ -149,10 +141,10 @@ const RegistItem = () => {
     [],
   );
 
+  // 제품 등록 API
   const onSubmit = useCallback(() => {
     setLoading(true);
     const formData = new FormData();
-    // data: { codeName: string, package: string, imgSrc: string|null, name: string, unit: string, msrp: string|null, supplyPrice: string|null }
     formData.append('codeName', codeName);
     formData.append('scope', scope);
     formData.append('name', name);
@@ -161,9 +153,6 @@ const RegistItem = () => {
     formData.append('msrp', msrp);
     formData.append('supplyPrice', price);
     formData.append('description', description);
-    // for (var pair of formData.entries()) {
-    //   console.log(pair[0]+ ', ' + pair[1]);
-    // }
     if (imagePath){
       formData.append('imgSrc', imagePath);
     }

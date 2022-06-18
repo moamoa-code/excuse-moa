@@ -24,8 +24,6 @@ export function loadItemsAPI(){
   return axios.get(`/item/all`).then((response) => response.data);
 }
 
-
-
 // 제품 리스트 불러오기 (판매자)
 export function loadMyItemsAPI(){
   return axios.get(`/item/my`).then((response) => response.data);

@@ -1,6 +1,7 @@
 import React from 'react';
 import AppLayout from '../components/AppLayout';
 
+// -- 404 에러 표시 페이지 --
 const NotFound = () => {
   return (
     <AppLayout>

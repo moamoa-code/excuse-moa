@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { Image, Card, message, Empty } from 'antd';
-import dayjs from 'dayjs';
-import { loadPostAPI } from '../apis/post';
-import styled from 'styled-components';
-import { FileExcelOutlined } from '@ant-design/icons';
-import { CenteredDiv, HGap } from './Styled';
+import { FileExcelOutlined } from "@ant-design/icons";
+import { Image, message } from "antd";
+import dayjs from "dayjs";
+import React, { useEffect, useState } from "react";
+import styled from "styled-components";
+import { loadPostAPI } from "../apis/post";
 
 const Content = styled.div`
   background-color: white;
@@ -25,12 +24,12 @@ const Content = styled.div`
   }
   .desc {
     margin-top: 12px;
-    white-space:pre-wrap; // \r\n 줄바꿈 처리
+    white-space: pre-wrap; // \r\n 줄바꿈 처리
   }
   .foot {
     margin-top: 12px;
     font-style: italic;
-    text-align:right;
+    text-align: right;
   }
   .empty {
     span {
@@ -40,13 +39,13 @@ const Content = styled.div`
     margin: 0 auto;
     text-align: center;
   }
-`
+`;
 
-
+// 공지사항 상세보기
 const PostView = (props) => {
   const { post, postId } = props;
-  const [ postData, setPostData ] = useState(null);
-  const [ isLoading, setIsLoading ] = useState(false);
+  const [postData, setPostData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (postId) {
@@ -56,69 +55,58 @@ const PostView = (props) => {
     }
   }, [post, postId]);
 
-  const getPost = (id) =>  {
+  const getPost = (id) => {
     setIsLoading(true);
     loadPostAPI(id)
-    .then((data) => {
-      setPostData(data);
-    })
-    .catch((error) => {
-      message.error(error.response.data);
-    })
-    .finally(() => {
-      setIsLoading(false);
-    });
-  }
+      .then((data) => {
+        setPostData(data);
+      })
+      .catch((error) => {
+        message.error(error.response.data);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
 
   if (isLoading || !postData) {
     return (
       <>
         <Content>
-        <div className='empty'>
-          <FileExcelOutlined /><br />
-          데이터가 없거나 로드중입니다.
-        </div>
+          <div className="empty">
+            <FileExcelOutlined />
+            <br />
+            데이터가 없거나 로드중입니다.
+          </div>
         </Content>
       </>
     );
-  };
+  }
   return (
     <>
       <Content>
-        <div className='title'>
+        <div className="title">
           {postData?.title}
-          <span className='date'>{dayjs(postData?.createdAt).format('YYYY.MM.DD HH:mm')}</span>
+          <span className="date">
+            {dayjs(postData?.createdAt).format("YYYY.MM.DD HH:mm")}
+          </span>
         </div>
         <hr />
-        <div className='desc'>
-          {postData?.imgSrc ?
-            <div style={{ textAlign: 'center' }}>
-              <Image src={`${postData?.imgSrc}`} style={{ maxHeight: '300px'}}/>
+        <div className="desc">
+          {postData?.imgSrc ? (
+            <div style={{ textAlign: "center" }}>
+              <Image
+                src={`${postData?.imgSrc}`}
+                style={{ maxHeight: "300px" }}
+              />
             </div>
-            : null
-          }
+          ) : null}
           {postData?.content}
         </div>
-        <div className='foot'>
-          {postData?.User?.company}
-        </div>
+        <div className="foot">{postData?.User?.company}</div>
       </Content>
-      {/* <Card
-        title={postData?.title}
-        extra={dayjs(postData?.createdAt).format('YYYY.MM.DD HH:mm')}
-        size='small'
-      >
-        {postData?.imgSrc ?
-        <div style={{ textAlign: 'center' }}>
-          <Image src={`${postData?.imgSrc}`} style={{ maxHeight: '300px'}}/>
-        </div>
-        : null
-        }
-        <pre>{postData?.content}</pre>
-        <span>{postData?.User?.company}</span>
-      </Card> */}
     </>
-  )
-}
+  );
+};
 
 export default PostView;

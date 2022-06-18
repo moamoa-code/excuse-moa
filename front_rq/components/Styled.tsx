@@ -1,68 +1,68 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 // 레이아웃 800
 export const Container800 = styled.div`
   max-width: 800px;
   padding: 20px;
   margin: 0 auto;
-  box-sizing:border-box;
+  box-sizing: border-box;
   @media screen and (max-width: 600px) {
     max-width: 100%;
     padding: 10px;
   }
-`
+`;
 
 export const ContainerMax = styled.div`
   max-width: 100%;
   margin: 0 auto;
-  box-sizing:border-box;
-`
+  box-sizing: border-box;
+`;
 
 // 레이아웃 대짜
 export const ContainerBig = styled.div`
   max-width: 1024px;
   margin 0 auto;
   padding: 15px;
-`
+`;
 
 // 레이아웃 더 대짜
 export const ContainerWide = styled.div`
   max-width: 1280px;
   margin 0 auto;
   padding: 15px;
-`
+`;
 
 // 레이아웃 중간
 export const ContainerMid = styled.div`
   max-width: 600px;
   margin 0 auto;
   padding: 10px;
-`
+`;
 
 // 레이아웃 중간
 export const ContainerSmall = styled.div`
   max-width: 480px;
   margin 0 auto;
   padding: 10px;
-`
+`;
 
 // 레이아웃 대짜
 export const ContainerInnerBig = styled.div`
   max-width: 1024px;
   margin 0 auto;
-`
+`;
 
 // 공장-주문추가-상단 버튼
 export const OrderTypeSelects = styled.div`
   display: flex;
   flex-wrap: wrap;
-  justify-content:space-between;
+  justify-content: space-between;
   gap: 10px;
   a {
-    text-decoration:none !important;
+    text-decoration: none !important;
   }
   a:hover {
-    text-decoration:none !important;
+    text-decoration: none !important;
   }
   p {
     display: inline-block;
@@ -73,15 +73,15 @@ export const OrderTypeSelects = styled.div`
   }
   text-align: center;
   margin-bottom: 30px;
-  box-sizing:border-box;
-  .selected{
+  box-sizing: border-box;
+  .selected {
     color: white;
     background-color: #1890ff;
     border: 1px solid #1890ff;
   }
-  div{
+  div {
     box-sizing: border-box;
-    padding:5px;
+    padding: 5px;
     height: 50px;
     font-size: 16pt;
     font-wight: 600;
@@ -89,7 +89,7 @@ export const OrderTypeSelects = styled.div`
     border-radius: 15px;
     flex: 1;
   }
-`
+`;
 // 공장-주문추가 기타요구사항
 export const CommentInput = styled.div`
   padding: 5px 15px 5px 15px;
@@ -97,62 +97,62 @@ export const CommentInput = styled.div`
   p {
     font-weight: bold;
   }
-  textarea  {
+  textarea {
     width: 100%;
     height: 2em;
     resize: none;
     border-radius: 4px;
   }
-`
+`;
 export const Red = styled.span`
   color: red;
-`
+`;
 // 공장-주문추가 선택한 제품목록
 export const CartItems = styled.div`
-  .cartItem{
+  .cartItem {
     position: relative;
     padding: 15px 5px 15px 5px;
     border-bottom: 1px solid #999999;
   }
   input::-webkit-outer-spin-button,
   input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
+    -webkit-appearance: none;
   }
-  .first{
+  .first {
     margin: 5px 0px 10px 0px;
   }
-  .second{
+  .second {
     margin: 5px 0px 10px 0px;
   }
-  .name{
-    font-size:14pt;
-    font-weight:600;
+  .name {
+    font-size: 14pt;
+    font-weight: 600;
   }
-  .unit{
-    background-color:#FF5C8D;
+  .unit {
+    background-color: #ff5c8d;
     border-radius: 4px;
     padding: 4px 7px 4px 7px;
     margin: 0px 2px 0px 4px;
     color: white;
     font-size: 11pt;
   }
-  .codeName{
-    background-color:#00B4D8;
+  .codeName {
+    background-color: #00b4d8;
     border-radius: 4px;
     padding: 4px 7px 4px 7px;
     margin: 0px 2px 0px 4px;
     color: white;
     font-size: 11pt;
   }
-  .package{
+  .package {
     margin: 0px 2px 0px 4px;
     font-size: 12pt;
   }
-  .space{
-    display:inline-block;
-    width:7px;
+  .space {
+    display: inline-block;
+    width: 7px;
   }
-  .bottom{
+  .bottom {
     display: flex;
     justify-content: space-between;
     vertical-align: center;
@@ -161,35 +161,35 @@ export const CartItems = styled.div`
     padding: 2px 5px 2px 5px;
     margin: 0px;
     input {
-      margin:0px;
-      min-width:100px;
-      max-width:180px;
+      margin: 0px;
+      min-width: 100px;
+      max-width: 180px;
       font-size: 14pt;
       border: 1px solid #999999;
-      text-align:center;
+      text-align: center;
       border-radius: 25px;
     }
   }
-  .weight{
+  .weight {
     // position: absolute;
-    font-size:11pt;
-    font-wight:bold;
+    font-size: 11pt;
+    font-wight: bold;
     // top: 56px;
     // right: 10px;
     float: right;
   }
-  .delete{
+  .delete {
     position: absolute;
     top: 23px;
     right: 5px;
     border: 1px solid #999999;
     background: #5f5f5f99;
     border-radius: 50%;
-    width:25px;
-    height:25px;
-    font-size:8pt;
-    font-wight:600;
-    color:white;
+    width: 25px;
+    height: 25px;
+    font-size: 8pt;
+    font-wight: 600;
+    color: white;
   }
   .qtyInputBox {
     vertical-align: center;
@@ -204,218 +204,217 @@ export const CartItems = styled.div`
       background: none;
     }
     input {
-      margin:0px;
-      text-align:center;
+      margin: 0px;
+      text-align: center;
       font-size: 14pt;
-      width:45px;
-      border:none;
+      width: 45px;
+      border: none;
     }
     button:active {
-      position: relative; 
-      top:2px;
+      position: relative;
+      top: 2px;
     }
   }
-`
+`;
 // 공장-주문추가 목록컨테이너
 export const ListBox = styled.div`
   overflow: auto;
   max-height: 500px;
-`
+`;
 
-// 공장-주문추가 
+// 공장-주문추가
 export const ContentsBox = styled.div`
   border-radius: 4px;
   padding: 20px 15px 20px 15px;
-  box-sizing:border-box;
-  width:100%;
-  background-color:#fafafa;
-`
+  box-sizing: border-box;
+  width: 100%;
+  background-color: #fafafa;
+`;
 
 // 공장-주문추가 제목
 export const TiTle = styled.span`
   font-size: 16pt;
-  font-weight:600;
-`
-// 공장-주문추가 
+  font-weight: 600;
+`;
+// 공장-주문추가
 export const CenteredDiv = styled.div`
   text-align: center;
   margin 0 auto;
-`
+`;
 // 공장-주문추가 새 아이템 입력
 export const ItemForm = styled.div`
-.buttonWrapper{
-  margin: 24px 0px 10px 0px;
-  text-align:center;
-  button{
-    padding: 8px 12px 8px 12px;
-    display:inline-block;
+  .buttonWrapper {
+    margin: 24px 0px 10px 0px;
+    text-align: center;
+    button {
+      padding: 8px 12px 8px 12px;
+      display: inline-block;
+      font-size: 14pt;
+      color: white;
+      background-color: #1890ff;
+      border: none;
+      border-radius: 4px;
+    }
+    button:active {
+      position: relative;
+      top: 4px;
+    }
+  }
+  .optionName {
+    margin-top: 18px;
     font-size: 14pt;
-    color: white;
-    background-color: #1890ff;
-    border: none;
-    border-radius: 4px;
+    font-weight: 600;
+    display: block;
   }
-  button:active {
-    position: relative; 
-    top:4px;
+  .productName {
+    width: 100%;
   }
-}
-.optionName{
-  margin-top: 18px;
-  font-size: 14pt;
-  font-weight: 600;
-  display: block;
-}
-.productName{
-  width:100%;
-}
-input{
-  display: block;
-  padding: 5px 8px 5px 8px;
-  font-size: 14pt;
-  margin: 12px 0px 12px 0px;
-  border: 1px solid #999999;
-  text-align:center;
-  border-radius: 25px;
-}
-.optionContainer{
-  display: block;
-  overflow:auto;
-  max-height:300px;
-  p {
-    display: inline-block;
-    box-sizing: border-box;
-    border-radius: 4px;
+  input {
+    display: block;
     padding: 5px 8px 5px 8px;
-    margin: 6px;
-    font-size: 13pt;
-  }
-  p:active {
-    position: relative; 
-    top:2px;
-  }
-  .codeName{
-    background-color:#00B4D8;
-    color: white;
-  }
-  .unit{
-    background-color:#FF5C8D;
-    color: white;
-  }
-  .package{
-    background-color:#ec7728;
-    color: white;
-  }
-  .tag{
+    font-size: 14pt;
+    margin: 12px 0px 12px 0px;
     border: 1px solid #999999;
-    background-color:#ffffff;
-    color: black;
+    text-align: center;
+    border-radius: 25px;
   }
-  .readMe{
-
+  .optionContainer {
+    display: block;
+    overflow: auto;
+    max-height: 300px;
+    p {
+      display: inline-block;
+      box-sizing: border-box;
+      border-radius: 4px;
+      padding: 5px 8px 5px 8px;
+      margin: 6px;
+      font-size: 13pt;
+    }
+    p:active {
+      position: relative;
+      top: 2px;
+    }
+    .codeName {
+      background-color: #00b4d8;
+      color: white;
+    }
+    .unit {
+      background-color: #ff5c8d;
+      color: white;
+    }
+    .package {
+      background-color: #ec7728;
+      color: white;
+    }
+    .tag {
+      border: 1px solid #999999;
+      background-color: #ffffff;
+      color: black;
+    }
+    .readMe {
+    }
   }
-}
-`
+`;
 // 공장-주문추가 새 구매자 입력
 export const CustomerForm = styled.table`
-  width:100%;
+  width: 100%;
   margin: 15px 0px 10px 0px;
   font-size: 12pt;
   td {
     padding: 12px;
   }
   background-color: white;
-  .left{
+  .left {
     width: 60px;
   }
   input {
     padding: 6px;
-    width:100%;
+    width: 100%;
   }
-`
-// 공장-주문추가 
+`;
+// 공장-주문추가
 export const ItemsContainer = styled.div`
-  overflow:auto;
-  max-height:900px;
+  overflow: auto;
+  max-height: 900px;
   text-align: center;
   align-content: space-between;
   align-items: center;
   justify-content: center;
   display: flex;
-  width:100%;
+  width: 100%;
   flex-wrap: wrap;
   box-sizing: border-box;
   .selected {
     background-color: white;
-    box-shadow: 4px 5px 10px 0px rgba(0,0,0,0.2);
-}
-`
+    box-shadow: 4px 5px 10px 0px rgba(0, 0, 0, 0.2);
+  }
+`;
 // 공장-주문추가 제품 선택
 export const ItemSelector = styled.div`
   // display: inline-block;
   box-sizing: border-box;
   position: relative;
-  padding:5px;
+  padding: 5px;
   flex-basis: 340px;
 
-  margin:8px;
+  margin: 8px;
   border: 1px dotted #444444;
   border-radius: 7px;
   .showModalClick {
-    position : absolute;
+    position: absolute;
     padding: 3px 6px 3px 8px;
     margin: 0px;
     top: 0px;
     right: 5px;
     font-size: 17pt;
   }
-  .underline{
+  .underline {
     border-bottom: 1px solid #d4d4d4;
     padding-bottom: 7px;
   }
-  .second{
+  .second {
     margin-top: 13px;
   }
-  .name{
-    font-size:13pt;
-    font-weight:600;
+  .name {
+    font-size: 13pt;
+    font-weight: 600;
   }
-  .unit{
-    background-color:#FF5C8D;
+  .unit {
+    background-color: #ff5c8d;
     border-radius: 4px;
     padding: 4px 7px 4px 7px;
     margin: 0px 2px 0px 4px;
     color: white;
     font-size: 10pt;
   }
-  .codeName{
-    background-color:#00B4D8;
+  .codeName {
+    background-color: #00b4d8;
     border-radius: 4px;
     padding: 4px 7px 4px 7px;
     margin: 0px 2px 0px 4px;
     color: white;
     font-size: 10pt;
   }
-  .package{
+  .package {
     margin: 0px 2px 0px 4px;
     font-size: 10pt;
   }
-  .space{
-    display:inline-block;
-    width:5px;
+  .space {
+    display: inline-block;
+    width: 5px;
   }
-  .id{
+  .id {
     font-size: 8pt;
   }
-  div{
+  div {
     margin: 4px 0px 4px 0px;
-    vertical-align:middle;
+    vertical-align: middle;
   }
   @media screen and (max-width: 600px) {
     width: 100%;
-    margin:8px 0px 8px 0px;
+    margin: 8px 0px 8px 0px;
   }
-`
+`;
 
 // 공통
 
@@ -430,7 +429,7 @@ export const MoDal = styled.div`
   left: 0;
   z-index: 8;
   width: 100vw;
-  height: 100vh; 
+  height: 100vh;
   background-color: #828080e2;
   animation: fadein 0.2s;
   @keyframes fadein {
@@ -453,8 +452,8 @@ export const MoDal = styled.div`
     padding: 20px;
     overflow: auto;
     border-radius: 10px;
-    -webkit-box-shadow: 1px 1px 15px 3px rgba(0,0,0,0.34); 
-    box-shadow: 1px 1px 15px 3px rgba(0,0,0,0.34);
+    -webkit-box-shadow: 1px 1px 15px 3px rgba(0, 0, 0, 0.34);
+    box-shadow: 1px 1px 15px 3px rgba(0, 0, 0, 0.34);
     transition: opacity 1s;
     @media screen and (max-width: 680px) {
       padding: 10px;
@@ -465,15 +464,15 @@ export const MoDal = styled.div`
   .close {
     display: block;
     margin-top: 10px;
-    float:right;
+    float: right;
   }
-`
+`;
 export const ErrorMessage = styled.div`
   color: red;
 `;
 
 export const FormBox = styled.div`
-  box-shadow: 4px 5px 10px 0px rgba(0,0,0,0.1); 
+  box-shadow: 4px 5px 10px 0px rgba(0, 0, 0, 0.1);
   border: 2px solid #cccccc;
   border-radius: 20px;
   background-color: #fdfdfd;
@@ -489,7 +488,7 @@ export const FormBox = styled.div`
     margin-top: 18px;
     margin-bottom: 18px;
   }
-`
+`;
 
 // 입력 폼 한줄
 export const Block = styled.div`
@@ -512,7 +511,7 @@ export const Block = styled.div`
     border: 1px solid #e4e4e4;
     border-radius: 6px;
   }
-`
+`;
 // 검색
 export const SearchBlock = styled.div`
   margin: 18px 0 18px 0;
@@ -528,11 +527,11 @@ export const SearchBlock = styled.div`
     align-items: center;
   }
   select {
-    box-sizing : border-box;
+    box-sizing: border-box;
     height: 38px;
     border-radius: 4px 0 0 4px;
     border: 1px solid #999999;
-    background-color:white;
+    background-color: white;
   }
   input {
     flex-basis: 50px;
@@ -540,44 +539,44 @@ export const SearchBlock = styled.div`
     height: 38px;
     margin: 0;
     padding-left: 5px;
-    box-sizing : border-box;
+    box-sizing: border-box;
     border-radius: 4px 0 0 4px;
     border: 1px solid #999999;
   }
-  .search{
+  .search {
     color: white;
     font-size: 12pt;
     font-weight: 800;
     min-width: 35px;
-    border:0;
+    border: 0;
     margin: 0;
     border-radius: 0 4px 4px 0;
-    background-color:#1890ff;
+    background-color: #1890ff;
   }
   button {
     flex-grow: none;
-    box-sizing : border-box;
+    box-sizing: border-box;
     height: 38px;
     border-radius: 4px;
     border: 1px solid #999999;
-    background-color:white;
+    background-color: white;
   }
   button:active {
-    position: relative; 
-    top:2px;
+    position: relative;
+    top: 2px;
   }
   label {
     display: block;
     margin: 0 0 7px 0;
   }
-`
+`;
 // 검색결과, 각종 옵션
 export const OptionContainer = styled.div`
   background-color: #f1f8ff;
   padding: 8px 0px 8px 0px;
   display: block;
-  overflow:auto;
-  max-height:300px;
+  overflow: auto;
+  max-height: 300px;
   p {
     background-color: white;
     display: inline-block;
@@ -588,25 +587,25 @@ export const OptionContainer = styled.div`
     font-size: 9pt;
   }
   p:active {
-    position: relative; 
-    top:2px;
+    position: relative;
+    top: 2px;
   }
-  .codeName{
-    background-color:#00B4D8;
+  .codeName {
+    background-color: #00b4d8;
     color: white;
   }
-  .unit{
-    background-color:#FF5C8D;
+  .unit {
+    background-color: #ff5c8d;
     color: white;
   }
-  .package{
-    background-color:#ec7728;
+  .package {
+    background-color: #ec7728;
     color: white;
   }
-  .provider{
+  .provider {
     border: 1px solid #999999;
   }
-`
+`;
 
 // 여러 회원생성
 // 입력 폼 테이블
@@ -621,13 +620,13 @@ export const InputFormTable = styled.table`
       flex: 1;
       padding: 4px 0px 4px 0px;
       border-radius: 4px;
-      border: 1px solid #398AB9;
+      border: 1px solid #398ab9;
     }
     button {
       background: white;
       padding: 0 3px 0 3px;
       border-radius: 4px;
-      border: 1px solid #398AB9;
+      border: 1px solid #398ab9;
     }
   }
   width: 100%;
@@ -651,94 +650,93 @@ export const InputFormTable = styled.table`
   tr {
     margin-bottom: 5px;
   }
-`
+`;
 
 export const SearchAndTitle = styled.div`
-margin: 18px 0 18px 0;
-width: 100%;
-display: flex;
-justify-content: space-between;
-flex-wrap: wrap;
-hr {
-  flex-grow: 1;
-  width: 50px;
-  margin: 0 5px 0 5px;
-  border : 0px;
-  border-top: 1px solid #cfcfcf;
-}
-.left {
-  width: 15px;
-  margin-right: 10px;
-}
-.search input {
-  height: 38px;
-  margin: 0;
-  padding-left: 5px;
-  box-sizing : border-box;
-  border-radius: 4px 0 0 4px;
-  border: 1px solid #999999;
-}
-.search Button{
-  height: 38px;
-  color: white;
-  font-size: 12pt;
-  font-weight: 800;
-  min-width: 35px;
-  border:0;
-  margin: 0;
-  border-radius: 0 4px 4px 0;
-  background-color:#1890ff;
-}
-.listBtn {
-  margin-left: 5px;
-  height: 38px;
-  border-radius: 4px;
-  border: 1px solid #999999;
-  background-color:white;
-}
-.listBtn:active {
-  position: relative; 
-  top:2px;
-}
-.textBox {
-  font-size: 16pt;
-  font-weight: bold;
-  margin: 0px 10px 0px 10px;
+  margin: 18px 0 18px 0;
+  width: 100%;
   display: flex;
-  justify-content: center;
-  align-items: center;
-}
-`
-
+  justify-content: space-between;
+  flex-wrap: wrap;
+  hr {
+    flex-grow: 1;
+    width: 50px;
+    margin: 0 5px 0 5px;
+    border: 0px;
+    border-top: 1px solid #cfcfcf;
+  }
+  .left {
+    width: 15px;
+    margin-right: 10px;
+  }
+  .search input {
+    height: 38px;
+    margin: 0;
+    padding-left: 5px;
+    box-sizing: border-box;
+    border-radius: 4px 0 0 4px;
+    border: 1px solid #999999;
+  }
+  .search Button {
+    height: 38px;
+    color: white;
+    font-size: 12pt;
+    font-weight: 800;
+    min-width: 35px;
+    border: 0;
+    margin: 0;
+    border-radius: 0 4px 4px 0;
+    background-color: #1890ff;
+  }
+  .listBtn {
+    margin-left: 5px;
+    height: 38px;
+    border-radius: 4px;
+    border: 1px solid #999999;
+    background-color: white;
+  }
+  .listBtn:active {
+    position: relative;
+    top: 2px;
+  }
+  .textBox {
+    font-size: 16pt;
+    font-weight: bold;
+    margin: 0px 10px 0px 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+`;
 
 // 로딩중 모달
 export const LoadingModal = styled.div`
-overflow: auto;
-display: flex;
-position: fixed;
-top: 0;
-left: 0;
-z-index: 8;
-align-items: center;
-justify-content: center;
-width: 100vw;
-height: 100vh;
-background-color: rgba(255, 255, 255, 0.5);
-animation: fadein 0.2s;
-@keyframes fadein {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-div {
   overflow: auto;
-  z-index: 9;
-  padding: 15px;
-}
-`
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 8;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(255, 255, 255, 0.5);
+  animation: fadein 0.2s;
+  @keyframes fadein {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  div {
+    overflow: auto;
+    z-index: 9;
+    padding: 15px;
+  }
+`;
 
 export const DataShow = styled.div`
   display: flex;
@@ -751,7 +749,7 @@ export const DataShow = styled.div`
     font-size: 13pt;
     font-weight: bold;
     display: block;
-    flex-basis: 100%; 
+    flex-basis: 100%;
   }
   .container {
     border: 1px solid #f0f0f0;
@@ -759,12 +757,12 @@ export const DataShow = styled.div`
     flex-grow: 1;
     @media screen and (max-width: 600px) {
       flex-basis: 100%;
-      flex-direction:column;
+      flex-direction: column;
     }
   }
-  .title{
-    white-space:nowrap;
-    background-color:#fafafa;
+  .title {
+    white-space: nowrap;
+    background-color: #fafafa;
     flex-grow: 1;
     padding: 15px;
     @media screen and (max-width: 600px) {
@@ -772,8 +770,8 @@ export const DataShow = styled.div`
       flex-basis: 100%;
     }
   }
-  .data{
-    min-width:100px;
+  .data {
+    min-width: 100px;
     padding: 15px;
     flex-wrap: wrap;
     flex-grow: 4;
@@ -782,32 +780,32 @@ export const DataShow = styled.div`
       flex-basis: 100%;
     }
   }
-  .bigTitle{
+  .bigTitle {
     display: block;
-    flex-basis: 100%; 
+    flex-basis: 100%;
     padding: 15px;
-    background-color:#fafafa;
+    background-color: #fafafa;
     border: 1px solid #f0f0f0;
     @media screen and (max-width: 600px) {
       padding: 5px;
     }
   }
-  .bigData{
+  .bigData {
     display: block;
-    flex-basis: 100%; 
+    flex-basis: 100%;
     padding: 15px;
     border: 1px solid #f0f0f0;
     @media screen and (max-width: 600px) {
       padding: 5px;
     }
   }
-`
+`;
 
 export const HGap = styled.div`
   display: block;
   width: 100%;
   height: 15px;
-`
+`;
 
 export const MyTaBle = styled.div`
   display: flex;
@@ -896,34 +894,33 @@ span {
 .sub::before {
   content:" | "
 }
-`
+`;
 
 export const RightText = styled.div`
   text-align: right;
-`
+`;
 
 export const LeftAndRightDiv = styled.div`
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  .left{
+  .left {
     flex: 1;
   }
-  .right{
+  .right {
     margin-left: auto;
   }
-  
-`
+`;
 
 // 재고보고서
-export const InventoryTable = styled .table`
+export const InventoryTable = styled.table`
   width: 100%;
   min-width: 350px;
   border-collapse: collapse;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-  .extended{
+  .extended {
     .container {
-      background-color:white;
+      background-color: white;
       padding: 18px;
       border-radius: 12px;
       border: 1px solid #d4d4d4;
@@ -940,7 +937,7 @@ export const InventoryTable = styled .table`
     }
   }
   .name {
-    color:#1890ff;
+    color: #1890ff;
   }
   .qty {
     width: 80px;
@@ -948,7 +945,7 @@ export const InventoryTable = styled .table`
     font-size: 12pt;
     div {
       display: flex;
-      margin:0 auto;
+      margin: 0 auto;
       align-items: center;
       flex-wrap: wrap;
       gap: 4px;
@@ -976,13 +973,13 @@ export const InventoryTable = styled .table`
       flex-basis: 90px;
       padding: 4px 0px 4px 0px;
       border-radius: 4px;
-      border: 1px solid #398AB9;
+      border: 1px solid #398ab9;
     }
     button {
       background: white;
       padding: 0 3px 0 3px;
       border-radius: 4px;
-      border: 1px solid #398AB9;
+      border: 1px solid #398ab9;
     }
   }
   input {
@@ -990,7 +987,8 @@ export const InventoryTable = styled .table`
     padding: 4px 0px 4px 0px;
     border: none;
   }
-  th, td{
+  th,
+  td {
     padding: 10px 6px 10px 6px;
   }
   th {
@@ -1034,7 +1032,7 @@ export const InventoryTable = styled .table`
     background-color: #f8f8f8;
   }
   tbody tr:last-of-type {
-    border-bottom: 2px solid #398AB9;
+    border-bottom: 2px solid #398ab9;
   }
   td {
     border-left: 1px solid #dadada;
@@ -1042,7 +1040,7 @@ export const InventoryTable = styled .table`
   td:first-child {
     border-left: none;
   }
-  .wraper{
+  .wraper {
     display: flex;
   }
   .qtyInputBox {
@@ -1056,18 +1054,18 @@ export const InventoryTable = styled .table`
       background: none;
     }
     input {
-      margin:0px;
-      text-align:center;
+      margin: 0px;
+      text-align: center;
       font-size: 14pt;
-      width:45px;
-      border:none;
+      width: 45px;
+      border: none;
     }
     button:active {
-      position: relative; 
-      top:2px;
+      position: relative;
+      top: 2px;
     }
   }
-`
+`;
 
 export const StockViewModal = styled.div`
   display:flex;
@@ -1136,7 +1134,7 @@ export const StockViewModal = styled.div`
       position: relative; 
       top:2px;
     }
-`
+`;
 
 // 재고보고서 갱신 모바일용
 export const StockBox = styled.div`
@@ -1153,11 +1151,11 @@ export const StockBox = styled.div`
     }
     border-bottom: 1px solid #e4e4e4;
   }
-  .container{
+  .container {
     padding: 14px;
     border: 1px solid #e4e4e4;
     border-radius: 12px;
-    box-shadow: 0px 9px 10px -4px rgba(0,0,0,0.07);
+    box-shadow: 0px 9px 10px -4px rgba(0, 0, 0, 0.07);
   }
   .top {
     display: flex;
@@ -1167,7 +1165,7 @@ export const StockBox = styled.div`
       font-size: 12pt;
     }
     .action {
-      margin-left:auto;
+      margin-left: auto;
       .qtyInputBox {
         align-items: center;
         vertical-align: center;
@@ -1179,15 +1177,15 @@ export const StockBox = styled.div`
           background: none;
         }
         input {
-          margin:0px;
-          text-align:center;
+          margin: 0px;
+          text-align: center;
           font-size: 14pt;
-          width:45px;
-          border:none;
+          width: 45px;
+          border: none;
         }
         button:active {
-          position: relative; 
-          top:2px;
+          position: relative;
+          top: 2px;
         }
       }
     }
@@ -1208,12 +1206,13 @@ export const StockBox = styled.div`
     .lable {
       margin-right: 5px;
     }
-    input, select {
+    input,
+    select {
       flex: 1;
       max-width: 90px;
       padding: 4px 0px 4px 0px;
       border-radius: 4px;
-      border: 1px solid #398AB9;
+      border: 1px solid #398ab9;
     }
     .selectWrap {
       .number {
@@ -1228,8 +1227,8 @@ export const StockBox = styled.div`
         background: white;
         padding: 0 3px 0 3px;
         border-radius: 4px;
-        border: 1px solid #398AB9;
+        border: 1px solid #398ab9;
       }
     }
   }
-`
+`;

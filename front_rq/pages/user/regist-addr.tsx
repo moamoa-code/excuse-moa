@@ -1,48 +1,32 @@
-import React, { useState } from 'react';
-import AppLayout from '../../components/AppLayout';
-import AddressForm from '../../components/AddressForm';
-import { GetServerSidePropsContext } from 'next';
-import axios from 'axios';
-import { dehydrate, QueryClient, useQuery } from 'react-query';
-import { loadMyInfoAPI, registAddrAPI } from '../../apis/user';
-import User from '../../interfaces/user';
-import styled from 'styled-components';
-import { Divider, notification, Typography } from 'antd';
-import { SmileOutlined } from '@ant-design/icons';
-import Router from 'next/router';
-import { ContainerMid, FormBox } from '../../components/Styled';
+import { Divider, message, Typography } from "antd";
+import axios from "axios";
+import { GetServerSidePropsContext } from "next";
+import Router from "next/router";
+import React, { useState } from "react";
+import { dehydrate, QueryClient, useQuery } from "react-query";
+import { loadMyInfoAPI, registAddrAPI } from "../../apis/user";
+import AddressForm from "../../components/AddressForm";
+import AppLayout from "../../components/AppLayout";
+import { ContainerMid, FormBox } from "../../components/Styled";
+import User from "../../interfaces/user";
 
-const Container500 = styled.div`
-  max-width: 500px;
-  margin 0 auto;
-  padding: 10px;
-`
-
-
+// --회원정보/주소록/주소추가 페이지--
 const RegistAddress = () => {
-  const [ loading, setLoading ] = useState(false);
-  const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
+  const [loading, setLoading] = useState(false);
+  const { data: myUserInfo } = useQuery<User>("user", loadMyInfoAPI);
   const { Title } = Typography;
 
+  // 주소 저장 버튼 클릭
   const submitDatas = (datas) => {
     registAddress(datas);
-  }
-
-  const openNotification = () => {
-    notification.open({
-      message: `새로운 주소 추가가 완료되었습니다.`,
-      description:
-        ``,
-      icon: <SmileOutlined style={{ color: '#108ee9' }} />,
-      duration: 4,
-    });
   };
 
+  // 주소 추가 API
   const registAddress = (datas) => {
     setLoading(true);
     registAddrAPI(datas)
       .then(() => {
-        openNotification();
+        message.success('새로운 주소 추가가 완료되었습니다.');
         Router.replace(`/user/addr-list`);
       })
       .catch((error) => {
@@ -51,38 +35,42 @@ const RegistAddress = () => {
       .finally(() => {
         setLoading(false);
       });
-  }
+  };
 
   return (
     <AppLayout>
       <ContainerMid>
-        <Divider><Title level={4}>새로운 주소 추가</Title></Divider>
+        <Divider>
+          <Title level={4}>새로운 주소 추가</Title>
+        </Divider>
         <FormBox>
-          <AddressForm submitDatas={submitDatas} loading={loading}/>
+          <AddressForm submitDatas={submitDatas} loading={loading} />
         </FormBox>
       </ContainerMid>
     </AppLayout>
   );
 };
 
-export const getServerSideProps = async (context: GetServerSidePropsContext) => {
-  const cookie = context.req ? context.req.headers.cookie : ''; // 쿠키 넣어주기
-  axios.defaults.headers.Cookie = '';
+export const getServerSideProps = async (
+  context: GetServerSidePropsContext
+) => {
+  const cookie = context.req ? context.req.headers.cookie : ""; // 쿠키 넣어주기
+  axios.defaults.headers.Cookie = "";
   if (context.req && cookie) {
     axios.defaults.headers.Cookie = cookie;
   }
   const queryClient = new QueryClient();
   const response = await loadMyInfoAPI();
-  if (!response) { // 로그인 안했으면 홈으로
+  if (!response) {
+    // 로그인 안했으면 홈으로
     return {
       redirect: {
-        destination: '/login',
+        destination: "/login",
         permanent: false,
       },
     };
   }
-  const id = context.params?.id as string;
-  await queryClient.prefetchQuery(['user'], () => loadMyInfoAPI());
+  await queryClient.prefetchQuery(["user"], () => loadMyInfoAPI());
   return {
     props: {
       dehydratedState: JSON.parse(JSON.stringify(dehydrate(queryClient))),

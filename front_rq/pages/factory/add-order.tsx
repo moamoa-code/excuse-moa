@@ -1,47 +1,36 @@
 // 주문서 목록
-import axios, { AxiosError } from "axios";
-import { GetServerSidePropsContext } from "next";
-import React, { useMemo, useState } from "react";
-import Link from "next/link";
-import {
-  Button,
-  Divider,
-  Space,
-  message,
-  notification,
-  Descriptions,
-  Spin,
-} from "antd";
-import { useRouter } from "next/router";
-import { dehydrate, QueryClient, useQuery, useQueryClient } from "react-query";
-import {
-  loadAddrsAPI,
-  loadMyInfoAPI,
-  loadProviderByIdAPI,
-  loadProvidersAPI,
-  loadUserByIdAPI,
-} from "../../apis/user";
-import { orderPosItemAPI } from "../../apis/order";
-import AppLayout from "../../components/AppLayout";
-
-import "dayjs/locale/ko";
-import User from "../../interfaces/user";
 import {
   CheckCircleOutlined,
   InfoCircleTwoTone,
   MinusOutlined,
   PlusOutlined,
-  SearchOutlined,
+  SearchOutlined
 } from "@ant-design/icons";
+import {
+  Button, Descriptions, Divider, message,
+  notification, Space, Spin
+} from "antd";
 import Modal from "antd/lib/modal/Modal";
-import { loadCustomerItemListAPI, loadItemListAPI } from "../../apis/item";
-import Item from "../../interfaces/item";
 import Text from "antd/lib/typography/Text";
-import ItemView from "../../components/ItemView";
-
+import axios from "axios";
+import "dayjs/locale/ko";
+import { GetServerSidePropsContext } from "next";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import React, { useMemo, useState } from "react";
+import { dehydrate, QueryClient, useQuery } from "react-query";
 import shortId from "shortid";
-import UserInfoBox from "../../components/UserInfoBox";
-import useInput from "../../hooks/useInput";
+import { loadCustomerItemListAPI, loadItemListAPI } from "../../apis/item";
+import { orderPosItemAPI } from "../../apis/order";
+import {
+  loadAddrsAPI,
+  loadMyInfoAPI,
+  loadProviderByIdAPI,
+  loadProvidersAPI,
+  loadUserByIdAPI
+} from "../../apis/user";
+import AppLayout from "../../components/AppLayout";
+import ItemView from "../../components/ItemView";
 import {
   CartItems,
   CenteredDiv,
@@ -57,9 +46,14 @@ import {
   OrderTypeSelects,
   Red,
   SearchBlock,
-  TiTle,
+  TiTle
 } from "../../components/Styled";
+import UserInfoBox from "../../components/UserInfoBox";
+import useInput from "../../hooks/useInput";
+import Item from "../../interfaces/item";
+import User from "../../interfaces/user";
 
+// --(관리자)주문 추가 페이지--
 const addNewOrder = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -93,9 +87,10 @@ const addNewOrder = () => {
   const [isNewCustomer, setIsNewCustomer] = useState(false); // 구매자 새로입력
   const [isNewProduct, setIsNewProduct] = useState(false); // 제품 새로 입력
   // 구매자 검색
-  const [ searchCustomerTxt, onChangeSearchCustomerTxt, setSearchCustomerTxt ] = useInput('');
-  const [ filteredCustomers, setFilteredCustomers ] = useState(null);
-  const [ isFilteredCustomerList, setIsFilteredCustomerList ] = useState(false);
+  const [searchCustomerTxt, onChangeSearchCustomerTxt, setSearchCustomerTxt] =
+    useInput("");
+  const [filteredCustomers, setFilteredCustomers] = useState(null);
+  const [isFilteredCustomerList, setIsFilteredCustomerList] = useState(false);
   // 새로운 제품 입력 값
   const codeNames = [
     "싱글",
@@ -217,7 +212,7 @@ const addNewOrder = () => {
       if (v.qty < 1 || v.qty > 9999) {
         qtyError = true;
       }
-    })
+    });
     if (qtyError) {
       setLoading(false);
       return message.error("수량을 1~9999 사이로 입력하세요.");
@@ -248,7 +243,7 @@ const addNewOrder = () => {
   // 판매자 선택
   const onProviderSelectClick = (id) => () => {
     setIsFilteredCustomerList(false);
-    setSearchCustomerTxt('');
+    setSearchCustomerTxt("");
     setFilteredCustomers(null);
     setSelectedProvider(id);
     getProviderData(id);
@@ -407,7 +402,7 @@ const addNewOrder = () => {
     loadProviderByIdAPI(userId)
       .then((response) => {
         setIsFilteredCustomerList(false);
-        setSearchCustomerTxt('');
+        setSearchCustomerTxt("");
         setFilteredCustomers(null);
         setSelectedProviderData(response);
         setCustomers(response.Customers);
@@ -479,15 +474,13 @@ const addNewOrder = () => {
   // 구매자 검색
   const onCustomerSearch = () => {
     if (searchCustomerTxt.length < 1) {
-      return message.error('검색할 회사명을 입력해 주세요.');
+      return message.error("검색할 회사명을 입력해 주세요.");
     }
     let list = null;
-    list = customers.filter(
-      (v) => v.company.includes(searchCustomerTxt)
-    );
+    list = customers.filter((v) => v.company.includes(searchCustomerTxt));
     setFilteredCustomers(list);
     setIsFilteredCustomerList(true);
-  }
+  };
 
   return (
     <AppLayout>
@@ -511,22 +504,6 @@ const addNewOrder = () => {
             <p>새로운 주문 추가하기</p>
           </div>
         </OrderTypeSelects>
-        {/* <SearchAndTitle>
-          <div className='textBox'>
-            <hr className='left'/>1. 판매사/브랜드 선택<hr />
-          </div>
-          <div className='search'>
-            <input
-            />
-            <button type='button' >
-              <SearchOutlined />
-            </button>
-          </div>
-          <button className='listBtn'
-            type='button' 
-          >목록보기
-          </button>
-        </SearchAndTitle> */}
         <Divider orientation="left">
           <TiTle>1. 판매자/브랜드 선택</TiTle>
         </Divider>
@@ -562,7 +539,7 @@ const addNewOrder = () => {
         <Divider orientation="left">
           <TiTle>2. 구매자 선택</TiTle>
         </Divider>
-        {customers?.length > 9? 
+        {customers?.length > 9 ? (
           <SearchBlock>
             <div>
               <input
@@ -570,50 +547,53 @@ const addNewOrder = () => {
                 value={searchCustomerTxt}
                 onChange={onChangeSearchCustomerTxt}
                 onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === "Enter") {
                     onCustomerSearch();
                   }
                 }}
               />
-              <button type='button' className='search' 
+              <button
+                type="button"
+                className="search"
                 onClick={onCustomerSearch}
               >
                 <SearchOutlined />
               </button>
             </div>
-            <button 
-              type='button' 
-              onClick={()=>{
+            <button
+              type="button"
+              onClick={() => {
                 setIsFilteredCustomerList(false);
-              }}>전체보기
+              }}
+            >
+              전체보기
             </button>
           </SearchBlock>
-        :null}
-        {!selectedProvider ? null 
-        : (
+        ) : null}
+        {!selectedProvider ? null : (
           <ContentsBox>
             <ListBox>
               <Space wrap>
-                {
-                (!isFilteredCustomerList? customers:
-                filteredCustomers)?.map((v) => {
-                  if (v.id === selectedCustomer) {
+                {(!isFilteredCustomerList ? customers : filteredCustomers)?.map(
+                  (v) => {
+                    if (v.id === selectedCustomer) {
+                      return (
+                        <Button size="large" type="primary">
+                          {v.company}
+                        </Button>
+                      );
+                    }
                     return (
-                      <Button size="large" type="primary">
+                      <Button
+                        size="large"
+                        type="dashed"
+                        onClick={onCustomerSelectClick(v.id)}
+                      >
                         {v.company}
                       </Button>
                     );
                   }
-                  return (
-                    <Button
-                      size="large"
-                      type="dashed"
-                      onClick={onCustomerSelectClick(v.id)}
-                    >
-                      {v.company}
-                    </Button>
-                  );
-                })}
+                )}
               </Space>
             </ListBox>
             <br />

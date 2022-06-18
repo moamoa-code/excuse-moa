@@ -1,45 +1,20 @@
-// 상품 등록 페이지
-// 관리자, 판매자만 열람 가능
-import axios from "axios";
-import { GetServerSidePropsContext } from "next";
-import Link from "next/link";
-
-import React from "react";
-import Head from "next/head";
-import { Typography } from "antd";
-import { dehydrate, QueryClient, } from "react-query";
-
-import { loadMyInfoAPI } from "../../apis/user";
-import AppLayout from "../../components/AppLayout";
-import styled from "styled-components";
 import {
   ShopOutlined,
   UnorderedListOutlined,
-  UserOutlined,
+  UserOutlined
 } from "@ant-design/icons";
+import { Typography } from "antd";
+import axios from "axios";
+import { GetServerSidePropsContext } from "next";
+import Head from "next/head";
+import Link from "next/link";
+import React from "react";
+import { dehydrate, QueryClient } from "react-query";
+import { loadMyInfoAPI } from "../../apis/user";
+import AppLayout from "../../components/AppLayout";
+import { Container800 } from "../../components/Styled";
 
-const Container800 = styled.div`
-  max-width: 800px;
-  padding: 20px;
-  margin: 0 auto;
-  a:link {
-    text-decoration: none;
-  }
-  a:visited {
-    text-decoration: none;
-  }
-  a:hover {
-    text-decoration: underline;
-  }
-  span {
-    font-size: 12pt;
-    margin: 10px 0 10px 0;
-  }
-  p {
-    font-size: 20px;
-  }
-`;
-
+// --관리자페이지--
 const Factory = () => {
   const { Title } = Typography;
   return (

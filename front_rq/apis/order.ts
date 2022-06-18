@@ -79,7 +79,6 @@ export function loadReceivedOrdersAPI(userId: string, number?: number){
   return axios.get(`/order/received-orders/${userId}`).then((response) => response.data);
 }
 
-
 // 최근 3개 판매자 주문서 불러오기
 export function loadRecentReceivedOrdersAPI(userKey){
     return axios.get(`/order/recent-received-orders/${userKey}`).then((response) => response.data);

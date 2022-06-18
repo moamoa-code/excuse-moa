@@ -1,31 +1,30 @@
-// 주소 등록 폼, 다음 주소 API 활용
-import React, { useCallback, useState, useEffect } from 'react';
-import DaumPostcode from 'react-daum-postcode';
-import { Form, Input, Button } from 'antd';
-import useInput from '../hooks/useInput';
-import Modal from 'antd/lib/modal/Modal';
-import styled from 'styled-components';
-import { Block } from './Styled';
+import { Button, Form } from "antd";
+import Modal from "antd/lib/modal/Modal";
+import React, { useCallback, useState } from "react";
+import DaumPostcode from "react-daum-postcode";
+import useInput from "../hooks/useInput";
+import { Block } from "./Styled";
 
+// 주소 등록 폼, 다음 주소 API 활용
 const AddressForm = (props) => {
-  const [ isVisible, setIsVisible ] = useState(false);
-  const [ zip, setZip ] = useState('');
-  const [ address, onChangeAddress, setAddress ] = useInput<string>('');
-  const [ address2, onChangeAddress2, setAddress2 ] = useInput<string>('');
-  const [ addrName, onChangeAddrName, setAddrName ] = useInput('');
-  const [ phone, setPhone ] = useState('');
-  const [ name, onChangeName ] = useInput('');
+  const [isVisible, setIsVisible] = useState(false);
+  const [zip, setZip] = useState("");
+  const [address, onChangeAddress, setAddress] = useInput<string>("");
+  const [address2, onChangeAddress2, setAddress2] = useInput<string>("");
+  const [addrName, onChangeAddrName, setAddrName] = useInput("");
+  const [phone, setPhone] = useState("");
+  const [name, onChangeName] = useInput("");
 
   const onChangePhone = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target
+    const { value } = e.target;
     // 숫자만 입력받기
-    const onlyNumber = value.replace(/[^0-9]/g, '');
-    setPhone(onlyNumber)
-  }
+    const onlyNumber = value.replace(/[^0-9]/g, "");
+    setPhone(onlyNumber);
+  };
 
   const onSubmit = useCallback(() => {
-    const fullAddress = address + ' ' + address2;
-    const datas = { addrName, zip, address : fullAddress, name, phone }
+    const fullAddress = address + " " + address2;
+    const datas = { addrName, zip, address: fullAddress, name, phone };
     props.submitDatas(datas);
   }, [zip, address, addrName, phone, name]);
 
@@ -39,16 +38,17 @@ const AddressForm = (props) => {
 
   const onCompletePost = (data) => {
     let fullAddr = data.address;
-    let extraAddr = '';
+    let extraAddr = "";
 
-    if (data.addressType === 'R') {
-      if (data.bname !== '') {
+    if (data.addressType === "R") {
+      if (data.bname !== "") {
         extraAddr += data.bname;
       }
-      if (data.buildingName !== '') {
-        extraAddr += extraAddr !== '' ? `, ${data.buildingName}` : data.buildingName;
+      if (data.buildingName !== "") {
+        extraAddr +=
+          extraAddr !== "" ? `, ${data.buildingName}` : data.buildingName;
       }
-      fullAddr += extraAddr !== '' ? ` (${extraAddr})` : '';
+      fullAddr += extraAddr !== "" ? ` (${extraAddr})` : "";
     }
 
     setZip(data.zonecode);
@@ -57,17 +57,13 @@ const AddressForm = (props) => {
   };
 
   return (
-    <>          
+    <>
       <Modal
-      visible={isVisible}
-      onCancel={handleCancel}
-      footer={[
-        <Button onClick={handleCancel}>
-          닫기
-        </Button>,
-      ]}
+        visible={isVisible}
+        onCancel={handleCancel}
+        footer={[<Button onClick={handleCancel}>닫기</Button>]}
       >
-        <DaumPostcode onComplete={onCompletePost } />
+        <DaumPostcode onComplete={onCompletePost} />
       </Modal>
       <Form onFinish={onSubmit}>
         <Block>
@@ -75,7 +71,7 @@ const AddressForm = (props) => {
           <input
             value={addrName}
             onChange={onChangeAddrName}
-            placeholder='예) 모아카페 ㅇㅇ점'
+            placeholder="예) 모아카페 ㅇㅇ점"
             maxLength={20}
             required
           />
@@ -87,7 +83,7 @@ const AddressForm = (props) => {
           <label>우편번호</label>
           <input
             value={zip}
-            placeholder='우편번호 찾기를 통해 입력해주세요.'
+            placeholder="우편번호 찾기를 통해 입력해주세요."
             readOnly
             required
           />
@@ -96,7 +92,7 @@ const AddressForm = (props) => {
           <label>주소</label>
           <input
             value={address}
-            placeholder='우편번호 찾기를 통해 입력해주세요.'
+            placeholder="우편번호 찾기를 통해 입력해주세요."
             readOnly
             required
           />
@@ -107,7 +103,7 @@ const AddressForm = (props) => {
             value={address2}
             onChange={onChangeAddress2}
             maxLength={30}
-            placeholder=''
+            placeholder=""
             required
           />
         </Block>
@@ -117,7 +113,7 @@ const AddressForm = (props) => {
             value={name}
             onChange={onChangeName}
             maxLength={18}
-            placeholder=''
+            placeholder=""
             required
           />
         </Block>
@@ -127,7 +123,7 @@ const AddressForm = (props) => {
             value={phone}
             onChange={onChangePhone}
             maxLength={15}
-            placeholder=' - 없이 입력'
+            placeholder=" - 없이 입력"
             required
           />
         </Block>
@@ -136,7 +132,7 @@ const AddressForm = (props) => {
           저장
         </Button>
       </Form>
-  </>
+    </>
   );
 };
 

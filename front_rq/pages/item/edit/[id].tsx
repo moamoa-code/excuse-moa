@@ -1,20 +1,16 @@
-// 상품 수정
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import { GetServerSidePropsContext } from 'next';
-import React, { useCallback, useState } from 'react';
-import { Form, Input, Button, Tag, Checkbox, Divider, Space, notification } from 'antd';
 import { useRouter } from 'next/router';
-import { dehydrate, QueryClient, useQuery, useMutation, useQueryClient } from 'react-query';
+import React from 'react';
+import { dehydrate, QueryClient, useQuery } from 'react-query';
+import { loadItemAPI } from '../../../apis/item';
 import { loadMyInfoAPI } from '../../../apis/user';
-import { loadItemAPI, addCustomerToItemAPI } from '../../../apis/item';
-import useInput from '../../../hooks/useInput';
 import AppLayout from '../../../components/AppLayout';
-import User from '../../../interfaces/user';
-import Item from '../../../interfaces/item';
 import ItemEdit from '../../../components/ItemEdit';
-import { CheckCircleOutlined } from '@ant-design/icons';
-import Router from 'next/router';
+import Item from '../../../interfaces/item';
+import User from '../../../interfaces/user';
 
+// --(판매회원)제품 수정 페이지--
 const EditItem = () => {
   const router = useRouter();
   // const queryClient = useQueryClient();

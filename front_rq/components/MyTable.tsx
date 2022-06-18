@@ -1,9 +1,11 @@
 import { DownOutlined, FileExcelOutlined, RightOutlined } from '@ant-design/icons';
-import { message, Pagination } from 'antd';
+import { Pagination } from 'antd';
 import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { HGap } from './Styled';
 
+// 주로 모바일에서 보여지는 리스트
+// antd의 Table과 컬럼 호환
 const MyTable = (props) => {
   const {dataSource, columns, expandable, rowKey, selectKey, selectedId, pagination} = props;
   const [showKey, setShowKey] = useState(null);

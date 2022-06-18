@@ -1,20 +1,25 @@
-// 주문서 목록
 import {
   CheckCircleOutlined,
   CheckCircleTwoTone,
   CheckSquareTwoTone,
   CloseCircleFilled,
   DoubleRightOutlined,
-  MinusCircleOutlined, PlaySquareOutlined,
+  MinusCircleOutlined,
+  PlaySquareOutlined,
   PlusOutlined,
   PrinterTwoTone,
   SettingOutlined
 } from "@ant-design/icons";
 import {
   Button,
-  Checkbox, DatePicker, Form, Input, message,
+  Checkbox,
+  DatePicker,
+  Form,
+  Input,
+  message,
   notification,
-  Popconfirm, Space,
+  Popconfirm,
+  Space
 } from "antd";
 import Modal from "antd/lib/modal/Modal";
 import axios, { AxiosError } from "axios";
@@ -26,13 +31,19 @@ import Link from "next/link";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   dehydrate,
-  QueryClient, useMutation, useQuery, useQueryClient
+  QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient
 } from "react-query";
 import { useMediaQuery } from "react-responsive";
 import styled from "styled-components";
 import {
   cancelOrderAPI,
-  confirmOrderAPI, loadOrderAPI, loadTodosAPI, packCancelAPI,
+  confirmOrderAPI,
+  loadOrderAPI,
+  loadTodosAPI,
+  packCancelAPI,
   packDoneAPI,
   taskDoneAPI
 } from "../../apis/order";
@@ -40,13 +51,9 @@ import { loadMyInfoAPI } from "../../apis/user";
 import AppLayout from "../../components/AppLayout";
 import MyTable from "../../components/MyTable";
 import OrderView from "../../components/OrderView";
-import {
-  ContainerWide,
-  HGap
-} from "../../components/Styled";
+import { ContainerWide, HGap } from "../../components/Styled";
 import useInput from "../../hooks/useInput";
 import User from "../../interfaces/user";
-
 
 const TopBar = styled.div`
   display: flex;
@@ -227,6 +234,7 @@ const PaintStatus = (props) => {
   }
 };
 
+// --주문현황 페이지--
 const orderList = () => {
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
@@ -248,7 +256,6 @@ const orderList = () => {
   const [isFloatingButtonVisibale, setIsFloatingButtonVisibale] =
     useState(true);
   const [todayTotalWeight, setTodayTotalWeight] = useState(0);
-
   const [itemCodes, setItemCodes] = useState([]); // 제품코드 기준으로 카테고리화
   // 주문서 보기 모달
   const [isVisible, setIsVisible] = useState(false);
@@ -282,7 +289,6 @@ const orderList = () => {
     () => ({ backgroundColor: "#D96098", color: "white", border: "none" }),
     []
   );
-
   const isMobile = useMediaQuery({
     query: "(min-width:0px) and (max-width:740px)",
   });
@@ -626,7 +632,6 @@ const orderList = () => {
   };
 
   // 전체 중량 계산
-
   const getTodaysTotalWeight = (datas) => {
     let totalWeight = 0;
     const array1 = datas.map((order, index) => {
@@ -644,12 +649,12 @@ const orderList = () => {
       order.details.map((detail) => {
         const weight = getWeight(detail.itemUnit, detail.qty);
         totalWeight =
-        totalWeight +
+          totalWeight +
           Number(weight.toUpperCase().replace(" ", "").replace("KG", ""));
       });
     });
     setTodayTotalWeight(totalWeight);
-  }
+  };
 
   // 코드별 중량 계산
   const getCodeWeight = (codeName, datas) => {
@@ -680,6 +685,7 @@ const orderList = () => {
     return codeWeiht;
   };
 
+  // 주문현황 테이블 컬럼
   const columns = [
     {
       title: "주문번호",
@@ -1121,7 +1127,10 @@ const orderList = () => {
           </>
         )}
         <HGap />
-        <h2>조회된 주문 총 중량 : {String(todayTotalWeight.toFixed(1))}kg<br /></h2>
+        <h2>
+          조회된 주문 총 중량 : {String(todayTotalWeight.toFixed(1))}kg
+          <br />
+        </h2>
         <Space>
           <Link href={`/factory/add-order`}>
             <a>
@@ -1164,7 +1173,7 @@ export const getServerSideProps = async (
       },
     };
   }
-  if (response.role !== "ADMINISTRATOR") {
+  if (response?.role !== "ADMINISTRATOR") {
     // 로그인 안했으면 홈으로
     return {
       redirect: {

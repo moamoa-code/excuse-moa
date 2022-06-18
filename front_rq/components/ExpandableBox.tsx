@@ -1,8 +1,7 @@
-import React, { FC, useCallback, useState } from 'react';
-import { Empty, Space, Tag } from 'antd';
-import styled from 'styled-components';
-import { DownOutlined, IdcardOutlined, PhoneOutlined, RightOutlined, UpOutlined } from '@ant-design/icons';
-
+import { DownOutlined, UpOutlined } from "@ant-design/icons";
+import { Space, Tag } from "antd";
+import React, { FC, useState } from "react";
+import styled from "styled-components";
 
 const Div = styled.div`
   padding: 5px 0 10px 0;
@@ -44,48 +43,46 @@ const Div = styled.div`
   .expand {
     display: block;
   }
-
-`
+`;
 type EBoxProps = {
   title: string;
   tags: Array<any> | null;
   children: React.ReactNode;
 };
 
+// 제목 클릭시 내용 보여주는 간단한 컴포넌트
 const ExpandableBox: FC<EBoxProps> = ({ title, tags, children }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  return (  
+  return (
     <Div>
-      <div className='top'>
-        <div 
-          className='titleBar' 
-          onClick={()=>{
-            setIsExpanded(!isExpanded)
+      <div className="top">
+        <div
+          className="titleBar"
+          onClick={() => {
+            setIsExpanded(!isExpanded);
           }}
         >
-          <div className='title'>{title}</div>
-          <div className='button'>
-            {isExpanded?
-            <UpOutlined />
-            :<DownOutlined />}
-            
+          <div className="title">{title}</div>
+          <div className="button">
+            {isExpanded ? <UpOutlined /> : <DownOutlined />}
           </div>
         </div>
-        {tags?.length >= 1?
-          <div className='tags'>
-          {tags?.map((v, k) => {
-            return (
-              <Space wrap><Tag key={k}>{v}</Tag></Space>
-            )
-          })}
-        </div>
-        :null}
+        {tags?.length >= 1 ? (
+          <div className="tags">
+            {tags?.map((v, k) => {
+              return (
+                <Space wrap>
+                  <Tag key={k}>{v}</Tag>
+                </Space>
+              );
+            })}
+          </div>
+        ) : null}
       </div>
-      <div className={isExpanded?'content expand': 'content'}>
+      <div className={isExpanded ? "content expand" : "content"}>
         {children}
       </div>
-      
     </Div>
   );
 };
