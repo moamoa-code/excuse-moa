@@ -5,17 +5,18 @@ module.exports = (sequelize, DataTypes) => {
     // id는 mySQL에서 자동 생성됨.
     reqQty: { // 요구수량
       type: DataTypes.DOUBLE,
-      allowNull: false, // 필수
+      allowNull: false,
       defaultValue: 1.0,
     },
     qty: { // 현재수량
       type: DataTypes.DOUBLE,
-      allowNull: false, // 필수
+      allowNull: false,
       defaultValue: 1.0,
     },
     unit: { // 수량단위
       type: DataTypes.STRING(10),
-      allowNull: false, // 필수
+      defaultValue: '개',
+      allowNull: false,
     },
     tag: {  // 옵션
       type: DataTypes.STRING(25),

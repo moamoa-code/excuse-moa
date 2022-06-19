@@ -63,12 +63,12 @@ const addOrder = () => {
     },
   });
   // 판매자
-  const [selectedProvider, setSelectedProvider] = useState(null);
-  const [selectedProviderData, setSelectedProviderData] = useState<any>({});
+  const [selectedProvider, setSelectedProvider] = useState(null); // 판매자 ID
+  const [selectedProviderData, setSelectedProviderData] = useState<User>(null);
   // 고객
-  const [customers, setCustomers] = useState([]);
-  const [selectedCustomer, setSelectedCustomer] = useState("");
-  const [selectedCustomerData, setSelectedCustomerData] = useState("");
+  const [customers, setCustomers] = useState([]); // 판매자의 고객
+  const [selectedCustomer, setSelectedCustomer] = useState(""); // 고객 ID
+  const [selectedCustomerData, setSelectedCustomerData] = useState<User>(null);
   // 제품
   const [items, setItems] = useState<Item[]>([]); // 목록에 나타나는 제품
   const [selectedItems, setSelectedItems] = useState([]); // 카트에 들어간 제품 목록

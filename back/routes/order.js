@@ -100,7 +100,6 @@ router.post('/from-factory', isLoggedIn, async (req, res, next) => {
         }
       });
     }
-
     const provider = await User.findOne({ // 판매자 찾기
       where: {
         id: req.body.providerId
@@ -251,7 +250,6 @@ router.patch('/req-cancel', isLoggedIn, async (req, res, next) => {
     next(error);
   }
 });
-
 
 // 주문확인 완료 (판매자)
 router.patch('/confirm', isProvider, async (req, res, next) => { 
@@ -478,9 +476,6 @@ router.get('/received-orders-dates/:userId/:from/:til', isProvider, async (req, 
   }
 });
 
-
-
-
 // 모든 주문목록 가져오기 (공장)
 router.get('/all', isProvider, async (req, res, next) => { 
   try {
@@ -509,7 +504,6 @@ router.get('/all', isProvider, async (req, res, next) => {
     next(error);
   }
 });
-
 
 // 주문 상세 불러오기 (주문 통계)
 router.post('/order-details', async (req, res, next) => {
@@ -569,7 +563,6 @@ router.post('/order-details', async (req, res, next) => {
     next(error);
   }
 });
-
 
 // 주문목록 가져오기 (공장)
 router.post('/todos', async (req, res, next) => {
@@ -688,7 +681,6 @@ router.get('/recent-received-orders/:userKey', isProvider, async (req, res, next
   }
 });
 
-
 // 주문목록 가져오기 (판매자용)
 router.get('/received-orders/:userId', isProvider, async (req, res, next) => {
   try {
@@ -760,6 +752,5 @@ router.get('/:orderId', isLoggedIn, async (req, res, next) => { // GET /post/1
     next(error);
   }
 });
-
 
 module.exports = router;

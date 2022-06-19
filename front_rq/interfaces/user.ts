@@ -1,63 +1,18 @@
-export default interface User {
-  id: number;
-  key: string;
-  hqNumber: string;
-  password: string;
-  company: string|null;
-  name: string|null;
-  phone: string|null;
-  email: string|null;
-  role: string;
-  ProviderId: number;
-  Providers: User[];
-  Customers: User[];
-}
+import Item from "./item";
+import Post from "./post";
 
-// module.exports = (sequelize, DataTypes) => {
-//   const User = sequelize.define('User', { // MySQL에는 users 테이블 생성
-//     id: { // 사업자번호
-//       type: DataTypes.STRING(30),
-//       allowNull: false, // 필수
-//       unique: true, // 유일한 값
-//       primaryKey: true, 
-//     },
-//     password: { // 비밀번호
-//       type: DataTypes.STRING(100),
-//       allowNull: false, // 필수
-//     },
-//     company : { // 회사명
-//       type: DataTypes.STRING(20),
-//       allowNull: false, // 필수
-//     },
-//     name : { // 담당자 이름
-//       type: DataTypes.STRING(10),
-//       allowNull: true,
-//     },
-//     phone: { // 담당자 전화번호
-//       type: DataTypes.STRING(20),
-//       allowNull: true,
-//     },
-//     email: { // 담당자 이메일
-//       type: DataTypes.STRING(20),
-//       allowNull: true,
-//     },
-//     role: { // 회원등급
-//       type: DataTypes.STRING(15),
-//       defaultValue: "NOVICE", 
-//       // 비회원 NOVICE, 판매자 PROVIDER, 구매자 CUSTOMER, 판매-구매자 PROCUST, 관리자 ADMIN
-//       allowNull: false, // 필수
-//     },
-//   },{
-//     charset: 'utf8',
-//     collate: 'utf8_general_ci' // 한글 처리
-//   });
-//   User.associate = (db) => { // 릴레이션(관계) 정의
-//     db.User.hasMany(db.Address); // 주소목록
-//     db.User.hasMany(db.Order); // 주문내역
-//     db.User.hasMany(db.Item); // 등록한 제품.
-//     db.User.belongsToMany(db.User, { through: 'UsersRelation', as: 'Providers', foreignKey: 'customerId' }); // 판매자-구매자 관계
-//     db.User.belongsToMany(db.User, { through: 'UsersRelation', as: 'Customers', foreignKey: 'providerId' }); // 판매자-구매자 관계
-//     db.User.belongsToMany(db.Item, { through: 'ItemUsers' }); // 열람가능한 제품
-//   };
-//   return User;
-// };
+export default interface User {
+  id: number; // UUID
+  key: string; // 로그인용 아이디
+  hqNumber: string|null; // 본사 사업자번호
+  company: string|null; // 회사명
+  name: string|null; // 담당자 이름
+  phone: string|null; // 담당자 전화번호
+  email: string|null; // 담당자 이메일
+  role: string; // 회원등급
+  ProviderId: number; // (구매자) 지정 판매자
+  Providers: User[] | null;
+  Customers: User[] | null; // (판매자) 고객목록
+  UserViewItems: Item[] | null; // 열람가능한 제품목록
+  UserViewPosts: Post[] | null; // 열람가능한 공지목록
+}

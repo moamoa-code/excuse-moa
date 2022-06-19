@@ -4,27 +4,27 @@ module.exports = (sequelize, DataTypes) => {
     // id는 mySQL에서 자동 생성됨.
     codeName: { // 원두 코드명 
       type: DataTypes.STRING(14),
-      allowNull: false, // 필수
+      allowNull: false,
     },
     name: { // 제품 이름
       type: DataTypes.STRING(50),
-      allowNull: false, // 필수
+      allowNull: false,
     },
     packageName: {
       type: DataTypes.STRING(30),
-      allowNull: true, // 필수
+      allowNull: true,
     },
     unit: { // 수량단위
       type: DataTypes.STRING(10),
-      allowNull: false, // 필수
+      allowNull: false,
     },
     msrp: { // 권장소비가
       type: DataTypes.STRING(20),
-      allowNull: true, // 
+      allowNull: true, 
     },
     supplyPrice: { // 공급단가
       type: DataTypes.STRING(20),
-      allowNull: true, // 
+      allowNull: true, 
     },
     imgSrc: { // 제품 사진
       type: DataTypes.STRING(200),

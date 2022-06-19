@@ -36,6 +36,7 @@ exports.isProvider = async (req, res, next) => {
   }
 }
 
+// 로그인 된 회원이 관리자인지 체크
 exports.isAdmin = async (req, res, next) => {
   if (req.isAuthenticated()) { // passport 기능, 로그인 됐는지 검사
     try {

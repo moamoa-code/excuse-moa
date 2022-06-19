@@ -17,8 +17,6 @@ const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk');
 const user = require('../models/user');
 
-
-
 // 파일 업로드, 이름 변경 처리 + 아마존 S3
 AWS.config.update({
   accessKeyId: process.env.S3_ACCESS_KEY_ID,
@@ -61,6 +59,7 @@ const upload = multer({
 //   }),
 //   limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
 // });
+
 // 게시글 등록
 router.post('/regist', isProvider, upload.none(), async (req, res, next) => {
   try {
@@ -222,7 +221,6 @@ router.patch('/delete', isProvider, upload.none(), async (req, res, next) => {
     next(error); // status 500
   }
 });
-
 
 // 회원이 볼 수 있는 게시글 목록 불러오기
 router.get('/list', isLoggedIn, async (req, res, next) => { 
@@ -469,12 +467,9 @@ router.post('/add-customer', isLoggedIn, async (req, res, next) => {
 });
 
 
-// 게시글 조회
+// 게시글 상세 조회
 router.get('/:postId', async (req, res, next) => { // GET /post/1
   try {
-        // 작성자, 열람가능 회원만 열람 가능
-    //
-    
     const post = await Post.findOne({
       where: { id: req.params.postId },
     });

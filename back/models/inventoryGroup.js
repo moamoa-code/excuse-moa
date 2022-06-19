@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
     // id는 mySQL에서 자동 생성됨.
     name: {
       type: DataTypes.STRING(25),
-      allowNull: false, // 필수
+      allowNull: false,
     },
     desc: {
       type: DataTypes.STRING(100),

@@ -4,7 +4,6 @@ const { Op } = require('sequelize'); // Operator. 연산자
 const bcrypt = require('bcrypt'); // 비밀번호 암호화 라이브러리
 const passport = require('passport');
 const { User, Item, Address } = require('../models'); // 시퀄라이즈 - MySQL DB연결
-// const db = require('../models');
 const { isLoggedIn, isProvider, isNotLoggedIn, isAdmin } = require('./middlewears'); // 로그인 검사 미들웨어
 const e = require('express');
 
@@ -33,7 +32,6 @@ router.get('/show-provider', isProvider, async (req, res, next) => { //
 // 모든 유저 목록 불러오기
 router.get('/list/:page', isAdmin, async (req, res, next) => { // 
   try {
-
     // 페이지네이션 (페이징 처리)
     let limit = 10;
     let offset = 0 + (req.params.page - 1) * limit;
@@ -142,7 +140,6 @@ router.patch('/update-password', isLoggedIn, async (req, res, next) => { // post
       return res.status(403).send('사용자를 찾을 수 없습니다.');
     }
     const hashedPassword = await bcrypt.hash(req.body.password, 10); // 두번째 인자 높을수록 암호화 강함
-
     await User.update({
       password: hashedPassword, // 암호화된 password
     }, {
@@ -321,7 +318,7 @@ router.get("/search-company/:companyName", isProvider, async (req, res, next) =>
   }
 });
 
-// 유저정보 불러오기
+// key로 특정 유저정보 불러오기
 router.get("/:userKey", isLoggedIn, async (req, res, next) => {
   try {
     const userDataWithItems = await User.findOne({
@@ -373,6 +370,7 @@ router.get("/:userKey", isLoggedIn, async (req, res, next) => {
 });
 
 
+// id로 특정 유저 정보 불러오기
 router.get("/id/:userId", isLoggedIn, async (req, res, next) => {
   try {
     const userDataWithItems = await User.findOne({
@@ -423,7 +421,7 @@ router.get("/id/:userId", isLoggedIn, async (req, res, next) => {
   }
 });
 
-// 로그인 유저 정보 얻기
+// 로그인한 유저 정보 얻기
 router.get('/', async (req, res, next) => { // GET /user 로그인 유지 위해 로그인한 유저의 정보 전송
   try {
       if (req.user) { // 로그인 됐을경우
@@ -656,9 +654,7 @@ router.post('/create/', isLoggedIn, async (req, res, next) => { // post /user
         })
       }
       return res.status(201).send('ok');
-
     }
-
   } catch (error) {
     console.error(error);
     next(error); // status 500
@@ -816,7 +812,6 @@ router.patch('/edit', isLoggedIn, async (req, res, next) => { // post /user
       }
     }
     const hashedPassword = await bcrypt.hash(req.body.password, 10); // 두번째 인자 높을수록 암호화 강함
-
     await User.update({
       key: req.body.key,
       password: hashedPassword, // 암호화된 password
@@ -855,13 +850,24 @@ router.patch('/resign', isLoggedIn, async (req, res, next) => { // post /user
 });
 
 // 회원 삭제
-router.patch('/terminate', isAdmin, async (req, res, next) => { // post /user
+router.patch('/terminate', isProvider, async (req, res, next) => { // post /user
   try {
+    const me = await User.findOne({
+      where: {
+        id: req.user.id
+      }
+    })
+    if (!me) {
+      return res.status(403).send('로그인이 필요합니다.');
+    }
     const user = await User.findOne({
       where: {
         key: req.body.userKey
       }
     });
+    if (me.role !== 'ADMINISTRATOR' && user.ProviderId !== me.id) {
+      return res.status(403).send('권한이 없습니다.');
+    }
     if (!user) {
       return res.status(403).send('사용자를 찾을 수 없습니다.');
     }
@@ -895,7 +901,7 @@ router.patch('/terminate', isAdmin, async (req, res, next) => { // post /user
 });
 
 // 메모 추가
-router.patch('/memo', isProvider, async (req, res, next) => { // post /user
+router.patch('/memo', isAdmin, async (req, res, next) => { // post /user
   try {
     const user = await User.findOne({ 
       where: {

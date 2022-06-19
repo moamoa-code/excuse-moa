@@ -14,15 +14,15 @@ module.exports = (sequelize, DataTypes) => {
     },
     zip: { // 우편번호
       type: DataTypes.STRING(10),
-      allowNull: false, // 
+      allowNull: false,
     },
     phone: { // 받는분 전화번호
       type: DataTypes.STRING(20),
-      allowNull: false, //
+      allowNull: false,
     },
     name: { // 받는분 이름
       type: DataTypes.STRING(20),
-      allowNull: false, // 
+      allowNull: false,
     },
   },{
     charset: 'utf8mb4',

@@ -343,7 +343,6 @@ router.get('/list/:groupId/:page', async (req, res, next) => {
   }
 });
 
-
 // 재고보고서 상세데이터 가져오기
 router.get('/report/:id', async (req, res, next) => {
   try {
@@ -391,8 +390,6 @@ router.get('/report/:id', async (req, res, next) => {
   }
 });
 
-
-
 // 재고품목 가져오기
 router.get('/stocks/:userId', isLoggedIn, async (req, res, next) => {
   try {
@@ -424,7 +421,6 @@ router.get('/stocks/:userId', isLoggedIn, async (req, res, next) => {
     next(error); // status 500
   }
 });
-
 
 
 // 재고보고서 작성

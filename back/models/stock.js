@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(200),
       allowNull: true,
     },
-    imgSrc: { // 이미지
+    imgSrc: { // 이미지 주소
       type: DataTypes.STRING(200),
       allowNull: true,
     },

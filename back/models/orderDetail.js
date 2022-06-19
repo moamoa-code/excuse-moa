@@ -29,24 +29,24 @@ module.exports = (sequelize, DataTypes) => {
     },
     itemPackage: { // 제품 포장
       type: DataTypes.STRING(30),
-      allowNull: true, // 필수
+      allowNull: true,
       defaultValue: '',
     },
     itemName: { // 제품 이름
       type: DataTypes.STRING(30),
-      allowNull: false, // 필수
+      allowNull: false,
     },
     itemUnit: { // 수량단위
       type: DataTypes.STRING(10),
-      allowNull: false, // 필수
+      allowNull: false,
     },
     itemMsrp: { // 권장소비가
       type: DataTypes.STRING(20),
-      allowNull: true, // 
+      allowNull: true,
     },
     itemSupplyPrice: { // 공급단가
       type: DataTypes.STRING(20),
-      allowNull: true, // 
+      allowNull: true,
     },
   },{
     charset: 'utf8mb4',

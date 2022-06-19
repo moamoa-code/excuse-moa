@@ -35,6 +35,7 @@ const upload = multer({
   }),
   limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
 });
+
 // 제품등록
 router.post('/regist', isProvider, upload.none(), async (req, res, next) => {
   try {
@@ -190,7 +191,6 @@ router.get('/my', isLoggedIn, async (req, res, next) => { // GET /posts
   }
 });
 
-
 // 특정 판매자 제품 불러오기
 router.get('/list/:userKey', isLoggedIn, async (req, res, next) => { // GET /posts
   try {
@@ -222,7 +222,6 @@ router.get('/list/:userKey', isLoggedIn, async (req, res, next) => { // GET /pos
     next(error);
   }
 });
-
 
 // 특정 구매자 제품목록 불러오기
 router.get('/list-customer/:userId', isLoggedIn, async (req, res, next) => { // GET /posts
@@ -457,69 +456,69 @@ router.patch('/delete', isLoggedIn, async (req, res, next) => {
   }
 });
 
-// 주문목록 가져오기 (구매자용)
-router.get('/orders/:userId', async (req, res, next) => { // GET /post/1
-  try {
-    let date1 = new Date();
-    let date2 = new Date('2021-12-28')
-    const order = await Order.findAll({
-      where: {
-        customerId: req.params.userId,
-        date: { [Op.between]: [date2, date1] }
-      },
-      order: [
-        ['createdAt', 'DESC'],
-      ],
-      // attributes: ["id", "date", "totalPice", "comment", "address", "zip", "phone", "name", "isConfirmed", "isCanceled"],
-      include: [{
-        model: User,
-        as: 'Provider',
-        attributes: ["id", "company", "name", "phone"],
-      }, {
-        model: User,
-        as: 'Customer',
-        attributes: ["id", "company", "name", "phone"],
-      }]
-    });
-    if (!order) {
-      return res.status(404).send('해당 제품이 존재하지 않습니다.');
-    }
-    res.status(200).json(order);
-  } catch (error) {
-    console.error(error);
-    next(error);
-  }
-});
+// // 주문목록 가져오기 (구매자용)
+// router.get('/orders/:userId', async (req, res, next) => { // GET /post/1
+//   try {
+//     let date1 = new Date();
+//     let date2 = new Date('2021-12-28')
+//     const order = await Order.findAll({
+//       where: {
+//         customerId: req.params.userId,
+//         date: { [Op.between]: [date2, date1] }
+//       },
+//       order: [
+//         ['createdAt', 'DESC'],
+//       ],
+//       // attributes: ["id", "date", "totalPice", "comment", "address", "zip", "phone", "name", "isConfirmed", "isCanceled"],
+//       include: [{
+//         model: User,
+//         as: 'Provider',
+//         attributes: ["id", "company", "name", "phone"],
+//       }, {
+//         model: User,
+//         as: 'Customer',
+//         attributes: ["id", "company", "name", "phone"],
+//       }]
+//     });
+//     if (!order) {
+//       return res.status(404).send('해당 제품이 존재하지 않습니다.');
+//     }
+//     res.status(200).json(order);
+//   } catch (error) {
+//     console.error(error);
+//     next(error);
+//   }
+// });
 
 
-// 주문목록 가져오기 (판매자용)
-router.get('/received-orders/:userId', async (req, res, next) => { // GET /post/1
-  try {
-    const order = await Order.findAll({
-      where: { providerId: req.params.userId },
-      order: [
-        ['createdAt', 'DESC'],
-      ],
-      // attributes: ["id", "date", "totalPice", "comment", "address", "zip", "phone", "name", "isConfirmed", "isCanceled"],
-      include: [{
-        model: User,
-        as: 'Provider',
-        attributes: ["id", "company", "name", "phone"],
-      }, {
-        model: User,
-        as: 'Customer',
-        attributes: ["id", "company", "name", "phone"],
-      }]
-    });
-    if (!order) {
-      return res.status(404).send('해당 제품이 존재하지 않습니다.');
-    }
-    res.status(200).json(order);
-  } catch (error) {
-    console.error(error);
-    next(error);
-  }
-});
+// // 주문목록 가져오기 (판매자용)
+// router.get('/received-orders/:userId', async (req, res, next) => { // GET /post/1
+//   try {
+//     const order = await Order.findAll({
+//       where: { providerId: req.params.userId },
+//       order: [
+//         ['createdAt', 'DESC'],
+//       ],
+//       // attributes: ["id", "date", "totalPice", "comment", "address", "zip", "phone", "name", "isConfirmed", "isCanceled"],
+//       include: [{
+//         model: User,
+//         as: 'Provider',
+//         attributes: ["id", "company", "name", "phone"],
+//       }, {
+//         model: User,
+//         as: 'Customer',
+//         attributes: ["id", "company", "name", "phone"],
+//       }]
+//     });
+//     if (!order) {
+//       return res.status(404).send('해당 제품이 존재하지 않습니다.');
+//     }
+//     res.status(200).json(order);
+//   } catch (error) {
+//     console.error(error);
+//     next(error);
+//   }
+// });
 
 // 제품 조회
 router.get('/:itemId', async (req, res, next) => { // GET /post/1

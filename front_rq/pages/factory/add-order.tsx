@@ -1,4 +1,3 @@
-// 주문서 목록
 import {
   CheckCircleOutlined,
   InfoCircleTwoTone,
@@ -61,11 +60,11 @@ const addNewOrder = () => {
   const { data: providers } = useQuery("providers", loadProvidersAPI);
   // 판매자
   const [selectedProvider, setSelectedProvider] = useState();
-  const [selectedProviderData, setSelectedProviderData] = useState<any>({});
+  const [selectedProviderData, setSelectedProviderData] = useState<User>(null);
   // 고객
   const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState("");
-  const [selectedCustomerData, setSelectedCustomerData] = useState("");
+  const [selectedCustomerData, setSelectedCustomerData] = useState<User>(null);
   // 제품
   const [items, setItems] = useState<Item[]>([]); // 목록에 나타나는 제품
   const [selectedItems, setSelectedItems] = useState([]); // 카트에 들어간 제품 목록
@@ -248,7 +247,7 @@ const addNewOrder = () => {
     setSelectedProvider(id);
     getProviderData(id);
     setSelectedCustomer("");
-    setSelectedCustomerData("");
+    setSelectedCustomerData(null);
     setSelectedAddr("");
     setSelectedItems([]);
     setAllItemsOfProvider([]);

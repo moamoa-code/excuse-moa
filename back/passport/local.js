@@ -4,9 +4,6 @@ const bcrypt = require('bcrypt'); // 비밀번호 복호화
 const { User } = require('../models');
 
 // 로그인 작업
-// front의 form으로 받은 data > reducer, saga  > axios(/user/login, data) > 
-// backend routes/user > data가 req.body로 > db에서 user 찾아서 값 비교
-
 module.exports = () => {
     passport.use(new LocalStrategy({
         usernameField: 'key', // form으로 받은 data.id -> req.body.id
