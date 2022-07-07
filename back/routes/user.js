@@ -1060,7 +1060,6 @@ router.patch('/delete-customer', isLoggedIn, async (req, res, next) => { //
 
 // 고객에 열람가능한 제품 추가
 router.patch('/add-item', isProvider, async (req, res, next) => {
-  // {itemId: number, customerId: string}
   try {
     const item = await Item.findOne({
       where: { id: req.body.itemId }
@@ -1084,7 +1083,6 @@ router.patch('/add-item', isProvider, async (req, res, next) => {
 
 // 고객에 열람가능한 제품 제거
 router.patch('/remove-item', isProvider, async (req, res, next) => {
-  // {itemId: number, customerId: string}
   try {
     const item = await Item.findOne({
       where: { id: req.body.itemId }
