@@ -16,8 +16,11 @@ const passportConfig = require("./passport"); // 패스포트(로그인관련)
 const userRouter = require("./routes/user");
 const itemRouter = require("./routes/item");
 const orderRouter = require("./routes/order");
+const orderRouterREST = require("./routes/rest/order");
 const postRouter = require("./routes/post");
 const inventoryRouter = require("./routes/inventory");
+const testRouter = require("./routes/test");
+
 
 dotenv.config();
 const app = express();
@@ -88,8 +91,10 @@ app.get("/", (req, res) => {
 app.use("/user", userRouter);
 app.use("/item", itemRouter);
 app.use("/order", orderRouter);
+app.use("/rest/order", orderRouterREST);
 app.use("/post", postRouter);
 app.use("/inventory", inventoryRouter);
+app.use("/test", testRouter)
 
 app.listen(port, () => {
   console.log("서버 실행 중");
