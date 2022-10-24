@@ -219,6 +219,7 @@ const OrderItems = () => {
       totalWeight: tWeight,
     })
       .then((result) => {
+        console.log(result);
         message.success("주문이 추가되었습니다.");
       })
       .catch((error) => {

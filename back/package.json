@@ -33,6 +33,9 @@
     "waait": "^1.0.5"
   },
   "devDependencies": {
-    "nodemon": "^2.0.14"
+    "eslint": "^8.26.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "nodemon": "^2.0.14",
+    "prettier": "2.7.1"
   }
 }

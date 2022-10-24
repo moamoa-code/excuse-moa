@@ -3,33 +3,41 @@ import {
   InfoCircleTwoTone,
   MinusOutlined,
   PlusOutlined,
-  SearchOutlined
-} from "@ant-design/icons";
+  SearchOutlined,
+} from '@ant-design/icons';
 import {
-  Button, Descriptions, Divider, message,
-  notification, Space, Spin
-} from "antd";
-import Modal from "antd/lib/modal/Modal";
-import Text from "antd/lib/typography/Text";
-import axios from "axios";
-import "dayjs/locale/ko";
-import { GetServerSidePropsContext } from "next";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import React, { useMemo, useState } from "react";
-import { dehydrate, QueryClient, useQuery } from "react-query";
-import shortId from "shortid";
-import { loadCustomerItemListAPI, loadItemListAPI } from "../../apis/item";
-import { orderPosItemAPI } from "../../apis/order";
+  Button,
+  DatePicker,
+  Descriptions,
+  Divider,
+  message,
+  notification,
+  Space,
+  Spin,
+} from 'antd';
+import Modal from 'antd/lib/modal/Modal';
+import Text from 'antd/lib/typography/Text';
+import axios from 'axios';
+import 'dayjs/locale/ko';
+import { GetServerSidePropsContext } from 'next';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import React, { useMemo, useState } from 'react';
+import { dehydrate, QueryClient, useQuery } from 'react-query';
+import shortId from 'shortid';
+import { loadCustomerItemListAPI, loadItemListAPI } from '../../apis/item';
+import { orderItemsByFactoryAPI } from '../../rest-apis/order';
+import moment from 'moment';
+import 'moment/locale/ko';
 import {
   loadAddrsAPI,
   loadMyInfoAPI,
   loadProviderByIdAPI,
   loadProvidersAPI,
-  loadUserByIdAPI
-} from "../../apis/user";
-import AppLayout from "../../components/AppLayout";
-import ItemView from "../../components/ItemView";
+  loadUserByIdAPI,
+} from '../../apis/user';
+import AppLayout from '../../components/AppLayout';
+import ItemView from '../../components/ItemView';
 import {
   CartItems,
   CenteredDiv,
@@ -45,37 +53,41 @@ import {
   OrderTypeSelects,
   Red,
   SearchBlock,
-  TiTle
-} from "../../components/Styled";
-import UserInfoBox from "../../components/UserInfoBox";
-import useInput from "../../hooks/useInput";
-import Item from "../../interfaces/item";
-import User from "../../interfaces/user";
+  TiTle,
+} from '../../components/Styled';
+import UserInfoBox from '../../components/UserInfoBox';
+import useInput from '../../hooks/useInput';
+import Item from '../../interfaces/item';
+import User from '../../interfaces/user';
 
 // --(관리자)주문 추가 페이지--
-const addNewOrder = () => {
+const addOldOrder = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const { data: myUserInfo } = useQuery<User>("user", loadMyInfoAPI);
-  const { data: providers } = useQuery("providers", loadProvidersAPI);
+  const { data: myUserInfo } = useQuery<User>('user', loadMyInfoAPI);
+  const { data: providers } = useQuery('providers', loadProvidersAPI);
+  // 주문서 상태
+  const [orderDate, setOrderDate] = useState(moment());
+  const [status, setStatus] = useState('주문확인완료');
+  const [factoryStatus, setFactoryStatus] = useState('출하');
   // 판매자
   const [selectedProvider, setSelectedProvider] = useState();
   const [selectedProviderData, setSelectedProviderData] = useState<User>(null);
   // 고객
   const [customers, setCustomers] = useState([]);
-  const [selectedCustomer, setSelectedCustomer] = useState("");
+  const [selectedCustomer, setSelectedCustomer] = useState('');
   const [selectedCustomerData, setSelectedCustomerData] = useState<User>(null);
   // 제품
   const [items, setItems] = useState<Item[]>([]); // 목록에 나타나는 제품
   const [selectedItems, setSelectedItems] = useState([]); // 카트에 들어간 제품 목록
   const [allItemsOfProvider, setAllItemsOfProvider] = useState<Item[]>([]); // 판매자의 모든제품 목록
   // 주소
-  const [selectedAddr, setSelectedAddr] = useState("");
+  const [selectedAddr, setSelectedAddr] = useState('');
   const [addrs, setAddrs] = useState([]);
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [comment, onChangeComment] = useInput("");
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [comment, onChangeComment] = useInput('');
   // 총 수량, 무게
   const [totalQty, setTotalQty] = useState(0);
   const [totalWeight, setTotalWeight] = useState(0);
@@ -86,75 +98,68 @@ const addNewOrder = () => {
   const [isNewCustomer, setIsNewCustomer] = useState(false); // 구매자 새로입력
   const [isNewProduct, setIsNewProduct] = useState(false); // 제품 새로 입력
   // 구매자 검색
-  const [searchCustomerTxt, onChangeSearchCustomerTxt, setSearchCustomerTxt] =
-    useInput("");
+  const [searchCustomerTxt, onChangeSearchCustomerTxt, setSearchCustomerTxt] = useInput('');
   const [filteredCustomers, setFilteredCustomers] = useState(null);
   const [isFilteredCustomerList, setIsFilteredCustomerList] = useState(false);
   // 새로운 제품 입력 값
   const codeNames = [
-    "싱글",
-    "ES",
-    "HOUSE",
-    "BKY",
-    "KM5",
-    "KM6",
-    "KM5 212",
-    "HYA",
-    "BR",
-    "C7",
-    "506",
-    "A",
-    "B",
-    "P",
-    "HA",
-    "ST",
-    "HOUSE 212",
-    "DECAFFEIN",
-    "블랜드",
+    '싱글',
+    'ES',
+    'HOUSE',
+    'BKY',
+    'KM5',
+    'KM6',
+    'KM5 212',
+    'HYA',
+    'BR',
+    'C7',
+    '506',
+    'A',
+    'B',
+    'P',
+    'HA',
+    'ST',
+    'HOUSE 212',
+    'DECAFFEIN',
+    '블랜드',
   ];
-  const units = ["200g", "500g", "1Kg", "400g", "100g"];
+  const units = ['200g', '500g', '1Kg', '400g', '100g'];
   const packages = [
-    "M 무지",
-    "M 브랜드스티커",
-    "M 브랜드인쇄",
-    "지퍼 무지",
-    "지퍼 브랜드인쇄",
-    "지퍼 브랜드스티커",
+    'M 무지',
+    'M 브랜드스티커',
+    'M 브랜드인쇄',
+    '지퍼 무지',
+    '지퍼 브랜드인쇄',
+    '지퍼 브랜드스티커',
   ];
   const productTags = [
-    "BR",
-    "ST",
-    "C7",
-    "디카페인",
-    "BKY",
-    "아리차블랜드",
-    "케냐블랜드",
-    "케냐",
-    "예가체프",
-    "수프리모",
+    'BR',
+    'ST',
+    'C7',
+    '디카페인',
+    'BKY',
+    '아리차블랜드',
+    '케냐블랜드',
+    '케냐',
+    '예가체프',
+    '수프리모',
   ];
-  const [productTag, setProductTag] = useState("");
-  const [codeName, setCodeName] = useState("");
-  const [unit, setUnit] = useState("");
-  const [productName, setProductName] = useState("");
-  const [packageName, setPackageName] = useState("");
+  const [productTag, setProductTag] = useState('');
+  const [codeName, setCodeName] = useState('');
+  const [unit, setUnit] = useState('');
+  const [productName, setProductName] = useState('');
+  const [packageName, setPackageName] = useState('');
   // style useMemo
-  const opacityStyle = useMemo(() => ({ opacity: "0.5" }), []);
-  const minusButtonStyle = useMemo(
-    () => ({ fontSize: "14pt", color: "#ff4d4f" }),
-    []
-  );
-  const plusButtonStyle = useMemo(
-    () => ({ fontSize: "14pt", color: "#1890ff" }),
-    []
-  );
+  const opacityStyle = useMemo(() => ({ opacity: '0.5' }), []);
+  const minusButtonStyle = useMemo(() => ({ fontSize: '14pt', color: '#ff4d4f' }), []);
+  const plusButtonStyle = useMemo(() => ({ fontSize: '14pt', color: '#1890ff' }), []);
 
   // 알림창 띄우기
   const openNotification = (text) => {
     notification.open({
       message: `${text}`,
       description: ``,
-      icon: <CheckCircleOutlined style={{ color: "#108ee9" }} />,
+      icon: <CheckCircleOutlined style={{ color: '#108ee9' }} />,
       duration: 2,
     });
   };
@@ -172,17 +177,13 @@ const addNewOrder = () => {
     let totalWeight = 0;
     array.map((v) => {
       let weight = 0;
-      if (v.weight.toUpperCase().replace(" ", "").slice(-2) === "KG") {
-        weight = Number(
-          v.weight.toUpperCase().replace(" ", "").replace("KG", "")
-        );
+      if (v.weight.toUpperCase().replace(' ', '').slice(-2) === 'KG') {
+        weight = Number(v.weight.toUpperCase().replace(' ', '').replace('KG', ''));
       } else if (
-        v.weight.toUpperCase().replace(" ", "").slice(-2) !== "KG" &&
-        v.weight.toUpperCase().replace(" ", "").slice(-1) === "G"
+        v.weight.toUpperCase().replace(' ', '').slice(-2) !== 'KG' &&
+        v.weight.toUpperCase().replace(' ', '').slice(-1) === 'G'
       ) {
-        weight =
-          Number(v.weight.toUpperCase().replace(" ", "").replace("G", "")) *
-          0.001;
+        weight = Number(v.weight.toUpperCase().replace(' ', '').replace('G', '')) * 0.001;
       } else {
         weight = 0;
       }
@@ -194,17 +195,13 @@ const addNewOrder = () => {
   const onOrderClick = () => {
     setLoading(true);
     // message.error(selectedItems.length)
-    if (
-      selectedProvider === "" ||
-      selectedCustomer === "" ||
-      selectedItems.length <= 0
-    ) {
+    if (selectedProvider === '' || selectedCustomer === '' || selectedItems.length <= 0) {
       setLoading(false);
-      return message.error("선택 안한 항목이 있습니다.");
+      return message.error('선택 안한 항목이 있습니다.');
     }
-    if (isNewCustomer && name === "") {
+    if (isNewCustomer && name === '') {
       setLoading(false);
-      return message.error("구매자 이름을 입력하세요.");
+      return message.error('구매자 이름을 입력하세요.');
     }
     let qtyError = false;
     selectedItems.forEach((v) => {
@@ -214,14 +211,18 @@ const addNewOrder = () => {
     });
     if (qtyError) {
       setLoading(false);
-      return message.error("수량을 1~9999 사이로 입력하세요.");
+      return message.error('수량을 1~9999 사이로 입력하세요.');
     }
+
     let customerId = selectedCustomer;
     const tWeight = totalWeight.toFixed(1);
-    orderPosItemAPI({
+    orderItemsByFactoryAPI({
       items: selectedItems,
       providerId: selectedProvider,
       customerId: customerId,
+      date: orderDate.toDate(),
+      status,
+      factoryStatus,
       comment,
       address,
       name,
@@ -229,32 +230,32 @@ const addNewOrder = () => {
       totalWeight: tWeight,
     })
       .then((result) => {
-        openNotification("주문이 추가되었습니다.");
+        openNotification('주문이 추가되었습니다.');
+        // router.replace(`/factory/order-list`);
+        console.log(result);
       })
       .catch((error) => {
         setLoading(false);
         message.error(error.response.data);
       })
-      .finally(() => {
-        // router.replace(`/factory/order-list`);
-      });
+      .finally(() => {});
   };
   // 판매자 선택
   const onProviderSelectClick = (id) => () => {
     setIsFilteredCustomerList(false);
-    setSearchCustomerTxt("");
+    setSearchCustomerTxt('');
     setFilteredCustomers(null);
     setSelectedProvider(id);
     getProviderData(id);
-    setSelectedCustomer("");
+    setSelectedCustomer('');
     setSelectedCustomerData(null);
-    setSelectedAddr("");
+    setSelectedAddr('');
     setSelectedItems([]);
     setAllItemsOfProvider([]);
     setItems([]);
-    setName("");
-    setPhone("");
-    setAddress("");
+    setName('');
+    setPhone('');
+    setAddress('');
     setTotalQty(0);
     setTotalWeight(0);
   };
@@ -264,30 +265,30 @@ const addNewOrder = () => {
     setIsNewCustomer(false);
     setSelectedCustomer(id);
     getCustomerData(id);
-    setSelectedAddr("");
+    setSelectedAddr('');
     setSelectedItems([]);
     setTotalQty(0);
     setTotalWeight(0);
     setAllItemsOfProvider([]);
     setItems([]);
-    setName("");
-    setPhone("");
-    setAddress("");
+    setName('');
+    setPhone('');
+    setAddress('');
   };
 
   // 주소 선택
   const onAddrSelectClick = (addr) => () => {
     setSelectedAddr(addr.id);
-    if (addr.id === "공수") {
-      setName("공장수령");
-      setPhone("");
-      setAddress("");
+    if (addr.id === '공수') {
+      setName('공장수령');
+      setPhone('');
+      setAddress('');
       return;
     }
-    if (addr.id === "없음") {
-      setName("");
-      setPhone("");
-      setAddress("");
+    if (addr.id === '없음') {
+      setName('');
+      setPhone('');
+      setAddress('');
       return;
     }
     setName(addr.name);
@@ -297,26 +298,26 @@ const addNewOrder = () => {
 
   // 새로운제품 추가시 제품이름 자동생성
   const createProductName = (codeName, productTag) => {
-    return setProductName(codeName + " " + productTag);
+    return setProductName(codeName + ' ' + productTag);
   };
 
   // 제품 선택
   const onItemSelectClick = (item) => () => {
     item.qty = 1;
-    item.tag = "";
-    item.weight = "";
-    if (String(item.unit).toUpperCase().replace(" ", "") === "1KG") {
-      item.weight = "1kg";
-    } else if (String(item.unit).toUpperCase().replace(" ", "") === "500G") {
-      item.weight = "500g";
-    } else if (String(item.unit).toUpperCase().replace(" ", "") === "400G") {
-      item.weight = "400g";
-    } else if (String(item.unit).toUpperCase().replace(" ", "") === "200G") {
-      item.weight = "200g";
-    } else if (String(item.unit).toUpperCase().replace(" ", "") === "100G") {
-      item.weight = "100g";
+    item.tag = '';
+    item.weight = '';
+    if (String(item.unit).toUpperCase().replace(' ', '') === '1KG') {
+      item.weight = '1kg';
+    } else if (String(item.unit).toUpperCase().replace(' ', '') === '500G') {
+      item.weight = '500g';
+    } else if (String(item.unit).toUpperCase().replace(' ', '') === '400G') {
+      item.weight = '400g';
+    } else if (String(item.unit).toUpperCase().replace(' ', '') === '200G') {
+      item.weight = '200g';
+    } else if (String(item.unit).toUpperCase().replace(' ', '') === '100G') {
+      item.weight = '100g';
     } else {
-      item.weight = "0";
+      item.weight = '0';
     }
     if (selectedItems.findIndex((v) => v.id === item.id) !== -1) {
       message.warning(`${item.name} 제품을 뺐습니다.`);
@@ -343,23 +344,23 @@ const addNewOrder = () => {
       productName.length <= 0 ||
       packageName.length <= 0
     ) {
-      return message.error("입력하지 않은 항목이 있습니다.");
+      return message.error('입력하지 않은 항목이 있습니다.');
     }
-    let weight = "";
-    if (String(unit).toUpperCase() === "1KG") {
-      weight = "1kg";
-    } else if (String(unit).toUpperCase() === "500G") {
-      weight = "500g";
-    } else if (String(unit).toUpperCase() === "400G") {
-      weight = "400g";
-    } else if (String(unit).toUpperCase() === "200G") {
-      weight = "200g";
-    } else if (String(unit).toUpperCase() === "100G") {
-      weight = "100g";
+    let weight = '';
+    if (String(unit).toUpperCase() === '1KG') {
+      weight = '1kg';
+    } else if (String(unit).toUpperCase() === '500G') {
+      weight = '500g';
+    } else if (String(unit).toUpperCase() === '400G') {
+      weight = '400g';
+    } else if (String(unit).toUpperCase() === '200G') {
+      weight = '200g';
+    } else if (String(unit).toUpperCase() === '100G') {
+      weight = '100g';
     } else {
-      weight = "0";
+      weight = '0';
     }
-    const id = "F_" + shortId.generate();
+    const id = 'F_' + shortId.generate();
     const item = {
       id,
       codeName,
@@ -380,8 +381,8 @@ const addNewOrder = () => {
   const onGetItemListClick = (userId) => () => {
     setLoading(true);
     setIsNewProduct(false);
-    if (userId === "") {
-      return message.error("판매자를 선택해주세요.");
+    if (userId === '') {
+      return message.error('판매자를 선택해주세요.');
     }
     loadItemListAPI(selectedProviderData?.key)
       .then((response) => {
@@ -401,7 +402,7 @@ const addNewOrder = () => {
     loadProviderByIdAPI(userId)
       .then((response) => {
         setIsFilteredCustomerList(false);
-        setSearchCustomerTxt("");
+        setSearchCustomerTxt('');
         setFilteredCustomers(null);
         setSelectedProviderData(response);
         setCustomers(response.Customers);
@@ -473,7 +474,7 @@ const addNewOrder = () => {
   // 구매자 검색
   const onCustomerSearch = () => {
     if (searchCustomerTxt.length < 1) {
-      return message.error("검색할 회사명을 입력해 주세요.");
+      return message.error('검색할 회사명을 입력해 주세요.');
     }
     let list = null;
     list = customers.filter((v) => v.company.includes(searchCustomerTxt));
@@ -497,12 +498,22 @@ const addNewOrder = () => {
         >
           <ItemView item={selectedItem} myUserInfo={myUserInfo} />
         </Modal>
-
         <OrderTypeSelects>
           <div className="selected">
-            <p>새로운 주문 추가하기</p>
+            <p>과거 주문 단건 입력</p>
           </div>
         </OrderTypeSelects>
+        <div>
+            <span>주문날짜:&nbsp;</span>
+            <DatePicker
+              onChange={(date) => {
+                setOrderDate(date.hours(13).minutes(0));
+              }}
+              // locale={locale_kr}
+              defaultValue={orderDate}
+            />
+            <h1>{JSON.stringify(orderDate)}</h1>
+          </div>
         <Divider orientation="left">
           <TiTle>1. 판매자/브랜드 선택</TiTle>
         </Divider>
@@ -518,11 +529,7 @@ const addNewOrder = () => {
                   );
                 }
                 return (
-                  <Button
-                    size="large"
-                    type="dashed"
-                    onClick={onProviderSelectClick(v.id)}
-                  >
+                  <Button size="large" type="dashed" onClick={onProviderSelectClick(v.id)}>
                     {v.company}
                   </Button>
                 );
@@ -531,9 +538,7 @@ const addNewOrder = () => {
           </ListBox>
         </ContentsBox>
         <br />
-        {selectedProvider ? (
-          <UserInfoBox userInfo={selectedProviderData} />
-        ) : null}
+        {selectedProvider ? <UserInfoBox userInfo={selectedProviderData} /> : null}
         <br />
         <Divider orientation="left">
           <TiTle>2. 구매자 선택</TiTle>
@@ -546,16 +551,12 @@ const addNewOrder = () => {
                 value={searchCustomerTxt}
                 onChange={onChangeSearchCustomerTxt}
                 onKeyPress={(e) => {
-                  if (e.key === "Enter") {
+                  if (e.key === 'Enter') {
                     onCustomerSearch();
                   }
                 }}
               />
-              <button
-                type="button"
-                className="search"
-                onClick={onCustomerSearch}
-              >
+              <button type="button" className="search" onClick={onCustomerSearch}>
                 <SearchOutlined />
               </button>
             </div>
@@ -573,26 +574,20 @@ const addNewOrder = () => {
           <ContentsBox>
             <ListBox>
               <Space wrap>
-                {(!isFilteredCustomerList ? customers : filteredCustomers)?.map(
-                  (v) => {
-                    if (v.id === selectedCustomer) {
-                      return (
-                        <Button size="large" type="primary">
-                          {v.company}
-                        </Button>
-                      );
-                    }
+                {(!isFilteredCustomerList ? customers : filteredCustomers)?.map((v) => {
+                  if (v.id === selectedCustomer) {
                     return (
-                      <Button
-                        size="large"
-                        type="dashed"
-                        onClick={onCustomerSelectClick(v.id)}
-                      >
+                      <Button size="large" type="primary">
                         {v.company}
                       </Button>
                     );
                   }
-                )}
+                  return (
+                    <Button size="large" type="dashed" onClick={onCustomerSelectClick(v.id)}>
+                      {v.company}
+                    </Button>
+                  );
+                })}
               </Space>
             </ListBox>
             <br />
@@ -631,7 +626,7 @@ const addNewOrder = () => {
                       maxLength={12}
                       onChange={(e) => {
                         let value = e.target.value;
-                        value = e.target.value.replace(/[^0-9]/g, "");
+                        value = e.target.value.replace(/[^0-9]/g, '');
                         setPhone(value);
                       }}
                     />
@@ -653,9 +648,7 @@ const addNewOrder = () => {
           </ContentsBox>
         )}
         <br />
-        {selectedCustomer ? (
-          <UserInfoBox userInfo={selectedCustomerData} />
-        ) : null}
+        {selectedCustomer ? <UserInfoBox userInfo={selectedCustomerData} /> : null}
         <br />
         {isNewCustomer ? null : (
           <>
@@ -665,7 +658,7 @@ const addNewOrder = () => {
             {!selectedProvider ? null : (
               <ContentsBox>
                 <Space wrap>
-                  {selectedAddr === "공수" ? (
+                  {selectedAddr === '공수' ? (
                     <Button size="large" danger>
                       공장수령
                     </Button>
@@ -673,13 +666,13 @@ const addNewOrder = () => {
                     <Button
                       size="large"
                       type="dashed"
-                      onClick={onAddrSelectClick({ id: "공수" })}
+                      onClick={onAddrSelectClick({ id: '공수' })}
                       danger
                     >
                       공장수령
                     </Button>
                   )}
-                  {selectedAddr === "카페" ? (
+                  {selectedAddr === '카페' ? (
                     <Button size="large" danger>
                       카페수령
                     </Button>
@@ -687,13 +680,13 @@ const addNewOrder = () => {
                     <Button
                       size="large"
                       type="dashed"
-                      onClick={onAddrSelectClick({ id: "카페" })}
+                      onClick={onAddrSelectClick({ id: '카페' })}
                       danger
                     >
                       카페수령
                     </Button>
                   )}
-                  {selectedAddr === "없음" ? (
+                  {selectedAddr === '없음' ? (
                     <Button size="large" danger>
                       정보없음
                     </Button>
@@ -701,13 +694,13 @@ const addNewOrder = () => {
                     <Button
                       size="large"
                       type="dashed"
-                      onClick={onAddrSelectClick({ id: "없음" })}
+                      onClick={onAddrSelectClick({ id: '없음' })}
                       danger
                     >
                       정보없음
                     </Button>
                   )}
-                  {selectedAddr === "추가" ? (
+                  {selectedAddr === '추가' ? (
                     <Button size="large" danger>
                       새로입력
                     </Button>
@@ -715,7 +708,7 @@ const addNewOrder = () => {
                     <Button
                       size="large"
                       type="dashed"
-                      onClick={onAddrSelectClick({ id: "추가" })}
+                      onClick={onAddrSelectClick({ id: '추가' })}
                       danger
                     >
                       <PlusOutlined /> 새로입력
@@ -735,11 +728,7 @@ const addNewOrder = () => {
                         );
                       }
                       return (
-                        <Button
-                          size="large"
-                          type="dashed"
-                          onClick={onAddrSelectClick(v)}
-                        >
+                        <Button size="large" type="dashed" onClick={onAddrSelectClick(v)}>
                           {v.addrName}
                         </Button>
                       );
@@ -748,11 +737,11 @@ const addNewOrder = () => {
                 </ListBox>
               </ContentsBox>
             )}
-            {selectedAddr !== "공수" &&
-            selectedAddr !== "카페" &&
-            selectedAddr !== "없음" &&
-            selectedAddr !== "" ? (
-              <Descriptions bordered size="small" style={{ marginTop: "10px" }}>
+            {selectedAddr !== '공수' &&
+            selectedAddr !== '카페' &&
+            selectedAddr !== '없음' &&
+            selectedAddr !== '' ? (
+              <Descriptions bordered size="small" style={{ marginTop: '10px' }}>
                 <Descriptions.Item span={3} label="주소">
                   <Text
                     editable={{
@@ -801,16 +790,13 @@ const addNewOrder = () => {
               <ContentsBox>
                 <ItemsContainer>
                   {items?.map((v) => {
-                    let className = "";
+                    let className = '';
                     if (selectedItems.find((i) => i.id === v.id)) {
                       // 제품 선택됐을 경우 스타일
-                      className = "selected";
+                      className = 'selected';
                     }
                     return (
-                      <ItemSelector
-                        onClick={onItemSelectClick(v)}
-                        className={className}
-                      >
+                      <ItemSelector onClick={onItemSelectClick(v)} className={className}>
                         <span
                           className="showModalClick"
                           onClick={(e) => {
@@ -844,11 +830,7 @@ const addNewOrder = () => {
             <br />
             <CenteredDiv>
               <Space wrap>
-                <Button
-                  size="large"
-                  type="dashed"
-                  onClick={onGetItemListClick(selectedProvider)}
-                >
+                <Button size="large" type="dashed" onClick={onGetItemListClick(selectedProvider)}>
                   <PlusOutlined /> 판매자의 모든 제품 보기
                 </Button>
                 <Button
@@ -978,9 +960,7 @@ const addNewOrder = () => {
                 />
               </div>
               <div className="buttonWrapper">
-                <button onClick={onAddNewProductToCart}>
-                  장바구니에 제품 추가하기
-                </button>
+                <button onClick={onAddNewProductToCart}>장바구니에 제품 추가하기</button>
               </div>
             </ItemForm>
           </ContentsBox>
@@ -989,16 +969,13 @@ const addNewOrder = () => {
           <ContentsBox>
             <ItemsContainer>
               {allItemsOfProvider?.map((v) => {
-                let className = "";
+                let className = '';
                 if (selectedItems.find((i) => i.id === v.id)) {
                   // 제품 선택됐을 경우 스타일
-                  className = "selected";
+                  className = 'selected';
                 }
                 return (
-                  <ItemSelector
-                    onClick={onItemSelectClick(v)}
-                    className={className}
-                  >
+                  <ItemSelector onClick={onItemSelectClick(v)} className={className}>
                     <span
                       className="showModalClick"
                       onClick={(e) => {
@@ -1045,7 +1022,7 @@ const addNewOrder = () => {
                     className="name"
                     onClick={() => {
                       setSelectedItem(item);
-                      if (String(item.id).includes("F_")) {
+                      if (String(item.id).includes('F_')) {
                         return;
                       }
                       setIsVisible(true);
@@ -1097,37 +1074,18 @@ const addNewOrder = () => {
                             return;
                           }
                           const newQty = Number(array[idx].qty) - 1;
-                          if (
-                            String(item.unit).toUpperCase().replace(" ", "") ===
-                            "1KG"
-                          ) {
-                            array[idx].weight = newQty * 1 + "Kg";
-                          } else if (
-                            String(item.unit).toUpperCase().replace(" ", "") ===
-                            "500G"
-                          ) {
-                            array[idx].weight =
-                              (newQty * 0.5).toFixed(1) + "Kg";
-                          } else if (
-                            String(item.unit).toUpperCase().replace(" ", "") ===
-                            "400G"
-                          ) {
-                            array[idx].weight =
-                              (newQty * 0.4).toFixed(1) + "Kg";
-                          } else if (
-                            String(item.unit).toUpperCase().replace(" ", "") ===
-                            "200G"
-                          ) {
-                            array[idx].weight =
-                              (newQty * 0.2).toFixed(1) + "Kg";
-                          } else if (
-                            String(item.unit).toUpperCase().replace(" ", "") ===
-                            "100G"
-                          ) {
-                            array[idx].weight =
-                              (newQty * 0.1).toFixed(1) + "Kg";
+                          if (String(item.unit).toUpperCase().replace(' ', '') === '1KG') {
+                            array[idx].weight = newQty * 1 + 'Kg';
+                          } else if (String(item.unit).toUpperCase().replace(' ', '') === '500G') {
+                            array[idx].weight = (newQty * 0.5).toFixed(1) + 'Kg';
+                          } else if (String(item.unit).toUpperCase().replace(' ', '') === '400G') {
+                            array[idx].weight = (newQty * 0.4).toFixed(1) + 'Kg';
+                          } else if (String(item.unit).toUpperCase().replace(' ', '') === '200G') {
+                            array[idx].weight = (newQty * 0.2).toFixed(1) + 'Kg';
+                          } else if (String(item.unit).toUpperCase().replace(' ', '') === '100G') {
+                            array[idx].weight = (newQty * 0.1).toFixed(1) + 'Kg';
                           } else {
-                            array[idx].weight = "0";
+                            array[idx].weight = '0';
                           }
                           array[idx].qty = newQty;
                           getTotalQty(array);
@@ -1147,37 +1105,18 @@ const addNewOrder = () => {
                           const idx = array.findIndex((v) => v.id === item.id);
                           array[idx].qty = Number(e.target.value);
                           const newQty = Number(array[idx].qty);
-                          if (
-                            String(item.unit).toUpperCase().replace(" ", "") ===
-                            "1KG"
-                          ) {
-                            array[idx].weight = newQty * 1 + "Kg";
-                          } else if (
-                            String(item.unit).toUpperCase().replace(" ", "") ===
-                            "500G"
-                          ) {
-                            array[idx].weight =
-                              (newQty * 0.5).toFixed(1) + "Kg";
-                          } else if (
-                            String(item.unit).toUpperCase().replace(" ", "") ===
-                            "400G"
-                          ) {
-                            array[idx].weight =
-                              (newQty * 0.4).toFixed(1) + "Kg";
-                          } else if (
-                            String(item.unit).toUpperCase().replace(" ", "") ===
-                            "200G"
-                          ) {
-                            array[idx].weight =
-                              (newQty * 0.2).toFixed(1) + "Kg";
-                          } else if (
-                            String(item.unit).toUpperCase().replace(" ", "") ===
-                            "100G"
-                          ) {
-                            array[idx].weight =
-                              (newQty * 0.1).toFixed(1) + "Kg";
+                          if (String(item.unit).toUpperCase().replace(' ', '') === '1KG') {
+                            array[idx].weight = newQty * 1 + 'Kg';
+                          } else if (String(item.unit).toUpperCase().replace(' ', '') === '500G') {
+                            array[idx].weight = (newQty * 0.5).toFixed(1) + 'Kg';
+                          } else if (String(item.unit).toUpperCase().replace(' ', '') === '400G') {
+                            array[idx].weight = (newQty * 0.4).toFixed(1) + 'Kg';
+                          } else if (String(item.unit).toUpperCase().replace(' ', '') === '200G') {
+                            array[idx].weight = (newQty * 0.2).toFixed(1) + 'Kg';
+                          } else if (String(item.unit).toUpperCase().replace(' ', '') === '100G') {
+                            array[idx].weight = (newQty * 0.1).toFixed(1) + 'Kg';
                           } else {
-                            array[idx].weight = "0";
+                            array[idx].weight = '0';
                           }
                           array[idx].qty = newQty;
                           getTotalQty(array);
@@ -1193,37 +1132,18 @@ const addNewOrder = () => {
                             return;
                           }
                           const newQty = Number(array[idx].qty) + 1;
-                          if (
-                            String(item.unit).toUpperCase().replace(" ", "") ===
-                            "1KG"
-                          ) {
-                            array[idx].weight = newQty * 1 + "Kg";
-                          } else if (
-                            String(item.unit).toUpperCase().replace(" ", "") ===
-                            "500G"
-                          ) {
-                            array[idx].weight =
-                              (newQty * 0.5).toFixed(1) + "Kg";
-                          } else if (
-                            String(item.unit).toUpperCase().replace(" ", "") ===
-                            "400G"
-                          ) {
-                            array[idx].weight =
-                              (newQty * 0.4).toFixed(1) + "Kg";
-                          } else if (
-                            String(item.unit).toUpperCase().replace(" ", "") ===
-                            "200G"
-                          ) {
-                            array[idx].weight =
-                              (newQty * 0.2).toFixed(1) + "Kg";
-                          } else if (
-                            String(item.unit).toUpperCase().replace(" ", "") ===
-                            "100G"
-                          ) {
-                            array[idx].weight =
-                              (newQty * 0.1).toFixed(1) + "Kg";
+                          if (String(item.unit).toUpperCase().replace(' ', '') === '1KG') {
+                            array[idx].weight = newQty * 1 + 'Kg';
+                          } else if (String(item.unit).toUpperCase().replace(' ', '') === '500G') {
+                            array[idx].weight = (newQty * 0.5).toFixed(1) + 'Kg';
+                          } else if (String(item.unit).toUpperCase().replace(' ', '') === '400G') {
+                            array[idx].weight = (newQty * 0.4).toFixed(1) + 'Kg';
+                          } else if (String(item.unit).toUpperCase().replace(' ', '') === '200G') {
+                            array[idx].weight = (newQty * 0.2).toFixed(1) + 'Kg';
+                          } else if (String(item.unit).toUpperCase().replace(' ', '') === '100G') {
+                            array[idx].weight = (newQty * 0.1).toFixed(1) + 'Kg';
                           } else {
-                            array[idx].weight = "0";
+                            array[idx].weight = '0';
                           }
                           array[idx].qty = newQty;
                           getTotalQty(array);
@@ -1247,12 +1167,7 @@ const addNewOrder = () => {
         </CommentInput>
         <br />
         <Space>
-          <Button
-            size="large"
-            type="primary"
-            onClick={onOrderClick}
-            loading={loading}
-          >
+          <Button size="large" type="primary" onClick={onOrderClick} loading={loading}>
             {totalQty}개 ({totalWeight.toFixed(1)}Kg) 주문 추가 완료
           </Button>
           <Link href={`/factory/order-list`}>
@@ -1268,11 +1183,9 @@ const addNewOrder = () => {
   );
 };
 
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  const cookie = context.req ? context.req.headers.cookie : ""; // 쿠키 넣어주기
-  axios.defaults.headers.Cookie = "";
+export const getServerSideProps = async (context: GetServerSidePropsContext) => {
+  const cookie = context.req ? context.req.headers.cookie : ''; // 쿠키 넣어주기
+  axios.defaults.headers.Cookie = '';
   const id = context.params?.id as string;
   if (context.req && cookie) {
     axios.defaults.headers.Cookie = cookie;
@@ -1283,21 +1196,21 @@ export const getServerSideProps = async (
     // 로그인 안했으면 홈으로
     return {
       redirect: {
-        destination: "/unauth",
+        destination: '/unauth',
         permanent: false,
       },
     };
   }
-  if (response.role !== "ADMINISTRATOR") {
+  if (response.role !== 'ADMINISTRATOR') {
     // 로그인 안했으면 홈으로
     return {
       redirect: {
-        destination: "/unauth",
+        destination: '/unauth',
         permanent: false,
       },
     };
   }
-  await queryClient.prefetchQuery(["user"], () => loadMyInfoAPI());
+  await queryClient.prefetchQuery(['user'], () => loadMyInfoAPI());
   return {
     props: {
       dehydratedState: JSON.parse(JSON.stringify(dehydrate(queryClient))),
@@ -1305,4 +1218,4 @@ export const getServerSideProps = async (
   };
 };
 
-export default addNewOrder;
+export default addOldOrder;

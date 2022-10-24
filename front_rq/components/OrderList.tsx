@@ -1,4 +1,3 @@
-// @ts-nocheck
 // antd 로케일 관련 오류
 import { LoadingOutlined, PrinterTwoTone } from "@ant-design/icons";
 import { Button, DatePicker, message, Space } from "antd";
@@ -12,6 +11,8 @@ import styled from "styled-components";
 import {
   loadMyOrdersAPI,
   loadOrderAPI,
+  loadOrdersCustomerSide,
+  loadOrdersCustomerSideAPI,
   loadReceivedOrdersWithDatesAPI,
 } from "../apis/order";
 import MyTable from "./MyTable";
@@ -92,7 +93,8 @@ const OrderList = ({ userInfo, mode }) => {
     ["orders", startDate, endDate],
     () => {
       if (mode === "CUSTOMER") {
-        return loadMyOrdersAPI(userInfo.id, [startDate, endDate]);
+        console.log('패치')
+        return loadOrdersCustomerSideAPI(userInfo.id, [startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD')]);
       }
       if (mode === "PROVIDER") {
         return loadReceivedOrdersWithDatesAPI(userInfo.id, [

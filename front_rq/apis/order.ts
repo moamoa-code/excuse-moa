@@ -28,9 +28,16 @@ export function loadMyOrdersAPI(userId, dates){
   return axios.get(`/order/${userId}/${dates[0]}/${dates[1]}`).then((response) => response.data);
 }
 
+// 주문서 불러오기 (구매자)
+// export function loadMyOrdersAPI(userId: string, dates: [any, any]){
+  export function loadOrdersCustomerSideAPI(userId, dates){
+    return axios.get(`/rest/order/customer/${userId}?start=${dates[0]}&end=${dates[1]}`).then((response) => response.data);
+  }
+
 // 공장에서 제품 주문
 export function orderPosItemAPI(data: {items: any[], comment: string, providerId: string, customerId: string, address: string, name: string, phone: string, totalWeight: string}){
-  return axios.post(`/order/from-factory`, data).then((response) => response.data);
+  // return axios.post(`/order/from-factory`, data).then((response) => response.data);
+  return axios.post(`/rest/order`, data).then((response) => response.data);
 }
 
 // 카트에서 제품 주문
